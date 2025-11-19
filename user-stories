@@ -1,0 +1,33 @@
+As a user I want to analyze SAP master and transactional data so that I can determine how suppliers/products are affected by regulations.
+
+As a user I want to evaluate impact level (on volumes, transactions, markets) so that I can determine the importance/relevance of the applicable regulations.
+
+As a user I want to be able to select the analysis target (suppliers, products/materials, documents, BOM) so that the system can determine a status (compliant, non-compliant or missing info).
+
+As a user I want to treat material and product from the tables as equivalent so that I can avoid inconsistencies.
+
+As a user I want to identify material type (raw, semi-finished or finished) so that I can determine the production stage/step it is currently at.
+
+As a user I want to display and analyze the material structure/bill of materials so that I can further understand the nature of the material.
+
+As a user I want to compute compliance of sub-components so that I can determine if the parent material is compliant or not.
+
+As a user I want to use supplier's country/region so that I can determine which regulations are to be applied.
+
+As a user I want to use the target market's country/region so that I can determine which regulations are to be applied
+
+As a user I want to view the transaction history so that I can assess relevance and business value of the supplier/material.
+
+As a user I want to set values of the configurator so that it can determine if these parameters are compliant or not.
+
+As a user I want the configurator to interpret non-standard fields (e.g. free-text comments) so that I can determine/affect the compliance of the component.
+
+As a user I want to distinguish active/inactive products/suppliers based on recent activity so that I can decide for a compliance investment or a portfolio removal.
+
+As a user I want to use sales/purchase volumes and transaction frequency values so that I can decide for a compliance investment or a portfolio removal.
+
+As a user I want to have a central configurator so that I can define criteria per regulation.
+
+As a user I want the configurator to support multiple regulations (EUDR, CS3D7LkSG, Machinery .. etc) so that I can use the same system for different compliance checks.
+
+As a user I want the configurator to be generic and reusable so that I can use it as a first-level maturity check. 
