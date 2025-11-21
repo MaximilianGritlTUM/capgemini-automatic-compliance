@@ -4,9 +4,8 @@
 
 * As a user, I want the system to *connect to SAP*, so I can analyze master and transactional data.
 * As a user, I want the system to *read SAP master and transactional data*, so I can assess compliance impact.
-* As a user, I want the tool to *handle SAP naming inconsistencies* (e.g., material vs product), so my analysis is reliable.
-* As a user, I want the system to *work with multiple SAP tables/CDS views*, so I can use standard SAP sources.
-* As a user, I want optional *EHS integration*, so I can expand regulatory checks.
+* As a user I want the system to treat SAP "material" and "product" terminology equivalently so that analysis is consistent and unified.
+[[[* As a user, I want *EHS integration*, so I can expand regulatory checks.]]]
 
 ---
 
@@ -14,8 +13,8 @@
 
 ### *User Stories*
 
-* As a user, I want to *select the analysis target* (suppliers, products, materials, BOM, documents), so I can scope my evaluation.
-* As a user, I want the system to *classify each object* as compliant, non-compliant, or missing info, so I can quickly understand the status.
+* As a compliance analyst, I want to select which SAP object type to analyze (suppliers, products/materials, documents, BOM) so that the system evaluate the correct compliance scope(compliant, non-compliant or missing info).
+
 
 ---
 
@@ -23,20 +22,19 @@
 
 ### *User Stories*
 
-* As a user, I want materials and products to be *treated as equivalent*, so my analysis is consistent.
-* As a user, I want the system to *identify material type* (raw, semi-finished, finished), so I understand regulatory impact.
-* As a user, I want to *view and analyze material structure/BOM*, so I can assess compliance at all levels.
-* As a user, I want the system to *compute compliance from sub-components*, so I understand inherited risks.
 
+* As a user I want the system to identify material type (raw, semi-finished or finished) so that I can determine the current production stage/step.
+* As a user I want to display and analyze multi-level BOM structure, so that I can understand material composition.
+* As a user I want the system to compute compliance from sub-components, so that we can determine if the parent material is compliant or not.
 ---
 
 # *Epic 4: Supplier Compliance & Activity*
 
 ### *User Stories*
 
-* As a user, I want the system to *interpret supplier country/location*, so regulations are applied correctly.
-* As a user, I want *transaction history* included, so I can assess relevance and business value.
-* As a user, I want to know whether suppliers are *active or inactive*, so I focus only on relevant cases.
+* As a user, I want *transaction history for suppliers/materials* included, so I can assess relevance and business value.
+* As a user, I want to know whether suppliers/products are *active or inactive*, so I focus only on relevant cases.
+
 
 ---
 
@@ -44,9 +42,9 @@
 
 ### *User Stories*
 
-* As a user, I want a configurator that *supports country- and region-based rules*, so regulations apply correctly.
-* As a user, I want the system to know *where products are sold* and *where suppliers are based*, so market-specific rules are applied.
-* As a user, I want regulations to adapt to *regions* (EU, China, Asia, US, etc.), so compliance is accurate.
+* As a user I want to use supplier's country/region when evaluating regulations, so that region-specific rules are applied correctly.
+* As a user I want the system to consider the target market's country/region so that regulations are applied depending on export destinations.
+
 
 ---
 
@@ -55,7 +53,8 @@
 ### *User Stories*
 
 * As a user, I want the system to *read compliance fields* from SAP, so I can leverage existing information.
-* As a user, I want the tool to *interpret non-standard fields* (e.g., free-text “EUDR relevant”), so no signal is lost.
+* As a user, I want the tool to *interpret non-standard fields* (e.g., free-text “EUDR relevant”), so that I can determine the compliance of the component.
+
 
 ---
 
@@ -64,7 +63,6 @@
 ### *User Stories*
 
 * As a user, I want to see *sales/purchase volumes and transaction frequency*, so I understand business impact.
-* As a user, I want the system to *identify active vs inactive products/suppliers*, so I can make decisions like invest in compliance or retire portfolios.
 
 ---
 
@@ -72,9 +70,106 @@
 
 ### *User Stories*
 
-* As a user, I want a *central configurator* where I can define criteria per regulation, so I can reuse logic.
-* As a user, I want the configurator to *support multiple regulations* (EUDR, CS3D/LkSG, Machinery, etc.), so I can use one tool for all compliance checks.
-* As a user, I want a *first-level maturity check*, so I quickly see if a supplier/product is likely affected.
-* As a user, I want both *master-data checks* and optional *operational flow analysis*, so I can go from quick screening to deeper evaluation.
+* As a user, I want a *configurator*, so that I can define criteria per regulation.
+* As a user, I want the configurator to *support multiple regulations* (EUDR, CS3D/LkSG, Machinery, etc.), so I can use one tool for compliance checks.
+[[[As a user, I want both *master-data checks* and optional *operational flow analysis*, so I can go from quick screening to deeper evaluation.]]]
+
+---------
+
+* As a user, I want the system to *connect to SAP*, so I can analyze master and transactional data.
+* As a user, I want the system to *read SAP master and transactional data*, so I can assess compliance impact.
+* As a user I want the system to treat SAP "material" and "product" terminology equivalently so that analysis is consistent and unified.
+* As a compliance analyst, I want to select which SAP object type to analyze (suppliers, products/materials, documents, BOM) so that the system evaluate the correct compliance scope(compliant, non-compliant or missing info).
+* As a user I want the system to identify material type (raw, semi-finished or finished) so that I can determine the current production stage/step.
+* As a user I want to display and analyze multi-level BOM structure, so that I can understand material composition.
+* As a user I want the system to compute compliance from sub-components, so that we can determine if the parent material is compliant or not.
+* As a user, I want *transaction history for suppliers/materials* included, so I can assess relevance and business value.
+* As a user, I want to know whether suppliers/products are *active or inactive*, so I focus only on relevant cases.
+* As a user I want to use supplier's country/region when evaluating regulations, so that region-specific rules are applied correctly.
+* As a user I want the system to consider the target market's country/region so that regulations are applied depending on export destinations.
+* As a user, I want the system to *read compliance fields* from SAP, so I can leverage existing information.
+* As a user, I want the tool to *interpret non-standard fields* (e.g., free-text “EUDR relevant”), so that I can determine the compliance of the component.
+* As a user, I want to see *sales/purchase volumes and transaction frequency*, so I understand business impact.
+* As a user, I want a *configurator*, so that I can define criteria per regulation.
+* As a user, I want the configurator to *support multiple regulations* (EUDR, CS3D/LkSG, Machinery, etc.), so I can use one tool for compliance checks.
+
+-
+
+
+Here are the **shortened epics (1–2 sentences max)** with the **correct user stories listed underneath**.
 
 ---
+
+# ✅ **Epic 1 — SAP Connectivity & Data Acquisition**
+
+Enable the system to connect to SAP and extract all relevant master, transactional, and compliance-related data, ensuring consistent terminology and usable inputs for analysis.
+
+**User Stories**
+
+* Connect to SAP to analyze master and transactional data.
+* Read SAP master and transactional data to assess compliance impact.
+* Read compliance fields from SAP.
+* Interpret non-standard fields (e.g., free-text “EUDR relevant”).
+* Treat SAP "material" and "product" terminology equivalently for consistent analysis.
+
+---
+
+# ✅ **Epic 2 — Object Selection & Scope Definition**
+
+Allow compliance analysts to choose the SAP object type to analyze so the system applies the correct compliance scope.
+
+**User Stories**
+
+* Select which SAP object type to analyze (suppliers, products/materials, documents, BOM).
+
+---
+
+# ✅ **Epic 3 — Material Classification & Structure Analysis**
+
+Provide understanding of material characteristics and hierarchical structure so the system can evaluate production stages and component relationships.
+
+**User Stories**
+
+* Identify material type (raw, semi-finished, finished).
+* Display and analyze multi-level BOM structure.
+* Compute compliance of parent materials based on sub-components.
+
+---
+
+# ✅ **Epic 4 — Supplier & Material Relevance Assessment**
+
+Ensure the system evaluates only meaningful cases by including usage history, activity status, and transaction volumes.
+
+**User Stories**
+
+* Include transaction history for suppliers/materials.
+* Identify whether suppliers/products are active or inactive.
+* Display sales/purchase volumes and transaction frequency.
+
+---
+
+# ✅ **Epic 5 — Region-Based Compliance Evaluation**
+
+Incorporate geographic information into compliance logic so regulations can be applied based on supplier origin and target markets.
+
+**User Stories**
+
+* Use supplier’s country/region when evaluating regulations.
+* Consider the target market’s country/region when applying regulations.
+
+---
+
+# ✅ **Epic 6 — Multi-Regulation Configurator**
+
+Provide a configurable rule engine that supports criteria definition and analysis across multiple regulatory frameworks.
+
+**User Stories**
+
+* Provide a configurator to define criteria per regulation.
+* Support multiple regulations (EUDR, CS3D/LkSG, Machinery, etc.).
+
+---
+
+If you'd like, I can also format these in **Jira style**, **Confluence-ready tables**, or **include acceptance criteria**.
+
+
