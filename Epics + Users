@@ -1,37 +1,37 @@
 Epic 1 – Data foundation & regulatory impact analysis
-US1.1 – As a user I want to analyze SAP master and transactional data so that I can determine how suppliers and products are affected by regulations.
-US1.2 – As a user I want to evaluate impact level (on volumes, transactions, markets) so that I can determine the importance and relevance of the applicable regulations.
-US1.3 – As a user I want to view the transaction history so that I can assess relevance and business value of the supplier or material.
-US1.4 – As a user I want to use sales and purchase volumes and transaction frequency values so that I can decide between a compliance investment or a portfolio removal.
-US1.5 – As a user I want to run a quick master-data readiness check so that I can get a first assessment of regulatory compliance with minimal effort and system load.
-US1.6 – As a user I want to optionally trigger a deeper operational / flow analysis based on detailed transactions so that I can investigate critical cases more thoroughly when needed.
+US1.1 – As a compliance analyst, I want the system to read SAP master and transactional data (materials, suppliers, BOM, sales and purchase documents) so that I can determine how suppliers and products are affected by selected regulations.
+US1.2 – As a compliance analyst, I want the system to compute regulatory impact levels (on volumes, transactions and market destinations) so that I can determine the importance and relevance of the applicable regulations.
+US1.3 – As a user, I want to view the transaction history for suppliers and materials so that I can assess their business relevance and value.
+US1.4 – As a user, I want to use sales and purchase volumes and transaction frequency values so that I can decide between a compliance investment or a portfolio removal.
+US1.5 – As a compliance analyst, I want to run a quick master-data readiness check so that I can get a first assessment of regulatory compliance with minimal effort and system load.
+US1.6 – As a compliance analyst, I want to optionally trigger a deeper operational / flow analysis based on detailed transactions so that I can investigate critical cases more thoroughly when needed.
 
 Epic 2 – Product & BOM compliance logic
-US2.1 – As a user I want to treat “material” and “product” from the SAP tables as equivalent so that I can avoid inconsistencies in the analysis.
-US2.2 – As a user I want to identify the material type (raw, semi-finished or finished) so that I can determine the production stage or step it is currently at.
-US2.3 – As a user I want to display and analyze the material structure / bill of materials so that I can further understand the nature of the material.
-US2.4 – As a user I want to compute the compliance of sub-components so that I can determine whether the parent material is compliant or not.
+US2.1 – As a user, I want the system to treat SAP “material” and “product” terminology equivalently so that analysis is consistent and unified.
+US2.2 – As a user, I want the system to identify the material type (raw, semi-finished or finished) so that I can determine the current production stage or step.
+US2.3 – As a user, I want to display and analyze the multi-level BOM structure so that I can understand material composition.
+US2.4 – As a user, I want the system to compute the compliance of sub-components so that I can determine whether the parent material is compliant or not.
 
 Epic 3 – Supplier & market context
-US3.1 – As a user I want to use the supplier’s country or region so that I can determine which regulations are to be applied.
-US3.2 – As a user I want to use the target market’s country or region so that I can determine which regulations are to be applied.
-US3.3 – As a user I want to distinguish active and inactive products or suppliers based on recent activity so that I can decide for a compliance investment or a portfolio removal.
+US3.1 – As a user, I want to use the supplier’s country or region when evaluating regulations so that region-specific rules are applied correctly.
+US3.2 – As a user, I want the system to consider the target market’s country or region so that regulations are applied depending on export destinations.
+US3.3 – As a user, I want to distinguish active and inactive products or suppliers based on recent activity so that I can decide for a compliance investment or a portfolio removal.
 
 Epic 4 – Configurator & regulatory templates
-US4.1 – As a user I want to have a central configurator so that I can define criteria per regulation, mark data fields as mandatory or optional, and include both structured compliance fields and free-text rules.
-US4.2 – As a user I want the configurator to support multiple regulations (e.g. EUDR, CS3D, LkSG, Machinery, …) so that I can use the same system for different compliance checks.
-US4.3 – As a user I want the configurator to be generic and reusable, with the ability to save, load and copy regulation templates, so that I can use it as a first-level maturity check across different regulations and clients.
-US4.4 – As a user I want to set values and parameters in the configurator so that it can determine whether these parameters are compliant or not.
-US4.5 – As a user I want the configurator to interpret non-standard fields (e.g. free-text comments) so that I can determine or influence the compliance of the component.
-US4.6 – As a user I want to be able to select and configure the analysis targets (suppliers, products/materials, documents, BOM) per regulation so that the system can determine a status (compliant, non-compliant or missing info) for all in-scope objects.
+US4.1 – As a user, I want to have a central configurator so that I can define criteria per regulation, mark data fields as mandatory or optional, and include both structured compliance fields and free-text rules.
+US4.2 – As a user, I want the configurator to support multiple regulations (e.g. EUDR, CS3D, LkSG, Machinery, etc.) so that I can use the same system for different compliance checks.
+US4.3 – As a user, I want the configurator to be generic and reusable, with the ability to save, load and copy regulation templates, so that I can use it as a first-level maturity check across different regulations and clients.
+US4.4 – As a user, I want to set values and parameters in the configurator so that it can determine whether these parameters are compliant or not.
+US4.5 – As a user, I want the configurator to interpret non-standard fields (e.g. free-text comments) so that I can determine or influence the compliance of the component.
+US4.6 – As a compliance analyst, I want to select which SAP object types to analyze (suppliers, products/materials, documents, BOM) per regulation so that the system evaluates the correct compliance scope and returns the appropriate status (compliant, non-compliant or missing info) for all in-scope objects.
 
 Epic 5 – Readiness reporting & decision support
-US5.1 – As a user I want to see a readiness report per regulation that summarizes compliance status and data completeness for all in-scope suppliers, products and other objects so that I get a quick overview of my situation.
-US5.2 – As a user I want the readiness report to categorize data per object as available, partially available or missing and show the underlying data sources so that I can understand where gaps come from.
-US5.3 – As a user I want the report to highlight critical data gaps and provide recommendations (e.g. which fields or suppliers need additional data) so that I know which actions to take to improve compliance.
-US5.4 – As a user I want to export the readiness report (e.g. to Excel or PDF) and have it timestamped with an audit trail so that I can use it in audits and internal reviews.
+US5.1 – As a user, I want to see a readiness report per regulation that summarizes compliance status and data completeness for all in-scope suppliers, products and other objects so that I get a quick overview of my situation.
+US5.2 – As a user, I want the readiness report to categorize data per object as available, partially available or missing and show the underlying data sources so that I can understand where gaps come from.
+US5.3 – As a user, I want the report to highlight critical data gaps and provide recommendations (e.g. which fields or suppliers need additional data) so that I know which actions to take to improve compliance.
+US5.4 – As a user, I want to export the readiness report (e.g. to Excel or PDF) and have it timestamped with an audit trail so that I can use it in audits and internal reviews.
 
 Epic 6 – System & integration (technical)
-US6.1 – As a system owner I want the solution to connect to SAP S/4HANA using standard APIs and CDS views so that we can reuse existing master and transactional data without custom extracts.
-US6.2 – As a system owner I want the solution to support multiple SAP source tables or CDS views per object type so that it can adapt to different customer data models.
-US6.3 – As a system owner I want the solution to integrate existing EHS and compliance data sources so that all relevant compliance indicators are available in one place.
+US6.1 – As a system owner, I want the solution to connect to SAP S/4HANA using standard APIs and CDS views so that we can reuse existing master and transactional data without custom extracts.
+US6.2 – As a system owner, I want the solution to support multiple SAP source tables or CDS views per object type so that it can adapt to different customer data models.
+US6.3 – As a system owner, I want the solution to integrate existing EHS and compliance data sources so that all relevant compliance indicators are available in one place.
