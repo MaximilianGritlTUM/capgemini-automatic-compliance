@@ -1,7 +1,8 @@
 As a compliance analyst, I want the system to read SAP master and transactional data (materials, suppliers, BOM, sales, purchase documents) so that I can determine how suppliers/products is affected by selected regulations.
-
+-> As a compliance analyst, I want the system to read SAP master and transactional data (materials, suppliers, BOM, sales, purchase documents), so that the system can process it.
+-> 
 As a compliance analyst, I want the system to compute regulatory impact level (on volumes, transactions, market destination) so that I can determine the importance/relevance of the applicable regulations.
-
+-> 
 As a compliance analyst, I want to select which SAP object type to analysis (suppliers, products/materials, documents, BOM) so that the system evaluate the correct compliance scope(compliant, non-compliant or missing info).
 
 As a user I want the system to treat SAP "material" and "product" terminology equivalently so that analysis is consistent and unified.
