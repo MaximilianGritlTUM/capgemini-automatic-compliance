@@ -1,0 +1,80 @@
+# *Epic 1: SAP Data Integration*
+
+### *User Stories*
+
+* As a user, I want the system to *connect to SAP*, so I can analyze master and transactional data.
+* As a user, I want the system to *read SAP master and transactional data*, so I can assess compliance impact.
+* As a user, I want the tool to *handle SAP naming inconsistencies* (e.g., material vs product), so my analysis is reliable.
+* As a user, I want the system to *work with multiple SAP tables/CDS views*, so I can use standard SAP sources.
+* As a user, I want optional *EHS integration*, so I can expand regulatory checks.
+
+---
+
+# *Epic 2: Object & Scope Selection*
+
+### *User Stories*
+
+* As a user, I want to *select the analysis target* (suppliers, products, materials, BOM, documents), so I can scope my evaluation.
+* As a user, I want the system to *classify each object* as compliant, non-compliant, or missing info, so I can quickly understand the status.
+
+---
+
+# *Epic 3: Product & Material Compliance*
+
+### *User Stories*
+
+* As a user, I want materials and products to be *treated as equivalent*, so my analysis is consistent.
+* As a user, I want the system to *identify material type* (raw, semi-finished, finished), so I understand regulatory impact.
+* As a user, I want to *view and analyze material structure/BOM*, so I can assess compliance at all levels.
+* As a user, I want the system to *compute compliance from sub-components*, so I understand inherited risks.
+
+---
+
+# *Epic 4: Supplier Compliance & Activity*
+
+### *User Stories*
+
+* As a user, I want the system to *interpret supplier country/location*, so regulations are applied correctly.
+* As a user, I want *transaction history* included, so I can assess relevance and business value.
+* As a user, I want to know whether suppliers are *active or inactive*, so I focus only on relevant cases.
+
+---
+
+# *Epic 5: Market & Country Logic*
+
+### *User Stories*
+
+* As a user, I want a configurator that *supports country- and region-based rules*, so regulations apply correctly.
+* As a user, I want the system to know *where products are sold* and *where suppliers are based*, so market-specific rules are applied.
+* As a user, I want regulations to adapt to *regions* (EU, China, Asia, US, etc.), so compliance is accurate.
+
+---
+
+# *Epic 6: Compliance Indicators*
+
+### *User Stories*
+
+* As a user, I want the system to *read compliance fields* from SAP, so I can leverage existing information.
+* As a user, I want the tool to *interpret non-standard fields* (e.g., free-text “EUDR relevant”), so no signal is lost.
+
+---
+
+# *Epic 7: Transaction Relevance & Volume*
+
+### *User Stories*
+
+* As a user, I want to see *sales/purchase volumes and transaction frequency*, so I understand business impact.
+* As a user, I want the system to *identify active vs inactive products/suppliers*, so I can make decisions like invest in compliance or retire portfolios.
+
+---
+
+# *Epic 8: Regulatory Configurator*
+
+### *User Stories*
+
+* As a user, I want a *central configurator* where I can define criteria per regulation, so I can reuse logic.
+* As a user, I want the configurator to *support multiple regulations* (EUDR, CS3D/LkSG, Machinery, etc.), so I can use one tool for all compliance checks.
+* As a user, I want a *first-level maturity check*, so I quickly see if a supplier/product is likely affected.
+* As a user, I want both *master-data checks* and optional *operational flow analysis*, so I can go from quick screening to deeper evaluation.
+
+---
