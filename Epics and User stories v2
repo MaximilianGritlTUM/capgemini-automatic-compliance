@@ -5,7 +5,6 @@
 * As a user, I want the system to *connect to SAP*, so I can analyze master and transactional data.
 * As a user, I want the system to *read SAP master and transactional data*, so I can assess compliance impact.
 * As a user I want the system to treat SAP "material" and "product" terminology equivalently so that analysis is consistent and unified.
-[[[* As a user, I want *EHS integration*, so I can expand regulatory checks.]]]
 
 ---
 
@@ -72,7 +71,6 @@
 
 * As a user, I want a *configurator*, so that I can define criteria per regulation.
 * As a user, I want the configurator to *support multiple regulations* (EUDR, CS3D/LkSG, Machinery, etc.), so I can use one tool for compliance checks.
-[[[As a user, I want both *master-data checks* and optional *operational flow analysis*, so I can go from quick screening to deeper evaluation.]]]
 
 ---------
 
@@ -93,7 +91,13 @@
 * As a user, I want a *configurator*, so that I can define criteria per regulation.
 * As a user, I want the configurator to *support multiple regulations* (EUDR, CS3D/LkSG, Machinery, etc.), so I can use one tool for compliance checks.
 
--
+|  Epic   |
+|---------|   
+|         |
+|         |
+|         |
+|         |
+
 
 
 Here are the **shortened epics (1–2 sentences max)** with the **correct user stories listed underneath**.
@@ -172,4 +176,6 @@ Provide a configurable rule engine that supports criteria definition and analysi
 
 If you'd like, I can also format these in **Jira style**, **Confluence-ready tables**, or **include acceptance criteria**.
 
-
+### POTENTIAL USER STORIES ###
+* As a user, I want EHS integration, so I can expand regulatory checks.
+* As a user, I want both master-data checks and optional operational flow analysis, so that I can go from quick screening to deeper evaluation.
