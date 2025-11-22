@@ -1,7 +1,7 @@
 # capgemini-automatic-compliance
 Capgemini Automatic Regulatory Compliance Check Tool
 
-Epics:
+### Epics ###
 | Epic | Description | User Stories |
 |---|---|---|
 | Epic 1: SAP Connectivity & Data Acquisition | Enable the system to connect to SAP and extract relevant data for consistent analysis. | - As a user, I want to connect to SAP so that I can analyze master and transactional data.<br>- As a compliance analyst, I want to read SAP master and transactional data so that I can assess compliance impact.<br>- As a compliance analyst, I want to read compliance-relevant fields from SAP so that I can perform regulatory evaluation.<br>- As a user, I want the system to detect and interpret non-standard SAP fields so that manual cleanup is minimized.<br>- As a user, I want SAP terms like “material” and “product” treated consistently so that analysis remains uniform and correct. |
