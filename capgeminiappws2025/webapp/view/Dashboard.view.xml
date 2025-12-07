@@ -1,0 +1,127 @@
+<mvc:View
+    controllerName="capgeminiappws2025.controller.Dashboard"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m">
+
+    <Page
+        id="dashboardPage"
+        title="Compliance Dashboard"
+        class="sapUiNoContentPadding">
+
+        <content>
+
+            <!-- Page Title -->
+            <Title
+                text="Regulatory Compliance Overview"
+                level="H2"
+                class="sapUiSmallMarginTop sapUiSmallMarginBottom sapUiSmallMarginBegin sapUiSmallMarginEnd" />
+
+            <!-- KPI Tiles -->
+            <HBox>
+
+                <!-- 1 Active Materials -->
+                <GenericTile
+                    class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout"
+                    header="Active Materials"
+                    subheader="Total Count"
+                    press="onNavToMaterials">
+                    <TileContent
+                        unit="EA"
+                        footer="Current Quarter">
+                        <NumericContent
+                            value="{/Kpi/ActiveMaterials}"
+                            valueColor="Good"
+                            withMargin="false" />
+                    </TileContent>
+                </GenericTile>
+
+                <!-- 2 Active Suppliers -->
+                <GenericTile
+                    class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout"
+                    header="Active Suppliers"
+                    subheader="Supplier Base"
+                    press="onNavToSuppliers">
+                    <TileContent
+                        unit="Partners"
+                        footer="Updated Weekly">
+                        <NumericContent
+                            value="{/Kpi/ActiveSuppliers}"
+                            valueColor="Neutral"
+                            withMargin="false" />
+                    </TileContent>
+                </GenericTile>
+
+                <!-- 3 Regulations Monitored -->
+                <GenericTile
+                    class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout"
+                    header="Regulations Monitored"
+                    subheader="Global Scope"
+                    press="onNavToRegulations">
+                    <TileContent
+                        unit="Rules"
+                        footer="Last Sync">
+                        <NumericContent
+                            value="{/Kpi/PendingReviews}"
+                            valueColor="Error"
+                            withMargin="false" />
+                    </TileContent>
+                </GenericTile>
+
+                <!-- 4 Pending Reviews -->
+                <GenericTile
+                    class="sapUiTinyMarginBegin sapUiTinyMarginTop tileLayout"
+                    header="Pending Reviews"
+                    subheader="Compliance Queue"
+                    press="onNavToReviews">
+                    <TileContent
+                        unit="Items"
+                        footer="High Priority">
+                        <NumericContent
+                            value="23"
+                            scale=""
+                            valueColor="Error"
+                            withMargin="false" />
+                    </TileContent>
+                </GenericTile>
+
+            </HBox>
+
+            <!-- Recent Compliance Issues Table -->
+            <Table
+                id="complianceTable"
+                headerText="Recent Compliance Issues"
+                items="{/Issues}">
+
+                <columns>
+                    <Column><Text text="Material" /></Column>
+                    <Column><Text text="Supplier" /></Column>
+                    <Column><Text text="Region" /></Column>
+                    <Column><Text text="Regulation" /></Column>
+                    <Column><Text text="Status" /></Column>
+                    <Column><Text text="Risk Level" /></Column>
+                    <Column><Text text="Last Updated" /></Column>
+                </columns>
+
+                <items>
+                    <ColumnListItem>
+                        <cells>
+                            <Text text="{MaterialID}" />
+                            <Text text="{SupplierName}" />
+                            <Text text="{Region}" />
+                            <Text text="{Regulation}" />
+                            <ObjectStatus
+                                text="{Status}"
+                                state="{= ${Status} === 'Non-Compliant' ? 'Error' : ${Status} === 'Under Review' ? 'Warning' : 'Success'}" />
+                            <ObjectStatus
+                                text="{RiskLevel}"
+                                state="{= ${RiskLevel} === 'High' ? 'Error' : ${RiskLevel} === 'Medium' ? 'Warning' : 'Success'}" />
+                            <Text text="{LastUpdated}" />
+                        </cells>
+                    </ColumnListItem>
+                </items>
+
+            </Table>
+
+        </content>
+    </Page>
+</mvc:View>
