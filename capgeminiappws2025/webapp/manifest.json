@@ -16,11 +16,21 @@
       "toolsId": "c51afef8-2a01-4fe6-ae75-0beda66caa08"
     },
     "dataSources": {
+      "Z_CONFIG_SRV_UI_VAN": {
+        "uri": "/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='Z_CONFIG_SRV_UI_VAN',Version='0001')/$value/",
+        "type": "ODataAnnotation",
+        "settings": {
+          "localUri": "localService/mainService/Z_CONFIG_SRV_UI_VAN.xml"
+        }
+      },
       "mainService": {
-        "uri": "localService/metadata.xml/",
+        "uri": "/sap/opu/odata/sap/Z_CONFIG_SRV_UI/",
         "type": "OData",
         "settings": {
-          "localUri": "localService/metadata.xml",
+          "annotations": [
+            "Z_CONFIG_SRV_UI_VAN"
+          ],
+          "localUri": "localService/mainService/metadata.xml",
           "odataVersion": "2.0"
         }
       }
@@ -87,20 +97,31 @@
       },
       "routes": [
         {
-          "name": "RouteMain",
-          "pattern": ":?query:",
-          "target": [
-            "TargetMain"
-          ]
+          "name": "home",
+          "pattern": "",
+          "target": "home"
+        },
+        {
+          "name": "configurator",
+          "pattern": "configurator",
+          "target": "configurator"
         }
       ],
       "targets": {
-        "TargetMain": {
+        "home": {
           "viewType": "XML",
           "transition": "slide",
           "clearControlAggregation": false,
-          "viewId": "Dashboard",
-          "viewName": "Dashboard"
+          "viewId": "dashboard",
+          "viewName": "Dashboard",
+          "ControlId": "app",
+          "viewLevel": 1
+        },
+        "configurator": {
+          "viewId": "configurator",
+          "viewName": "Configurator",
+          "ControlId": "app",
+          "viewLevel": 1
         }
       }
     },
