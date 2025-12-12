@@ -7,7 +7,7 @@
     "applicationVersion": {
       "version": "0.0.1"
     },
-    "title": "{{appTitle}}",
+    "title": "{{Capgemini Compliance Check}}",
     "description": "{{appDescription}}",
     "resources": "resources.json",
     "sourceTemplate": {
@@ -16,21 +16,11 @@
       "toolsId": "c51afef8-2a01-4fe6-ae75-0beda66caa08"
     },
     "dataSources": {
-      "ZDDSPILOT_SB_VAN": {
-        "uri": "/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='ZDDSPILOT_SB_VAN',Version='0001')/$value/",
-        "type": "ODataAnnotation",
-        "settings": {
-          "localUri": "localService/mainService/ZDDSPILOT_SB_VAN.xml"
-        }
-      },
       "mainService": {
-        "uri": "/sap/opu/odata/sap/ZDDSPILOT_SB/",
+        "uri": "localService/metadata.xml/",
         "type": "OData",
         "settings": {
-          "annotations": [
-            "ZDDSPILOT_SB_VAN"
-          ],
-          "localUri": "localService/mainService/metadata.xml",
+          "localUri": "localService/metadata.xml",
           "odataVersion": "2.0"
         }
       }
@@ -109,8 +99,8 @@
           "viewType": "XML",
           "transition": "slide",
           "clearControlAggregation": false,
-          "viewId": "Main",
-          "viewName": "Main"
+          "viewId": "Dashboard",
+          "viewName": "Dashboard"
         }
       }
     },

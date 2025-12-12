@@ -1,10 +1,51 @@
-node_modules/
-dist/
+#############################
+#  SAP / MTA Build Files
+#############################
 .scp/
 .env
 Makefile*.mta
-mta_archives
+mta_archives/
 mta-*
-resources
+resources/
 archive.zip
 .*_mta_build_tmp
+
+#############################
+#  IDE / Editor Settings
+#############################
+.idea/
+.vscode/
+*.iml
+
+#############################
+#  Node.js Dependencies
+#############################
+node_modules/
+
+#############################
+#  Build Outputs
+#############################
+dist/
+target/
+build/
+coverage/
+.tmp/
+
+#############################
+#  Logs and Temp Files
+#############################
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db
+
+#############################
+#  Miscellaneous
+#############################
+package-lock.json
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
