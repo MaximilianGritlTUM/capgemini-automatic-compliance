@@ -17,10 +17,9 @@
     },
     "dataSources": {
       "mainService": {
-        "uri": "localService/metadata.xml/",
+        "uri": "/sap/opu/odata/sap/Z_CONFIG_SRV_UI",
         "type": "OData",
         "settings": {
-          "localUri": "localService/metadata.xml",
           "odataVersion": "2.0"
         }
       }
@@ -92,6 +91,16 @@
           "target": [
             "TargetMain"
           ]
+        },
+        {
+          "pattern": "complianceReports",                
+          "name": "ComplianceReport",        
+          "target": "ComplianceReport"  
+        },
+        {
+          "pattern": "reportDetail/{reportId}",                
+          "name": "ComplianceReportDetail",        
+          "target": "ComplianceReportDetail"
         }
       ],
       "targets": {
@@ -101,6 +110,14 @@
           "clearControlAggregation": false,
           "viewId": "Dashboard",
           "viewName": "Dashboard"
+        },
+        "ComplianceReport": {
+          "viewName": "ComplianceReport",
+          "viewLevel": 1
+        },
+        "ComplianceReportDetail": {
+          "viewName": "ComplianceReportDetail",
+          "viewLevel": 2
         }
       }
     },
