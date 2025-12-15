@@ -92,6 +92,16 @@
           "target": [
             "TargetMain"
           ]
+        },
+        {
+          "pattern": "complianceReports",                
+          "name": "ComplianceReport",        
+          "target": "ComplianceReport"  
+        },
+        {
+          "pattern": "reportDetail/{reportId}",                
+          "name": "ComplianceReportDetail",        
+          "target": "ComplianceReportDetail"
         }
       ],
       "targets": {
@@ -101,6 +111,14 @@
           "clearControlAggregation": false,
           "viewId": "Dashboard",
           "viewName": "Dashboard"
+        },
+        "ComplianceReport": {
+          "viewName": "ComplianceReport",
+          "viewLevel": 1
+        },
+        "ComplianceReportDetail": {
+          "viewName": "ComplianceReportDetail",
+          "viewLevel": 2
         }
       }
     },

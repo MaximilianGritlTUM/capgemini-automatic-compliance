@@ -1,0 +1,72 @@
+<mvc:View
+    controllerName="capgeminiappws2025.controller.ComplianceReport"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m">
+    <!--http://localhost:8080/index.html#/complianceReports-->
+    <Page
+        id="complianceReportPage"
+        title="Compliance Report"
+        class="sapUiNoContentPadding">
+
+        <content>
+
+            <Title
+                text="Detailed Compliance Results"
+                level="H2"
+                class="sapUiSmallMarginTop sapUiSmallMarginBottom
+                       sapUiSmallMarginBegin sapUiSmallMarginEnd" />
+
+            <!-- Toolbar: Export Report / Filter Button -->
+            <Toolbar
+                class="sapUiSmallMarginBegin sapUiSmallMarginEnd sapUiTinyMarginBottom">
+                <Title text="Detailed Results" level="H3" />
+                <ToolbarSpacer />
+                <Button
+                    text="Filter"
+                    press="onOpenFilter" />
+            </Toolbar>
+
+            <!-- Results Table -->
+            <Table
+                id="reportTable"
+                headerText="Compliance Report List"
+                items="{/Reports}"
+                mode="SingleSelectMaster"
+                itemPress=".onTableItemPress"
+                class="sapUiSmallMarginBegin sapUiSmallMarginEnd sapUiSmallMarginBottom">
+
+                <columns>
+                    <Column><Text text="Report ID" /></Column>
+                    <Column><Text text="Regulation" /></Column>
+                    <Column><Text text="Run Timestamp" /></Column>
+                    <Column><Text text="Degree of Fulfillment (%)" /></Column>
+                    <Column><Text text="Data Availability" /></Column>
+                    <Column><Text text="Status" /></Column>
+                </columns>
+
+                <items>
+                    <ColumnListItem type="Navigation">
+                        <cells>
+                            <Text text="{ReportId}" />
+                            <Text text="{Regulation}" />
+                            <Text text="{RunTimestamp}" />
+                            <ObjectStatus
+                                text="{DegreeOfFulfillment}"
+                                state="{= ${DegreeOfFulfillment} >= 80 ? 'Success' :
+                                              ${DegreeOfFulfillment} >= 50 ? 'Warning' :
+                                              'Error'}" />
+                            <Text text="{DataAvailabilitySummary}" />
+                            <ObjectStatus
+                                text="{Status}"
+                                state="{= ${Status} === 'Completed' ? 'Success' :
+                                              ${Status} === 'Running' ? 'Warning' :
+                                              'Error'}" />
+                        </cells>
+                    </ColumnListItem>
+                </items>
+
+            </Table>
+
+        </content>
+    </Page>
+</mvc:View>
