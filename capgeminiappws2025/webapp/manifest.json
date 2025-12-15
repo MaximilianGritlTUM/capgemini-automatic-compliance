@@ -24,13 +24,9 @@
         }
       },
       "mainService": {
-        "uri": "/sap/opu/odata/sap/Z_CONFIG_SRV_UI/",
+        "uri": "/sap/opu/odata/sap/Z_CONFIG_SRV_UI",
         "type": "OData",
         "settings": {
-          "annotations": [
-            "Z_CONFIG_SRV_UI_VAN"
-          ],
-          "localUri": "localService/mainService/metadata.xml",
           "odataVersion": "2.0"
         }
       }
@@ -105,6 +101,23 @@
           "name": "configurator",
           "pattern": "configurator",
           "target": "configurator"
+        },
+        {
+          "name": "RouteMain",
+          "pattern": ":?query:",
+          "target": [
+            "TargetMain"
+          ]
+        },
+        {
+          "pattern": "complianceReports",                
+          "name": "ComplianceReport",        
+          "target": "ComplianceReport"  
+        },
+        {
+          "pattern": "reportDetail/{reportId}",                
+          "name": "ComplianceReportDetail",        
+          "target": "ComplianceReportDetail"
         }
       ],
       "targets": {
@@ -122,6 +135,14 @@
           "viewName": "Configurator",
           "ControlId": "app",
           "viewLevel": 1
+        },
+        "ComplianceReport": {
+          "viewName": "ComplianceReport",
+          "viewLevel": 1
+        },
+        "ComplianceReportDetail": {
+          "viewName": "ComplianceReportDetail",
+          "viewLevel": 2
         }
       }
     },
