@@ -18,12 +18,15 @@ sap.ui.define([
             var sReportId = oEvent.getParameter("arguments").reportId;
 
             var oModel = this.getView().getModel();
-            var aReports = oModel.getProperty("/Reports");
-            var iIndex = aReports.findIndex(r => r.ReportId === sReportId);
-
-            console.log("Matched index:", iIndex, "for reportId:", sReportId);
-            var sPath = "/Reports/" + iIndex;
-            this.getView().bindElement(sPath);
+            var sPath = oModel.createKey("/Report",{
+                ReportId: sReportId
+            });
+            this.getView().bindElement({
+                path: sPath,
+                parameters: {
+                    expand: "to_Results"
+                }
+            })
         },
 
         onNavBack: function() {

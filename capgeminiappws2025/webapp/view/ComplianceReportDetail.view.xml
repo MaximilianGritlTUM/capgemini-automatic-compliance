@@ -70,9 +70,7 @@
                                 id="materialsTable"
                                 inset="false"
                                 width="100%"
-                                items="{
-                                    path: 'Materials'
-                                }">
+                                items="{to_Results}">
 
                                 <columns>
                                     <Column>
@@ -128,9 +126,7 @@
                                 id="suppliersTable"
                                 inset="false"
                                 width="100%"
-                                items="{
-                                    path: 'Suppliers'
-                                }">
+                                items="{to_Results}">
 
                                 <columns>
                                     <Column>
