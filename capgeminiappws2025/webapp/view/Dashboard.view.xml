@@ -84,6 +84,12 @@
                     </TileContent>
                 </GenericTile>
 
+                <Button
+                    press="onPressConfigurator"
+                    text="Configurator"
+                    type="Emphasized"
+                />
+
             </HBox>
 
             <!-- Recent Compliance Issues Table -->

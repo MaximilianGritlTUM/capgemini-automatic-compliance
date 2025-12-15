@@ -48,6 +48,14 @@ sap.ui.define([
 
             const oModel = new JSONModel(oData);
             this.getView().setModel(oModel);
+        },
+
+        getRouter: function () {
+            return sap.ui.core.UIComponent.getRouterFor(this);
+        },
+
+        onPressConfigurator: function (oEvent) {
+            this.getRouter().navTo("configurator", {}, {}, false);
         }
 
     });
