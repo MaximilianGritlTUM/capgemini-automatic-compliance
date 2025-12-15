@@ -6,145 +6,170 @@
 >
     <Page
         id="configurator"
-        title="Compliance Configurator"
+        title="Regulatory Framework Configuration"
     >
         <content>
-            <SplitContainer
-                id="mainSplit"
-                mode="StretchCompressMode"
+            <HBox
+                width="100%"
+                renderType="Bare"
+                class="sapUiContentPadding"
             >
-                <!-- Master: Active Regulations -->
-                <masterPages>
-                    <Page title="Active Regulations">
-                        <content>
-                            <VBox class="sapUiContentPadding">
-                                <Toolbar>
-                                    <Title text="Active Regulations" level="H4" />
-                                    <ToolbarSpacer />
-                                    <Button
-                                        text="Add"
-                                        icon="sap-icon://add"
-                                        type="Emphasized"
-                                        press="onPressAddRegulation"
-                                    />
-                                </Toolbar>
 
-                                <List
-                                    id="regulationList"
-                                    mode="SingleSelectMaster"
-                                    growing="true"
-                                    items="{ path: '/Z_I_ZREGULATION' }"
-                                >
-                                    <StandardListItem
-                                        title="{Title}"
-                                        description="{= 'Active • ' + (${_Fields}.length || 0) + ' fields'}"
-                                        icon="sap-icon://document-text"
-                                        type="Active"
-                                        press="onSelectRegulation"
-                                    />
-                                </List>
-                            </VBox>
-                        </content>
-                    </Page>
-                </masterPages>
+                <!-- ================= LEFT CARD: Active Regulations ================= -->
+                <VBox
+                    width="320px"
+                    class="sapUiSmallMarginEnd"
+                >
+                    <Panel
+                        class="sapUiResponsiveMargin"
+                        backgroundDesign="Solid"
+                    >
+                        <headerToolbar>
+                            <Toolbar>
+                                <Title text="Active Regulations" level="H5" />
+                                <ToolbarSpacer />
+                                <Button
+                                    text="Add Regulation"
+                                    icon="sap-icon://add"
+                                    type="Emphasized"
+                                    press="onPressAddRegulation"
+                                />
+                            </Toolbar>
+                        </headerToolbar>
 
-                <!-- Detail: Regulation Details -->
-                <detailPages>
-                    <Page title="Regulation Details">
-                        <content>
-                            <VBox class="sapUiContentPadding" id="detailPanel" binding="{ path: '' }">
-                                <ObjectHeader
-                                    title="{Title}"
-                                    number="{RegulationStatus}"
-                                    numberUnit="Status"
-                                >
-                                    <attributes>
-                                        <ObjectAttribute text="{Description}" />
-                                    </attributes>
-                                </ObjectHeader>
-
-                                <Panel
-                                    headerText="General Information"
-                                    expandable="true"
-                                    expanded="true"
-                                    class="sapUiMediumMarginTop"
-                                >
-                                    <f:SimpleForm
-                                        editable="true"
-                                        layout="ResponsiveGridLayout"
-                                        labelSpanXL="3"
-                                        labelSpanL="3"
-                                        labelSpanM="3"
-                                        labelSpanS="12"
+                        <List
+                            id="regulationList"
+                            mode="SingleSelectMaster"
+                            items="{ path: '/Z_I_ZREGULATION' }"
+                            selectionChange="onSelectRegulation"
+                        >
+                            <CustomListItem
+                                type="Active"
+                                press="onSelectRegulation"
+                            >
+                                <VBox class="sapUiSmallMargin">
+                                    <HBox
+                                        justifyContent="SpaceBetween"
+                                        alignItems="Center"
                                     >
-                                        <Label text="Regulation Status" />
-                                        <Input value="{RegulationStatus}" />
+                                        <Text
+                                            text="{Title}"
+                                            wrapping="false"
+                                        />
+                                    </HBox>
+                                </VBox>
+                            </CustomListItem>
+                        </List>
+                    </Panel>
+                </VBox>
 
-                                        <Label text="Applicable Regions" />
-                                        <Input value="{ApplicableRegions}" />
-                                    </f:SimpleForm>
-                                </Panel>
+                <!-- ================= RIGHT CARD: Regulation Details ================= -->
+                <VBox
+                    width="100%"
+                    id="detailPanel"
+                >
+                    <Panel
+                        class="sapUiResponsiveMargin"
+                        backgroundDesign="Solid"
+                    >
+                        <!-- Header -->
+                        <VBox class="sapUiSmallMargin">
+                            <Title
+                                text="{Title}"
+                                level="H4"
+                            />
+                            <Text
+                                text="{Description}"
+                                class="sapUiTinyMarginBottom"
+                            />
+                        </VBox>
 
-                                <Panel
-                                    headerText="Compliance Rules"
-                                    class="sapUiMediumMarginTop"
-                                >
-                                    <headerToolbar>
-                                        <Toolbar>
-                                            <ToolbarSpacer />
-                                            <Button
-                                                text="Add Rule"
-                                                icon="sap-icon://add"
-                                                press="onPressAddRule"
-                                            />
-                                        </Toolbar>
-                                    </headerToolbar>
+                        <!-- ===== Basic Settings ===== -->
+                        <!-- <Title
+                            text="Basic Settings"
+                            level="H6"
+                            class="sapUiMediumMarginTop sapUiSmallMarginBegin"
+                        /> -->
 
-                                    <Table
-                                        id="rulesTable"
-                                        inset="false"
-                                        items="{ path: '_Fields' }"
-                                    >
-                                        <columns>
-                                            <Column width="70%">
-                                                <Text text="Field" />
-                                            </Column>
-                                            <Column hAlign="Center">
-                                                <Text text="Active" />
-                                            </Column>
-                                        </columns>
-                                        <items>
-                                            <ColumnListItem>
-                                                <cells>
-                                                    <Text text="{Elementname}" />
-                                                    <ObjectStatus
-                                                        text="{= ${Active} ? 'Active' : 'Inactive' }"
-                                                        state="{= ${Active} ? 'Success' : 'None' }"
-                                                    />
-                                                </cells>
-                                            </ColumnListItem>
-                                        </items>
-                                    </Table>
-                                </Panel>
+                        <!-- <f:SimpleForm
+                            editable="true"
+                            layout="ResponsiveGridLayout"
+                            labelSpanXL="3"
+                            labelSpanL="3"
+                            labelSpanM="3"
+                            labelSpanS="12"
+                        >
+                            <Label text="Regulation Status" />
+                            <Input value="{RegulationStatus}" />
 
-                                <Toolbar class="sapUiMediumMarginTop">
-                                    <Button
-                                        text="Save Configuration"
-                                        type="Emphasized"
-                                        icon="sap-icon://save"
-                                        press="onPressSaveConfiguration"
-                                    />
-                                    <Button
-                                        text="Test Rules"
-                                        icon="sap-icon://begin"
-                                        press="onPressTestRules"
-                                    />
-                                </Toolbar>
-                            </VBox>
-                        </content>
-                    </Page>
-                </detailPages>
-            </SplitContainer>
+                            <Label text="Applicable Regions" />
+                            <Input value="{ApplicableRegions}" />
+                        </f:SimpleForm> -->
+
+                        <!-- ===== Compliance Rules ===== -->
+                        <HBox
+                            justifyContent="SpaceBetween"
+                            class="sapUiMediumMarginTop sapUiSmallMarginBegin sapUiSmallMarginEnd"
+                        >
+                            <Title text="Compliance Rules" level="H6" />
+                            <Button
+                                text="Add Rule"
+                                icon="sap-icon://add"
+                                press="onPressAddRule"
+                            />
+                        </HBox>
+
+                        <Table
+                            id="rulesTable"
+                            class="sapUiSmallMargin"
+                        >
+                            <columns>
+                                <Column>
+                                    <Text text="View" />
+                                </Column>
+                                <Column>
+                                    <Text text="Field" />
+                                </Column>
+                                <Column hAlign="Center">
+                                    <Text text="Active" />
+                                </Column>
+                            </columns>
+
+                            <items>
+                                <ColumnListItem>
+                                    <cells>
+                                        <Text text="{Viewname}" />
+                                        <Text text="{Elementname}" />
+                                        <ObjectStatus
+                                            text="{= ${Active} ? 'Active' : 'Inactive'}"
+                                        />
+                                    </cells>
+                                </ColumnListItem>
+                            </items>
+                        </Table>
+
+                        <!-- ===== Footer Actions ===== -->
+                        <HBox
+                            class="sapUiMediumMargin"
+                            justifyContent="Start"
+                        >
+                            <Button
+                                text="Save Configuration"
+                                type="Emphasized"
+                                icon="sap-icon://save"
+                                press="onPressSaveConfiguration"
+                            />
+                            <Button
+                                text="Test Rules"
+                                class="sapUiTinyMarginBegin"
+                                press="onPressTestRules"
+                            />
+                        </HBox>
+
+                    </Panel>
+                </VBox>
+
+            </HBox>
         </content>
     </Page>
 </mvc:View>
