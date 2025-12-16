@@ -17,7 +17,6 @@
 
                 <!-- ================= LEFT CARD: Active Regulations ================= -->
                 <VBox
-                    width="320px"
                     class="sapUiSmallMarginEnd"
                 >
                     <Panel
@@ -33,6 +32,7 @@
                                     icon="sap-icon://add"
                                     type="Emphasized"
                                     press="onPressAddRegulation"
+                                    enabled="false"
                                 />
                             </Toolbar>
                         </headerToolbar>
@@ -67,6 +67,7 @@
                 <VBox
                     width="100%"
                     id="detailPanel"
+                    visible="false"
                 >
                     <Panel
                         class="sapUiResponsiveMargin"
@@ -116,12 +117,14 @@
                                 text="Add Rule"
                                 icon="sap-icon://add"
                                 press="onPressAddRule"
+                                enabled="false"
                             />
                         </HBox>
 
                         <Table
                             id="rulesTable"
-                            class="sapUiSmallMargin"
+                            class="sapUiMediumMargin"
+                            width="90%"
                         >
                             <columns>
                                 <Column>
@@ -158,11 +161,12 @@
                                 type="Emphasized"
                                 icon="sap-icon://save"
                                 press="onPressSaveConfiguration"
+                                enabled="false"
                             />
                             <Button
-                                text="Test Rules"
+                                text="Start Readiness Check"
                                 class="sapUiTinyMarginBegin"
-                                press="onPressTestRules"
+                                press="onPressStartReadinessCheck"
                             />
                         </HBox>
 

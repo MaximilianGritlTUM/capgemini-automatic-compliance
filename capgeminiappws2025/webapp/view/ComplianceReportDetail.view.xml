@@ -18,18 +18,18 @@
             <VBox width="100%" renderType="Div" class="sapUiSmallMargin">
                 <!-- Header: Regulation, Fulfillment, Timestamp, Audit Trail etc -->
                 <ObjectHeader
-                    title="{RegulationId}"
+                    title="{regulation}"
                     intro="Regulation"
-                    number="{DegreeOfFulfillment}"
+                    number="{degree_fulfill}"
                     numberUnit="% Fulfillment"
                     responsive="true">
                     <attributes>
                         <ObjectAttribute
                             title="Report ID"
-                            text="{ReportId}" />
+                            text="{report_id}" />
                         <ObjectAttribute
                             title="Run Timestamp"
-                            text="{RunTimestamp}" />
+                            text="{run_timestamp}" />
                         <ObjectAttribute
                             title="Compliance Relevance"
                             text="{ComplianceRelevance}" />
@@ -99,19 +99,19 @@
                                 <items>
                                     <ColumnListItem>
                                         <cells>
-                                            <Text text="{ObjectId}" />
-                                            <Text text="{ObjectName}" />
+                                            <Text text="{object_id}" />
+                                            <Text text="{object_name}" />
                                             <!-- Data availability: available / partial / missing -->
                                             <ObjectStatus
-                                                text="{AvailabilityCategory}"
-                                                icon="{= ${AvailabilityCategory} === 'AVAILABLE' ? 'sap-icon://accept' : ${AvailabilityCategory} === 'PARTIAL' ? 'sap-icon://alert' : 'sap-icon://error'}"
-                                                state="{= ${AvailabilityCategory} === 'AVAILABLE' ? 'Success' : ${AvailabilityCategory} === 'PARTIAL' ? 'Warning' : 'Error'}" />
+                                                text="{avail_cat}"
+                                                icon="{= ${avail_cat} === 'AVAILABLE' ? 'sap-icon://accept' : ${avail_cat} === 'PARTIAL' ? 'sap-icon://alert' : 'sap-icon://error'}"
+                                                state="{= ${avail_cat} === 'AVAILABLE' ? 'Success' : ${avail_cat} === 'PARTIAL' ? 'Warning' : 'Error'}" />
                                             <ObjectStatus
-                                                text="{DataQuality}"
-                                                state="{= ${DataQuality} === 'GOOD' ? 'Success' : ${DataQuality} === 'MEDIUM' ? 'Warning' : 'Error'}" />
-                                            <Text text="{GapDescription}" />
-                                            <Text text="{Recommendation}" />
-                                            <Text text="{DataSource}" />
+                                                text="{data_quality}"
+                                                state="{= ${data_quality} === 'GOOD' ? 'Success' : ${data_quality} === 'MEDIUM' ? 'Warning' : 'Error'}" />
+                                            <Text text="{gap_desc}" />
+                                            <Text text="{recommendation}" />
+                                            <Text text="{data_source}" />
                                         </cells>
                                     </ColumnListItem>
                                 </items>
@@ -158,15 +158,15 @@
                                             <Text text="{ObjectId}" />
                                             <Text text="{ObjectName}" />
                                             <ObjectStatus
-                                                text="{AvailabilityCategory}"
-                                                icon="{= ${AvailabilityCategory} === 'AVAILABLE' ? 'sap-icon://accept' : ${AvailabilityCategory} === 'PARTIAL' ? 'sap-icon://alert' : 'sap-icon://error'}"
-                                                state="{= ${AvailabilityCategory} === 'AVAILABLE' ? 'Success' : ${AvailabilityCategory} === 'PARTIAL' ? 'Warning' : 'Error'}" />
+                                                text="{avail_cat}"
+                                                icon="{= ${avail_cat} === 'AVAILABLE' ? 'sap-icon://accept' : ${avail_cat} === 'PARTIAL' ? 'sap-icon://alert' : 'sap-icon://error'}"
+                                                state="{= ${avail_cat} === 'AVAILABLE' ? 'Success' : ${avail_cat} === 'PARTIAL' ? 'Warning' : 'Error'}" />
                                             <ObjectStatus
-                                                text="{DataQuality}"
-                                                state="{= ${DataQuality} === 'GOOD' ? 'Success' : ${DataQuality} === 'MEDIUM' ? 'Warning' : 'Error'}" />
-                                            <Text text="{GapDescription}" />
-                                            <Text text="{Recommendation}" />
-                                            <Text text="{DataSource}" />
+                                                text="{data_quality}"
+                                                state="{= ${data_quality} === 'GOOD' ? 'Success' : ${data_quality} === 'MEDIUM' ? 'Warning' : 'Error'}" />
+                                            <Text text="{gap_desc}" />
+                                            <Text text="{recommendation}" />
+                                            <Text text="{data_source}" />
                                         </cells>
                                     </ColumnListItem>
                                 </items>
