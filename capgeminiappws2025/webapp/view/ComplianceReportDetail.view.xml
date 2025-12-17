@@ -64,7 +64,7 @@
                     <!-- Materials Tab -->
                     <items>
                         <IconTabFilter
-                            text="Materials"
+                            text="Fields"
                             icon="sap-icon://product">
                             <Table
                                 id="materialsTable"
@@ -74,10 +74,10 @@
 
                                 <columns>
                                     <Column>
-                                        <Text text="Material ID" />
+                                        <Text text="Data Source" />
                                     </Column>
                                     <Column>
-                                        <Text text="Description" />
+                                        <Text text="Field" />
                                     </Column>
                                     <Column>
                                         <Text text="Data Availability" />
@@ -90,9 +90,6 @@
                                     </Column>
                                     <Column>
                                         <Text text="Recommendations" />
-                                    </Column>
-                                    <Column>
-                                        <Text text="Data Source" />
                                     </Column>
                                 </columns>
 
@@ -121,7 +118,8 @@
                         <!-- Suppliers Tab -->
                         <IconTabFilter
                             text="Suppliers"
-                            icon="sap-icon://supplier">
+                            icon="sap-icon://supplier"
+                            visible="false">
                             <Table
                                 id="suppliersTable"
                                 inset="false"
