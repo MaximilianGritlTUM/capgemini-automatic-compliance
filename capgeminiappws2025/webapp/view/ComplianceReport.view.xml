@@ -30,7 +30,10 @@
             <Table
                 id="reportTable"
                 headerText="Compliance Report List"
-                items="{/Report}"
+                items="{
+                    path: '/Report',
+                    sorter: { path: 'run_timestamp', descending: false }
+                }"
                 mode="SingleSelectMaster"
                 itemPress=".onTableItemPress"
                 class="sapUiSmallMarginBegin sapUiSmallMarginEnd sapUiSmallMarginBottom">
