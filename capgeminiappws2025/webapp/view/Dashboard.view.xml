@@ -11,10 +11,23 @@
         <content>
 
             <!-- Page Title -->
-            <Title
-                text="Regulatory Compliance Overview"
-                level="H2"
-                class="sapUiSmallMarginTop sapUiSmallMarginBottom sapUiSmallMarginBegin sapUiSmallMarginEnd" />
+            <HBox 
+                width="100%"
+                justifyContent="SpaceBetween"
+                class="sapUiSmallPadding">
+
+                <Title
+                    text="Regulatory Compliance Overview"
+                    level="H2"
+                    class="sapUiSmallMarginTop sapUiSmallMarginBottom sapUiSmallMarginBegin sapUiSmallMarginEnd" />
+
+                <Button
+                        press="onPressConfigurator"
+                        text="Configurator"
+                        type="Emphasized"
+                        class="sapUiTinyMarginEnd"
+                    />
+            </HBox>
 
             <!-- KPI Tiles -->
             <HBox>
@@ -83,12 +96,6 @@
                             withMargin="false" />
                     </TileContent>
                 </GenericTile>
-
-                <Button
-                    press="onPressConfigurator"
-                    text="Configurator"
-                    type="Emphasized"
-                />
 
             </HBox>
 

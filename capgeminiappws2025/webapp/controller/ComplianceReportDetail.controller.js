@@ -19,7 +19,7 @@ sap.ui.define([
 
             var oModel = this.getView().getModel();
             var sPath = oModel.createKey("/Report",{
-                ReportId: sReportId
+                report_id: sReportId
             });
             this.getView().bindElement({
                 path: sPath,
@@ -67,13 +67,13 @@ sap.ui.define([
 
                     aExportData.push({
                         Type: "Material",
-                        ObjectId: oObj.ObjectId,
-                        ObjectName: oObj.ObjectName,
-                        AvailabilityCategory: oObj.AvailabilityCategory,
-                        DataQuality: oObj.DataQuality,
-                        GapDescription: oObj.GapDescription,
-                        Recommendation: oObj.Recommendation,
-                        DataSource: oObj.DataSource
+                        ObjectId: oObj.object_id,
+                        ObjectName: oObj.object_name,
+                        AvailabilityCategory: oObj.avail_cat,
+                        DataQuality: oObj.data_quality,
+                        GapDescription: oObj.gap_desc,
+                        Recommendation: oObj.recommendation,
+                        DataSource: oObj.data_source
                     });
                 });
             }
@@ -86,13 +86,13 @@ sap.ui.define([
 
                     aExportData.push({
                         Type: "Supplier",
-                        ObjectId: oObj.ObjectId,
-                        ObjectName: oObj.ObjectName,
-                        AvailabilityCategory: oObj.AvailabilityCategory,
-                        DataQuality: oObj.DataQuality,
-                        GapDescription: oObj.GapDescription,
-                        Recommendation: oObj.Recommendation,
-                        DataSource: oObj.DataSource
+                        ObjectId: oObj.object_id,
+                        ObjectName: oObj.object_name,
+                        AvailabilityCategory: oObj.avail_cat,
+                        DataQuality: oObj.data_quality,
+                        GapDescription: oObj.gap_desc,
+                        Recommendation: oObj.recommendation,
+                        DataSource: oObj.data_source
                     });
                 });
             }

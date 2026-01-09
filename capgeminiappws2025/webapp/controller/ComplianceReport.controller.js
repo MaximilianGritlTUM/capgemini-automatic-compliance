@@ -17,7 +17,7 @@ sap.ui.define([
         onTableItemPress: function (oEvent) {
             console.log("onTableItemPress fired");
             var oCtx = oEvent.getParameter("listItem").getBindingContext();
-            var sReportId = oCtx.getProperty("ReportId");
+            var sReportId = oCtx.getProperty("report_id");
             console.log("Navigate to detail. ReportId =", sReportId);
             var oRouter = this.getOwnerComponent().getRouter();
 
