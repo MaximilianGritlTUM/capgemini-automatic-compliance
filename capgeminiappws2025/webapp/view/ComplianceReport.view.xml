@@ -30,7 +30,10 @@
             <Table
                 id="reportTable"
                 headerText="Compliance Report List"
-                items="{/Report}"
+                items="{
+                    path: '/Report',
+                    sorter: { path: 'run_timestamp', descending: false }
+                }"
                 mode="SingleSelectMaster"
                 itemPress=".onTableItemPress"
                 class="sapUiSmallMarginBegin sapUiSmallMarginEnd sapUiSmallMarginBottom">
@@ -47,19 +50,19 @@
                 <items>
                     <ColumnListItem type="Navigation">
                         <cells>
-                            <Text text="{ReportId}" />
-                            <Text text="{Regulation}" />
-                            <Text text="{RunTimestamp}" />
+                            <Text text="{report_id}" />
+                            <Text text="{regulation}" />
+                            <Text text="{run_timestamp}" />
                             <ObjectStatus
-                                text="{DegreeOfFulfillment}"
-                                state="{= ${DegreeOfFulfillment} >= 80 ? 'Success' :
-                                              ${DegreeOfFulfillment} >= 50 ? 'Warning' :
+                                text="{degree_fulfill}"
+                                state="{= ${degree_fulfill} >= 80 ? 'Success' :
+                                              ${degree_fulfill} >= 50 ? 'Warning' :
                                               'Error'}" />
-                            <Text text="{DataAvailabilitySummary}" />
+                            <Text text="{data_avail_sum}" />
                             <ObjectStatus
-                                text="{Status}"
-                                state="{= ${Status} === 'Completed' ? 'Success' :
-                                              ${Status} === 'Running' ? 'Warning' :
+                                text="{status}"
+                                state="{= ${status} === 'Completed' ? 'Success' :
+                                              ${status} === 'Running' ? 'Warning' :
                                               'Error'}" />
                         </cells>
                     </ColumnListItem>
