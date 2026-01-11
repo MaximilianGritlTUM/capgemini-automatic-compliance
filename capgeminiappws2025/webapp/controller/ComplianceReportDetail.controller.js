@@ -65,8 +65,16 @@ sap.ui.define([
                     }
                     var oObj = oCtx.getObject();
 
+                    var sType = oObj.category || oObj.Category || oObj.object_type || oObj.objectType || "Material";
+                    if (typeof sType === "string") {
+                        var sTypeLower = sType.trim().toLowerCase();
+                        if (sTypeLower === "product" || sTypeLower === "products" || sTypeLower === "material" || sTypeLower === "materials") {
+                            sType = "Material";
+                        }
+                    }
+
                     aExportData.push({
-                        Type: "Material",
+                        Type: sType,
                         ObjectId: oObj.object_id,
                         ObjectName: oObj.object_name,
                         AvailabilityCategory: oObj.avail_cat,
