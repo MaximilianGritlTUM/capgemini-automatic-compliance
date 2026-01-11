@@ -107,6 +107,7 @@
 
                 <columns>
                     <Column><Text text="Material" /></Column>
+                    <Column><Text text="Material Type" /></Column>
                     <Column><Text text="Supplier" /></Column>
                     <Column><Text text="Region" /></Column>
                     <Column><Text text="Regulation" /></Column>
@@ -119,6 +120,7 @@
                     <ColumnListItem>
                         <cells>
                             <Text text="{= ${MaterialID} || ${ProductID} || ${Material} || ${Product} }" />
+                            <Text text="{= ${MaterialType} || ${MaterialTypeText} || ${ProductType} || ${ProductTypeText} }" />
                             <Text text="{SupplierName}" />
                             <Text text="{Region}" />
                             <Text text="{Regulation}" />

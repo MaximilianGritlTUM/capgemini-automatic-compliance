@@ -18,6 +18,7 @@ sap.ui.define([
                 Issues: [
                     {
                         MaterialID: "MAT-1001",
+                        MaterialType: "Finished",
                         SupplierName: "Alpha Timber GmbH",
                         Region: "DE",
                         Regulation: "EUDR",
@@ -27,6 +28,7 @@ sap.ui.define([
                     },
                     {
                         MaterialID: "MAT-1023",
+                        MaterialType: "Semi-finished",
                         SupplierName: "EcoWood AG",
                         Region: "FR",
                         Regulation: "CSDDD",
@@ -36,6 +38,7 @@ sap.ui.define([
                     },
                     {
                         MaterialID: "MAT-1042",
+                        MaterialType: "Raw",
                         SupplierName: "Nordic Metals AB",
                         Region: "SE",
                         Regulation: "Machinery",
