@@ -153,16 +153,48 @@
                                 <Column hAlign="Center">
                                     <Text text="Active" />
                                 </Column>
+                                <Column
+                                    styleClass="sapUiSmallMarginBegin"
+                                    hAlign="End"
+                                >
+                                    <Text text="Actions" />
+                                </Column>
                             </columns>
 
                             <items>
                                 <ColumnListItem>
                                     <cells>
+                                        <!-- Viewname: display only -->
                                         <Text text="{Viewname}" />
+
+                                        <!-- Elementname: display only -->
                                         <Text text="{Elementname}" />
-                                        <ObjectStatus
-                                            text="{= ${Active} ? 'Active' : 'Inactive'}"
-                                        />
+
+                                        <!-- Active: editable via Switch only -->
+                                        <VBox>
+                                            <Text
+                                                text="{= ${Active} ? 'Active' : 'Inactive'}"
+                                                visible="{= !${ui>/editRuleId} }"
+                                            />
+                                            <!-- keep binding two-way so change handler can update model -->
+                                            <Switch
+                                                state="{path: 'Active', mode: 'sap.ui.model.BindingMode.TwoWay'}"
+                                                change=".onSubmitRuleField"
+                                            />
+                                        </VBox>
+
+                                        <!-- Actions: delete only (no edit) -->
+                                        <HBox
+                                            justifyContent="End"
+                                            renderType="Bare"
+                                        >
+                                            <Button
+                                                icon="sap-icon://delete"
+                                                type="Reject"
+                                                press=".onDeleteRule"
+                                                tooltip="Delete rule"
+                                            />
+                                        </HBox>
                                     </cells>
                                 </ColumnListItem>
                             </items>

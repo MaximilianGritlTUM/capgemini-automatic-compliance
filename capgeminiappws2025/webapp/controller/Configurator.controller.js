@@ -7,14 +7,22 @@ sap.ui.define(
     "sap/m/MessageBox",
     "capgeminiappws2025/utils/CheckAlgorithm",
   ],
-  function (Controller, JSONModel, View, MessageToast, MessageBox, CheckAlgorithm) {
+  function (
+    Controller,
+    JSONModel,
+    View,
+    MessageToast,
+    MessageBox,
+    CheckAlgorithm
+  ) {
     "use strict";
 
     return Controller.extend("capgeminiappws2025.controller.Configurator", {
       onInit: function () {
         this.getView().setModel(
-          new sap.ui.model.json.JSONModel({
+          new JSONModel({
             editRegulationId: null,
+            editRuleId: null,
           }),
           "ui"
         );
@@ -27,7 +35,7 @@ sap.ui.define(
           return;
         }
 
-        var sPath = oCtx.getPath(); // e.g. /Z_I_ZREGULATION('0000000002')
+        var sPath = oCtx.getPath();
         var oModel = oCtx.getModel();
 
         MessageBox.confirm("Delete this regulation?", {
@@ -49,14 +57,16 @@ sap.ui.define(
       },
 
       onEditRegulation: function (oEvent) {
-        const oCtx = oEvent.getSource().getBindingContext();
-        const sRegulationId = oCtx.getProperty("Id");
+        var oCtx = oEvent.getSource().getBindingContext();
+        if (!oCtx) {
+          return;
+        }
+        var sRegulationId = String(oCtx.getProperty("Id"));
 
         this.getView()
           .getModel("ui")
           .setProperty("/editRegulationId", sRegulationId);
 
-        // focus input inside the matching list item
         var oList = this.byId("regulationList");
         setTimeout(
           function () {
@@ -67,36 +77,45 @@ sap.ui.define(
                 it.getBindingContext().getPath() === sPath
               );
             });
-            if (oItem) {
-              var aContent =
-                (oItem.getContent && oItem.getContent()) ||
-                (oItem.getCells && oItem.getCells()) ||
-                [];
-              var oInput = aContent.find(function (c) {
-                return c && c.isA && c.isA("sap.m.Input");
-              });
-              if (oInput) {
-                try {
-                  oInput.focus();
-                } catch (e) {
-                  /* ignore */
-                }
-                // Attach per-instance handlers once so only this input controls edit mode
-                if (!oInput._bEditHandlersAttached) {
-                  // blur / focusout: always exit edit mode (do not depend on value change)
-                  oInput._fnFocusOut = function () {
+            if (!oItem) {
+              return;
+            }
+
+            var aContent =
+              (oItem.getContent && oItem.getContent()) ||
+              (oItem.getCells && oItem.getCells()) ||
+              [];
+            var oInput = aContent.find(function (c) {
+              return c && c.isA && c.isA("sap.m.Input");
+            });
+            if (!oInput) {
+              return;
+            }
+
+            try {
+              oInput.focus();
+            } catch (e) {}
+
+            if (!oInput._bEditHandlersAttached) {
+              oInput.addEventDelegate({
+                onAfterRendering: function () {
+                  var oFocusDom =
+                    oInput.getFocusDomRef && oInput.getFocusDomRef();
+                  if (!oFocusDom) {
+                    return;
+                  }
+
+                  var fnCancel = function () {
                     this.getView()
                       .getModel("ui")
                       .setProperty("/editRegulationId", null);
                   }.bind(this);
-                  oInput.attachBrowserEvent("focusout", oInput._fnFocusOut);
 
-                  // Enter key: schedule exit so submit handler (if bound) can run first
-                  oInput._fnKeydown = function (oBrowserEvent) {
-                    if (
-                      oBrowserEvent.key === "Enter" ||
-                      oBrowserEvent.keyCode === 13
-                    ) {
+                  var fnKey = function (ev) {
+                    if (ev.key === "Enter" || ev.keyCode === 13) {
+                      try {
+                        oInput.fireSubmit();
+                      } catch (e) {}
                       setTimeout(
                         function () {
                           this.getView()
@@ -107,39 +126,36 @@ sap.ui.define(
                       );
                     }
                   }.bind(this);
-                  oInput.attachBrowserEvent("keydown", oInput._fnKeydown);
 
-                  // mark attached
-                  oInput._bEditHandlersAttached = true;
+                  oFocusDom.addEventListener("blur", fnCancel);
+                  oFocusDom.addEventListener("keydown", fnKey);
+                  oInput._domHandlers = {
+                    dom: oFocusDom,
+                    blur: fnCancel,
+                    keydown: fnKey,
+                  };
+                  try {
+                    oInput.focus();
+                  } catch (e) {}
+                }.bind(this),
 
-                  // cleanup when control is destroyed (optional)
-                  oInput.addEventDelegate({
-                    onBeforeRendering: function () {
-                      if (oInput.bIsDestroyed) {
-                        return;
-                      }
-                    },
-                    onAfterRendering: function () {
-                      if (
-                        oInput.bIsDestroyed &&
-                        oInput._bEditHandlersAttached
-                      ) {
-                        try {
-                          oInput.detachBrowserEvent(
-                            "focusout",
-                            oInput._fnFocusOut
-                          );
-                          oInput.detachBrowserEvent(
-                            "keydown",
-                            oInput._fnKeydown
-                          );
-                        } catch (e) {}
-                        oInput._bEditHandlersAttached = false;
-                      }
-                    },
-                  });
-                }
-              }
+                onBeforeRendering: function () {
+                  if (oInput._domHandlers && oInput._domHandlers.dom) {
+                    try {
+                      oInput._domHandlers.dom.removeEventListener(
+                        "blur",
+                        oInput._domHandlers.blur
+                      );
+                      oInput._domHandlers.dom.removeEventListener(
+                        "keydown",
+                        oInput._domHandlers.keydown
+                      );
+                    } catch (e) {}
+                    oInput._domHandlers = null;
+                  }
+                },
+              });
+              oInput._bEditHandlersAttached = true;
             }
           }.bind(this),
           0
@@ -147,146 +163,87 @@ sap.ui.define(
       },
 
       onSubmitRegulationTitle: function (oEvent) {
-        const oInput = oEvent.getSource();
-        const oCtx = oInput.getBindingContext();
+        var oInput = oEvent.getSource();
+        var oCtx = oInput.getBindingContext();
         if (!oCtx) {
           return;
         }
 
-        const oModel = oCtx.getModel();
-        const sPath = oCtx.getPath();
-        var sValue = oInput.getValue();
+        var oModel = oCtx.getModel();
+        var sPath = oCtx.getPath();
+        var sValue = ((oInput.getValue && oInput.getValue()) || "").trim();
 
-        function getPropertyMaxLength(oModel, sEntitySetName, sPropName) {
-          var oMeta = oModel.getServiceMetadata();
-          if (!oMeta || !oMeta.dataServices || !oMeta.dataServices.schema) {
-            return null;
-          }
-          var aSchemas = Array.isArray(oMeta.dataServices.schema)
-            ? oMeta.dataServices.schema
-            : [oMeta.dataServices.schema];
+        var oValueBinding = oInput.getBinding && oInput.getBinding("value");
+        var sProp = oValueBinding ? oValueBinding.getPath() : "Title";
 
-          // Find entitySet -> entityType
-          var sEntityTypeFull = null;
-          for (var si = 0; si < aSchemas.length && !sEntityTypeFull; si++) {
-            var oSchema = aSchemas[si];
-            var oContainer =
-              oSchema.entityContainer && oSchema.entityContainer[0];
-            if (!oContainer || !oContainer.entitySet) {
-              continue;
-            }
-            var aEntitySets = Array.isArray(oContainer.entitySet)
-              ? oContainer.entitySet
-              : [oContainer.entitySet];
-            for (var ei = 0; ei < aEntitySets.length; ei++) {
-              var oES = aEntitySets[ei];
-              if (oES.name === sEntitySetName) {
-                sEntityTypeFull = oES.entityType; // e.g. Namespace.EntityType
-                break;
-              }
-            }
-          }
-          if (!sEntityTypeFull) {
-            return null;
-          }
+        oModel.setProperty(sPath + "/" + sProp, sValue);
 
-          var sTypeName = sEntityTypeFull.split(".").pop();
-
-          // Find entityType definition and property
-          for (var sj = 0; sj < aSchemas.length; sj++) {
-            var oSchema2 = aSchemas[sj];
-            var aEntityTypes = oSchema2.entityType
-              ? Array.isArray(oSchema2.entityType)
-                ? oSchema2.entityType
-                : [oSchema2.entityType]
-              : [];
-            for (var ti = 0; ti < aEntityTypes.length; ti++) {
-              var oET = aEntityTypes[ti];
-              if (oET.name === sTypeName) {
-                var aProps = oET.property
-                  ? Array.isArray(oET.property)
-                    ? oET.property
-                    : [oET.property]
-                  : [];
-                for (var pi = 0; pi < aProps.length; pi++) {
-                  var oP = aProps[pi];
-                  if (oP.name === sPropName) {
-                    return oP.maxLength ? parseInt(oP.maxLength, 10) : null;
-                  }
-                }
-              }
-            }
-          }
-          return null;
-        }
-
-        // Determine entity set name used by the list (match your backend entity set name)
-        var sEntitySetName = "Z_I_ZREGULATION";
-
-        // check metadata for Title maxLength
-        var iMax = getPropertyMaxLength(oModel, sEntitySetName, "Title");
-        if (iMax && sValue && sValue.length > iMax) {
-          sap.m.MessageToast.show(
-            "Title exceeds maxLength (" + iMax + "), truncating client-side."
-          );
-          sValue = sValue.substring(0, iMax);
-        }
-
-        // Optionally sanitize/trim input
-        sValue = sValue && sValue.trim();
-
-        // Apply edited value to the OData entity before submit
-        oModel.setProperty(sPath + "/Title", sValue);
-
-        if (oModel.hasPendingChanges && oModel.hasPendingChanges()) {
+        if (typeof oModel.submitChanges === "function") {
           oModel.submitChanges({
-            success: () => {
-              sap.m.MessageToast.show("Regulation updated");
+            success: function () {
+              // refresh authoritative entity state
+              oModel.read(sPath, {
+                success: function (oEntity) {
+                  oModel.setProperty(sPath, oEntity);
+                  MessageToast.show("Regulation updated");
+                },
+                error: function () {
+                  MessageToast.show("Regulation updated (refresh failed)");
+                },
+              });
             },
             error: function (oError) {
-              // log server response for debugging
-              console.error("Submit failed:", oError);
-              // also inspect network tab response body to see detailed facet message
+              console.error("submitChanges error:", oError);
+              MessageToast.show("Update failed");
+            },
+          });
+        } else if (typeof oModel.update === "function") {
+          var payload = {};
+          payload[sProp] = sValue;
+          oModel.update(sPath, payload, {
+            method: "MERGE",
+            success: function () {
+              MessageToast.show("Regulation updated");
+            },
+            error: function (oErr) {
+              console.error("update error:", oErr);
+              MessageToast.show("Update failed");
             },
           });
         }
 
-        // Exit edit mode
         this.getView().getModel("ui").setProperty("/editRegulationId", null);
       },
 
       onSelectRegulation: function (oEvent) {
         var oSelectedItem = oEvent.getParameter("listItem");
-        var oContext = oSelectedItem.getBindingContext(); // default model
+        var oContext = oSelectedItem.getBindingContext();
         var sPath = oContext.getPath();
 
         var oRulesTable = this.byId("rulesTable");
-
         oRulesTable.bindItems({
           path: sPath + "/to_Fields",
-          template: oRulesTable.getItems()[0].clone(), // Clone first item as template
+          template: oRulesTable.getItems()[0].clone(),
         });
 
         this.byId("detailPanel").setVisible(true);
       },
 
-      onPressAddRegulation: function (oEvent) {
-        // Logic to add a new regulation
+      onPressAddRegulation: function () {
+        /* add regulation logic */
       },
 
-      onPressAddRule: function (oEvent) {
-        // Logic to add a new rule
+      onPressAddRule: function () {
+        /* add rule logic */
       },
 
-      onPressSaveConfiguration: function (oEvent) {
-        // Logic to save a configuraytion
+      onPressSaveConfiguration: function () {
+        /* save config logic */
       },
 
       onPressStartReadinessCheck: function (oEvent) {
-        // Logic to test results
         var oRulesTable = this.byId("rulesTable");
         var aContexts = oRulesTable.getBinding("items").getContexts();
-
         var aData = aContexts.map(function (oContext) {
           return oContext.getObject();
         });
@@ -301,15 +258,98 @@ sap.ui.define(
           .getObject();
 
         var oChecker = new CheckAlgorithm();
-
         oChecker
           .do_checking_algorithm(aData, oModel, oSelectedRegulation)
           .then(function () {
             oRouter.navTo("ComplianceReport");
           })
           .catch(function (oError) {
-            console.error("Readiness check or report creation failed:", oError);
+            console.error("Readiness check failed:", oError);
           });
+      },
+
+      onSubmitRuleField: function (oEvent) {
+        var oSource = oEvent.getSource();
+        var oCtx = oSource.getBindingContext();
+        if (!oCtx) {
+          this.getView().getModel("ui").setProperty("/editRuleId", null);
+          return;
+        }
+
+        var oModel = oCtx.getModel();
+        var sPath = oCtx.getPath();
+
+        var oValueBinding = oSource.getBinding && oSource.getBinding("value");
+        var oStateBinding = oSource.getBinding && oSource.getBinding("state");
+        var sProp, vNew;
+
+        if (oValueBinding) {
+          sProp = oValueBinding.getPath();
+          vNew = ((oSource.getValue && oSource.getValue()) || "").trim();
+        } else if (oStateBinding) {
+          sProp = oStateBinding.getPath();
+          vNew = !!oSource.getState();
+        } else {
+          this.getView().getModel("ui").setProperty("/editRuleId", null);
+          return;
+        }
+
+        oModel.setProperty(sPath + "/" + sProp, vNew);
+
+        if (typeof oModel.submitChanges === "function") {
+          oModel.submitChanges({
+            success: function () {
+              MessageToast.show("Rule updated");
+            },
+            error: function (oError) {
+              console.error("Rule submit failed:", oError);
+              MessageToast.show("Update failed");
+            },
+          });
+        } else if (typeof oModel.update === "function") {
+          var payload = {};
+          payload[sProp] = vNew;
+          oModel.update(sPath, payload, {
+            method: "MERGE",
+            success: function () {
+              MessageToast.show("Rule updated");
+            },
+            error: function (oErr) {
+              console.error("update error:", oErr);
+              MessageToast.show("Update failed");
+            },
+          });
+        }
+
+        this.getView().getModel("ui").setProperty("/editRuleId", null);
+      },
+
+      onDeleteRule: function (oEvent) {
+        var oSource = oEvent.getSource();
+        var oCtx = oSource.getBindingContext();
+        if (!oCtx) {
+          return;
+        }
+
+        var sPath = oCtx.getPath();
+        var oModel = oCtx.getModel();
+
+        MessageBox.confirm("Delete this rule?", {
+          title: "Confirm Delete",
+          onClose: function (sAction) {
+            if (sAction === MessageBox.Action.OK) {
+              oModel.remove(sPath, {
+                success: function () {
+                  MessageToast.show("Rule deleted");
+                },
+                error: function (oError) {
+                  MessageToast.show("Delete failed");
+                  console.error("Delete error:", oError);
+                },
+              });
+            }
+          },
+        });
       },
     });
   }
