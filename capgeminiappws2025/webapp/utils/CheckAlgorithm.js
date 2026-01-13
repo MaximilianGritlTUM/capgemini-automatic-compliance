@@ -97,6 +97,73 @@ sap.ui.define([
                 aReadPromises.push(oPromise);
             });
 
+            // Additional check for BOM - MaterialComposition
+            var oBomPromise = new Promise(function (resolve) {
+                // Get active rules for Z_I_Materials
+                var activeRules = aData.filter(function(rule) {
+                    return rule.Viewname === "Z_I_Materials";
+                });
+
+                // First fetch Z_I_Materials to get all records
+                oModel.read("/Z_I_Materials", {
+                    urlParameters: { "$top": 10000 },
+                    success: function(oZData) {
+                        var zMaterials = oZData.results;
+                        var materials = zMaterials.map(function(item) {
+                            return item.MaterialID;
+                        });
+
+                        // Then fetch MaterialComposition
+                        oModel.read("/MaterialComposition", {
+                            urlParameters: { "$top": 10000 },
+                            success: function(oCompData) {
+                                // Get unique ParentMaterial values
+                                var compMaterials = [...new Set(oCompData.results.map(function(item) {
+                                    return item.ParentMaterial;
+                                }).filter(function(pm) { return pm; }))]; // filter out null/undefined
+
+                                // For each ParentMaterial that exists in Z_I_Materials, check if all active rule fields have values
+                                compMaterials.forEach(function(pm) {
+                                    if (materials.indexOf(pm) !== -1) {
+                                        // Find the record
+                                        var record = zMaterials.find(function(item) {
+                                            return item.MaterialID === pm;
+                                        });
+                                        if (record) {
+                                            // Check if all active rules have values
+                                            var hasAllData = activeRules.every(function(rule) {
+                                                return record[rule.Elementname];
+                                            });
+                                            aReportResults.push({
+                                                category: "BOM",
+                                                object_id: "MaterialComposition",
+                                                object_name: pm,  // The ParentMaterial value
+                                                avail_cat: hasAllData ? "AVAILABLE" : "MISSING",
+                                                data_quality: hasAllData ? "HIGH" : "LOW",
+                                                gap_desc: hasAllData ? "" : "Missing values in Z_I_Materials for active rules",
+                                                recommendation: hasAllData ? "" : "Maintain missing values in Z_I_Materials",
+                                                data_source: "MaterialComposition"
+                                            });
+                                        }
+                                    }
+                                });
+
+                                resolve();
+                            },
+                            error: function(oError) {
+                                console.error("Read error for MaterialComposition", oError);
+                                resolve();
+                            }
+                        });
+                    },
+                    error: function(oError) {
+                        console.error("Read error for Z_I_Materials in BOM check", oError);
+                        resolve();
+                    }
+                });
+            });
+            aReadPromises.push(oBomPromise);
+
             // Wait for all rule checks to complete, then create the report
             return Promise.all(aReadPromises).then(function () {
                 console.log("All readiness checks completed");

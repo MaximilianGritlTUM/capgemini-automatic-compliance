@@ -115,6 +115,59 @@
                             </Table>
                         </IconTabFilter>
 
+                        <!-- BOM Tab -->
+                        <IconTabFilter
+                            text="BOM"
+                            icon="sap-icon://product">
+                            <Table
+                                id="bomTable"
+                                inset="false"
+                                width="100%"
+                                items="{to_Results}">
+
+                                <columns>
+                                    <Column>
+                                        <Text text="Data Source" />
+                                    </Column>
+                                    <Column>
+                                        <Text text="Field" />
+                                    </Column>
+                                    <Column>
+                                        <Text text="Data Availability" />
+                                    </Column>
+                                    <Column>
+                                        <Text text="Data Quality" />
+                                    </Column>
+                                    <Column>
+                                        <Text text="Data Gaps" />
+                                    </Column>
+                                    <Column>
+                                        <Text text="Recommendations" />
+                                    </Column>
+                                </columns>
+
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Text text="{object_id}" />
+                                            <Text text="{object_name}" />
+                                            <!-- Data availability: available / partial / missing -->
+                                            <ObjectStatus
+                                                text="{avail_cat}"
+                                                icon="{= ${avail_cat} === 'AVAILABLE' ? 'sap-icon://accept' : ${avail_cat} === 'PARTIAL' ? 'sap-icon://alert' : 'sap-icon://error'}"
+                                                state="{= ${avail_cat} === 'AVAILABLE' ? 'Success' : ${avail_cat} === 'PARTIAL' ? 'Warning' : 'Error'}" />
+                                            <ObjectStatus
+                                                text="{data_quality}"
+                                                state="{= ${data_quality} === 'GOOD' ? 'Success' : ${data_quality} === 'MEDIUM' ? 'Warning' : 'Error'}" />
+                                            <Text text="{gap_desc}" />
+                                            <Text text="{recommendation}" />
+                                            <Text text="{data_source}" />
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </IconTabFilter>
+
                         <!-- Suppliers Tab -->
                         <IconTabFilter
                             text="Suppliers"

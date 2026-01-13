@@ -2,8 +2,9 @@ sap.ui.define([
     "sap/ui/core/mvc/Controller",
     "sap/m/MessageToast",
     "sap/ui/core/UIComponent",
-    "sap/ui/export/Spreadsheet"
-], function (Controller, MessageToast, UIComponent, Spreadsheet) {
+    "sap/ui/export/Spreadsheet",
+    "sap/ui/model/Filter"
+], function (Controller, MessageToast, UIComponent, Spreadsheet, Filter) {
     "use strict";
 
     return Controller.extend("capgeminiappws2025.controller.ComplianceReportDetail", {
@@ -26,7 +27,21 @@ sap.ui.define([
                 parameters: {
                     expand: "to_Results"
                 }
-            })
+            });
+
+            // Filter materialsTable to show only category GENERAL
+            var oMaterialsTable = this.byId("materialsTable");
+            var oBinding = oMaterialsTable.getBinding("items");
+            if (oBinding) {
+                oBinding.filter(new Filter("category", "EQ", "GENERAL"));
+            }
+
+            // Filter bomTable to show only category BOM
+            var oBomTable = this.byId("bomTable");
+            var oBomBinding = oBomTable.getBinding("items");
+            if (oBomBinding) {
+                oBomBinding.filter(new Filter("category", "EQ", "BOM"));
+            }
         },
 
         onNavBack: function() {
