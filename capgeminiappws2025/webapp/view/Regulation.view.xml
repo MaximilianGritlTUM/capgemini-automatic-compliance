@@ -1,12 +1,10 @@
 <mvc:View
-	controllerName=""
-	xmlns:mvc="sap.ui.core.mvc"
-	xmlns="sap.m"
-	xmlns:c="sap.ui.core"
-	displayBlock="true"
-	height="100%"
-	busyIndicatorDelay="0"
->
+  controllerName="capgeminiappws2025.controller.Regulation"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:f="sap.ui.layout.form"
+  displayBlock="true">
+
   <Page
     id="RegulationPageId"
     title="Regulation"
@@ -14,16 +12,21 @@
     navButtonPress="onNavBack">
 
     <content>
-      <SimpleForm editable="true" layout="ResponsiveGridLayout">
-        <Label text="Id" />
-        <Input value="{Id}" editable="false" />
+      <f:SimpleForm editable="true" layout="ResponsiveGridLayout">
+        <Label text="Id" required="true"/>
+        <Input 
+          id="idInput"
+          value="{Id}"
+          required="true"
+          valueStateText="ID is required"
+        />
 
         <Label text="Title" />
-        <Input value="{Title}" />
+        <Input value="{Title}" required="true"/>
 
         <Label text="Description" />
         <TextArea value="{Description}" rows="5" />
-      </SimpleForm>
+      </f:SimpleForm>
     </content>
 
     <footer>
@@ -34,5 +37,4 @@
     </footer>
 
   </Page>
-
 </mvc:View>

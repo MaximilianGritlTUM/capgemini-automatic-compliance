@@ -12,9 +12,21 @@ sap.ui.define([
     return Controller.extend("capgeminiappws2025.controller.Configurator", {
 
         onInit: function () {
-            // Initial setup if needed
+            this.getOwnerComponent().getRouter()
+                .getRoute("configurator")
+                .attachPatternMatched(this._onRouteMatched, this);
         },
 
+        _onRouteMatched: function () {
+            var oList = this.byId("regulationList");
+            var oBinding = oList.getBinding("items");
+            if (oBinding) {
+                oBinding.refresh(true); 
+            } else {
+                this.getView().getModel().refresh(true);
+            }
+        },
+        
         onSelectRegulation: function (oEvent) {
             var oSelectedItem = oEvent.getParameter("listItem");
             var oContext = oSelectedItem.getBindingContext(); // default model
@@ -32,36 +44,22 @@ sap.ui.define([
             this.byId("detailPanel").setVisible(true)
         },
         
-        onPressAddRegulation: function (oEvent) {
+        onPressAddRegulation: function () {
             var oModel = this.getView().getModel(); 
             var oRouter = this.getOwnerComponent().getRouter();
 
             var sEntitySetPath = "/Z_I_ZREGULATION";
-
-            var oPayload = {
-                Title: "",
-                Description: ""
-            };
-
-            this.getView().setBusy(true);
-
-            oModel.create(sEntitySetPath, oPayload, {
-                success: function (oCreated) {
-                this.getView().setBusy(false);
-
-                // backend-generated key must be returned here
-                var sId = oCreated.Id;
-
-                // navigate to a detail/create page bound to that created entity
-                oRouter.navTo("Regulation", { Id: sId });
-                }.bind(this),
-
-                error: function (oError) {
-                this.getView().setBusy(false);
-                sap.m.MessageBox.error("Could not create Regulation.");
-                // Optional: console.error(oError);
-                }.bind(this)
-            });        
+            
+            var oContext = oModel.createEntry(sEntitySetPath, {
+                properties: {
+                    Title: "",
+                    Description: ""
+                }
+            });
+            
+            oRouter.navTo("Regulation", {
+                contextPath: encodeURIComponent(oContext.getPath())
+            });
         },
 
         onPressAddRule: function (oEvent) {
