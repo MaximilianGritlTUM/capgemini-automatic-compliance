@@ -1,7 +1,9 @@
 sap.ui.define([
-	"sap/ui/base/ManagedObject"
+	"sap/ui/base/ManagedObject",
+	"./nonstandard/FieldProcessor"
 ], function(
-	ManagedObject
+	ManagedObject,
+	FieldProcessor
 ) {
 	"use strict";
 
@@ -13,8 +15,8 @@ sap.ui.define([
 
 		/**
 		 * Performs the compliance checking algorithm by validating data against a set of rules.
-		 * For each rule, it checks if the specified element in the CDS view has data.
-		 * Collects results and creates a compliance report.
+		 * For each rule, it checks if the specified element in the CDS view has data and validates
+		 * non-standard fields against SAP whitelists (T006 units, TCURC currencies, etc.).
 		 *
 		 * @param {Array} aData - Array of rule objects containing Viewname, Elementname, Category, etc.
 		 * @param {sap.ui.model.odata.v2.ODataModel} oModel - The OData model for backend communication
@@ -22,6 +24,28 @@ sap.ui.define([
 		 * @returns {Promise} Promise that resolves when all checks are complete and report is created
 		 */
         do_checking_algorithm: function (aData, oModel, oSelectedRegulation) {
+            var self = this;
+
+            // Initialize the FieldProcessor for non-standard field validation
+            this._fieldProcessor = FieldProcessor.FieldProcessor.create(oModel);
+
+            // Preload whitelists (T006, TCURC, etc.) before processing
+            return this._fieldProcessor.preloadWhitelists().then(function() {
+                console.log("Whitelists preloaded for field validation");
+                return self._executeRuleChecks(aData, oModel, oSelectedRegulation);
+            }).catch(function(oError) {
+                // If whitelist loading fails, continue without validation
+                console.warn("Whitelist preload failed, continuing without validation:", oError);
+                return self._executeRuleChecks(aData, oModel, oSelectedRegulation);
+            });
+        },
+
+        /**
+         * Executes the rule checks after whitelists are loaded.
+         * @private
+         */
+        _executeRuleChecks: function(aData, oModel, oSelectedRegulation) {
+            var self = this;
             // Array to store the results of each rule check
             var aReportResults = [];
             // Array to collect promises for each asynchronous data read operation
@@ -41,28 +65,10 @@ sap.ui.define([
                         },
 
                         success: function (oData) {
-                            // Check if any records have empty/null values for the specified element
-                            var bHasEmpty = oData.results.some(function (oRow) {
-                                return !oRow[oRule.Elementname];
-                            });
-
-                            // Create a result object based on whether missing data was found
-                            aReportResults.push({
-                                category: oRule.Category || "GENERAL",  // Rule category, default to GENERAL
-                                object_id: oRule.Viewname,             // CDS view name
-                                object_name: oRule.Elementname,        // Element/field name being checked
-                                avail_cat: bHasEmpty ? "MISSING" : "AVAILABLE",  // Availability status
-                                data_quality: bHasEmpty ? "LOW" : "HIGH",       // Quality assessment
-                                gap_desc: bHasEmpty
-                                    ? "Missing values detected"  // Description of the gap
-                                    : "",                        // No gap if data is available
-                                recommendation: bHasEmpty
-                                    ? "Maintain missing values"  // Action needed
-                                    : "",                        // No action needed
-                                data_source: oRule.Viewname     // Source of the data
-                            });
-
-                            resolve();  // Resolve the promise for this rule check
+                            // Validate and analyze the results
+                            self._processRuleResults(oRule, oData.results, aReportResults)
+                                .then(resolve)
+                                .catch(function() { resolve(); }); // Continue even if validation fails
                         },
 
                         error: function (oError) {
@@ -77,23 +83,23 @@ sap.ui.define([
                                     object_id: oRule.Viewname,
                                     object_name: oRule.Elementname,
                                     avail_cat: "MISSING",
-                                    data_quality: "UNKNOWN",  // Can't determine quality if entity doesn't exist
+                                    data_quality: "UNKNOWN",
+                                    validation_status: "UNKNOWN",
+                                    validation_errors: [],
                                     gap_desc: "Entity or data not found (404)",
                                     recommendation: "Check CDS view or data availability",
                                     data_source: oRule.Viewname
                                 });
 
-                                resolve(); // Resolve (don't reject) to continue with other checks
+                                resolve();
                             } else {
-                                // For other technical errors (network, auth, etc.), log and continue
                                 console.error("Read error", oError);
-                                resolve(); // Resolve to avoid stopping the entire process
+                                resolve();
                             }
                         }
                     });
                 });
 
-                // Add this rule's promise to the array of all promises
                 aReadPromises.push(oPromise);
             });
 
@@ -102,13 +108,123 @@ sap.ui.define([
                 console.log("All readiness checks completed");
                 console.log(aReportResults);
 
-                // Create the compliance report with all collected results
-                return this._createReport(aReportResults, oModel, oSelectedRegulation);
+                return self._createReport(aReportResults, oModel, oSelectedRegulation);
 
-            }.bind(this)).catch(function (oError) {
+            }).catch(function (oError) {
                 console.log("Readiness check failed");
-                throw oError;  // Re-throw to propagate the error
+                throw oError;
             });
+        },
+
+        /**
+         * Processes results from an OData read and validates non-standard fields.
+         * @private
+         */
+        _processRuleResults: function(oRule, aRows, aReportResults) {
+            var self = this;
+            var sFieldName = oRule.Elementname;
+
+            // Check for empty values
+            var bHasEmpty = aRows.some(function (oRow) {
+                return !oRow[sFieldName];
+            });
+
+            // Validate non-standard fields if processor is available
+            if (this._fieldProcessor && this._fieldProcessor.getFieldDef(sFieldName)) {
+                // Collect validation results for all rows
+                var aValidationPromises = aRows.map(function(oRow) {
+                    return self._fieldProcessor.validateValue(sFieldName, oRow[sFieldName]);
+                });
+
+                return Promise.all(aValidationPromises).then(function(aValidationResults) {
+                    // Aggregate validation status
+                    var aErrors = [];
+                    var aWarnings = [];
+                    var iInvalid = 0;
+
+                    aValidationResults.forEach(function(result) {
+                        if (!result.ok) {
+                            iInvalid++;
+                        }
+                        result.getErrors().forEach(function(err) {
+                            if (aErrors.indexOf(err.message) === -1) {
+                                aErrors.push(err.message);
+                            }
+                        });
+                        result.getWarnings().forEach(function(warn) {
+                            if (aWarnings.indexOf(warn.message) === -1) {
+                                aWarnings.push(warn.message);
+                            }
+                        });
+                    });
+
+                    // Determine validation status
+                    var sValidationStatus = "VALID";
+                    if (iInvalid > 0) {
+                        sValidationStatus = "INVALID";
+                    } else if (aWarnings.length > 0) {
+                        sValidationStatus = "WARNINGS";
+                    }
+
+                    // Determine data quality based on validation
+                    var sDataQuality = "HIGH";
+                    if (bHasEmpty || sValidationStatus === "INVALID") {
+                        sDataQuality = "LOW";
+                    } else if (sValidationStatus === "WARNINGS") {
+                        sDataQuality = "MEDIUM";
+                    }
+
+                    // Build gap description
+                    var aGaps = [];
+                    if (bHasEmpty) {
+                        aGaps.push("Missing values detected");
+                    }
+                    if (iInvalid > 0) {
+                        aGaps.push(iInvalid + " records with invalid values");
+                    }
+                    aErrors.forEach(function(err) {
+                        aGaps.push(err);
+                    });
+
+                    // Build recommendation
+                    var aRecommendations = [];
+                    if (bHasEmpty) {
+                        aRecommendations.push("Maintain missing values");
+                    }
+                    if (iInvalid > 0) {
+                        aRecommendations.push("Fix invalid field values");
+                    }
+
+                    aReportResults.push({
+                        category: oRule.Category || "GENERAL",
+                        object_id: oRule.Viewname,
+                        object_name: sFieldName,
+                        avail_cat: bHasEmpty ? "MISSING" : "AVAILABLE",
+                        data_quality: sDataQuality,
+                        validation_status: sValidationStatus,
+                        validation_errors: aErrors.concat(aWarnings),
+                        gap_desc: aGaps.join("; "),
+                        recommendation: aRecommendations.join("; "),
+                        data_source: oRule.Viewname
+                    });
+                });
+            } else {
+                // No field definition - use simple empty check (original behavior)
+                aReportResults.push({
+                    category: oRule.Category || "GENERAL",
+                    object_id: oRule.Viewname,
+                    object_name: sFieldName,
+                    avail_cat: bHasEmpty ? "MISSING" : "AVAILABLE",
+                    data_quality: bHasEmpty ? "LOW" : "HIGH",
+                    validation_status: "NOT_CHECKED",
+                    validation_errors: [],
+                    gap_desc: bHasEmpty ? "Missing values detected" : "",
+                    recommendation: bHasEmpty ? "Maintain missing values" : "",
+                    data_source: oRule.Viewname
+                });
+
+                return Promise.resolve();
+            }
         },
 
 		/**
@@ -123,14 +239,26 @@ sap.ui.define([
         _createReport: function (aResults, oModel, oSelectedRegulation) {
             console.log("Selected Regulation for Report:", oSelectedRegulation);
 
+            // Calculate validation statistics
+            var oValidationStats = this._calculateValidationStats(aResults);
+
+            // Build summary string
+            var sSummary = aResults.length + " checks executed";
+            if (oValidationStats.invalid > 0) {
+                sSummary += "; " + oValidationStats.invalid + " validation errors";
+            }
+            if (oValidationStats.warnings > 0) {
+                sSummary += "; " + oValidationStats.warnings + " warnings";
+            }
+
             // Prepare the payload for creating the parent report entity
             var oParentPayload = {
-                regulation: oSelectedRegulation.Id,                    // Reference to the regulation
-                run_timestamp: new Date().toISOString(),             // Timestamp of the check run
-                degree_fulfill: this._calculateDegree(aResults),      // Percentage of successful checks
-                data_avail_sum: `${aResults.length} checks executed`, // Summary of checks performed
-                status: "COMPLETED",                                  // Report status
-                to_Results: aResults                                  // Associated result details
+                regulation: oSelectedRegulation.Id,
+                run_timestamp: new Date().toISOString(),
+                degree_fulfill: this._calculateDegree(aResults),
+                data_avail_sum: sSummary,
+                status: "COMPLETED",
+                to_Results: aResults
             };
 
             console.log("Creating parent report with payload:", oParentPayload);
@@ -153,17 +281,56 @@ sap.ui.define([
 
 		/**
 		 * Calculates the degree of fulfillment as a percentage based on successful checks.
+		 * Considers both data availability and validation status.
 		 *
 		 * @param {Array} aResults - Array of result objects
 		 * @returns {number} Percentage of checks that passed (rounded to nearest integer)
 		 * @private
 		 */
         _calculateDegree: function (aResults) {
-            // Count how many results have "AVAILABLE" status (successful checks)
-            var iOk = aResults.filter(r => r.avail_cat === "AVAILABLE").length;
+            // Count results that are both available AND valid
+            var iOk = aResults.filter(function(r) {
+                var bAvailable = r.avail_cat === "AVAILABLE";
+                var bValid = r.validation_status !== "INVALID";
+                return bAvailable && bValid;
+            }).length;
             // Calculate percentage and round to nearest integer
             return Math.round((iOk / aResults.length) * 100);
         },
+
+        /**
+         * Calculates validation statistics from results.
+         *
+         * @param {Array} aResults - Array of result objects
+         * @returns {Object} Stats object with valid, invalid, warnings, notChecked counts
+         * @private
+         */
+        _calculateValidationStats: function(aResults) {
+            var oStats = {
+                valid: 0,
+                invalid: 0,
+                warnings: 0,
+                notChecked: 0
+            };
+
+            aResults.forEach(function(r) {
+                switch (r.validation_status) {
+                    case "VALID":
+                        oStats.valid++;
+                        break;
+                    case "INVALID":
+                        oStats.invalid++;
+                        break;
+                    case "WARNINGS":
+                        oStats.warnings++;
+                        break;
+                    default:
+                        oStats.notChecked++;
+                }
+            });
+
+            return oStats;
+        }
 
 	});
 });
