@@ -32,7 +32,6 @@
                                     icon="sap-icon://add"
                                     type="Emphasized"
                                     press="onPressAddRegulation"
-                                    enabled="false"
                                 />
                             </Toolbar>
                         </headerToolbar>

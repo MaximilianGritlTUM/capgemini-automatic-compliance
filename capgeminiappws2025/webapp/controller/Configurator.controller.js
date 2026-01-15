@@ -33,7 +33,35 @@ sap.ui.define([
         },
         
         onPressAddRegulation: function (oEvent) {
-            // Logic to add a new regulation
+            var oModel = this.getView().getModel(); 
+            var oRouter = this.getOwnerComponent().getRouter();
+
+            var sEntitySetPath = "/Z_I_ZREGULATION";
+
+            var oPayload = {
+                Title: "",
+                Description: ""
+            };
+
+            this.getView().setBusy(true);
+
+            oModel.create(sEntitySetPath, oPayload, {
+                success: function (oCreated) {
+                this.getView().setBusy(false);
+
+                // backend-generated key must be returned here
+                var sId = oCreated.Id;
+
+                // navigate to a detail/create page bound to that created entity
+                oRouter.navTo("Regulation", { Id: sId });
+                }.bind(this),
+
+                error: function (oError) {
+                this.getView().setBusy(false);
+                sap.m.MessageBox.error("Could not create Regulation.");
+                // Optional: console.error(oError);
+                }.bind(this)
+            });        
         },
 
         onPressAddRule: function (oEvent) {

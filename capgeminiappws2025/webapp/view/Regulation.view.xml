@@ -1,0 +1,38 @@
+<mvc:View
+	controllerName=""
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns="sap.m"
+	xmlns:c="sap.ui.core"
+	displayBlock="true"
+	height="100%"
+	busyIndicatorDelay="0"
+>
+  <Page
+    id="RegulationPageId"
+    title="Regulation"
+    showNavButton="true"
+    navButtonPress="onNavBack">
+
+    <content>
+      <SimpleForm editable="true" layout="ResponsiveGridLayout">
+        <Label text="Id" />
+        <Input value="{Id}" editable="false" />
+
+        <Label text="Title" />
+        <Input value="{Title}" />
+
+        <Label text="Description" />
+        <TextArea value="{Description}" rows="5" />
+      </SimpleForm>
+    </content>
+
+    <footer>
+      <Toolbar>
+        <ToolbarSpacer/>
+        <Button text="Save" type="Emphasized" press="onSave"/>
+      </Toolbar>
+    </footer>
+
+  </Page>
+
+</mvc:View>

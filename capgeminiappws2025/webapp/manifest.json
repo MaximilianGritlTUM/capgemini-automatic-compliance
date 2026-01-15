@@ -118,6 +118,11 @@
           "pattern": "reportDetail/{reportId}",                
           "name": "ComplianceReportDetail",        
           "target": "ComplianceReportDetail"
+        },
+        {
+          "name": "Regulation",
+          "pattern": "regulation/{regulationId}",
+          "target": "Regulation"
         }
       ],
       "targets": {
@@ -142,6 +147,12 @@
         },
         "ComplianceReportDetail": {
           "viewName": "ComplianceReportDetail",
+          "viewLevel": 2
+        },
+        "Regulation": {
+          "viewId": "Regulation",
+          "viewName": "Regulation",
+          "ControlId": "app",
           "viewLevel": 2
         }
       }
