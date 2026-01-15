@@ -20,34 +20,51 @@ sap.ui.define([
       this.getView().bindElement({ path: sContextPath });
     },
 
-    onSave: function () {
-      var oModel = this.getView().getModel();
-      this.getView().setBusy(true);
+      onSave: function () {
+        var sTitle = (this.byId("titleInput").getValue() || "").trim();
 
-      oModel.submitChanges({
-        success: function () {
-          this.getView().setBusy(false);
+        if (!sTitle) {
+          MessageBox.error("Please enter a Title before saving.");
+          return;
+        }
 
-          this.getView().getModel().refresh(true);
+        // optional: ensure model has the same value (usually already true)
+        var oCtx = this.getView().getBindingContext();
+        if (oCtx) {
+          this.getView().getModel().setProperty(oCtx.getPath() + "/Title", sTitle);
+        }
 
-          MessageToast.show("Regulation Saved.");
-          
-          this.getOwnerComponent().getRouter().navTo("configurator", {}, true);
-        }.bind(this),
-        error: function () {
-          this.getView().setBusy(false);
-          MessageBox.error("Save failed.");
-        }.bind(this)
-      });
-    },
+        var oModel = this.getView().getModel();
+        this.getView().setBusy(true);
+
+        oModel.submitChanges({
+          success: function () {
+            this.getView().setBusy(false);
+            oModel.refresh(true);
+            MessageToast.show("Regulation Saved.");
+            this.getOwnerComponent().getRouter().navTo("configurator", {}, true);
+          }.bind(this),
+          error: function () {
+            this.getView().setBusy(false);
+            MessageBox.error("Save failed.");
+          }.bind(this)
+        });
+      },
     
     onNavBack: function () {
-      var sPreviousHash = History.getInstance().getPreviousHash();
-      if (sPreviousHash !== undefined) {
-        window.history.go(-1);
-      } else {
-        this.getOwnerComponent().getRouter().navTo("home", {}, true);
+      var oModel = this.getView().getModel();
+      var oCtx = this.getView().getBindingContext();
+
+      // If user created a new entry and navigates back without saving, discard it
+      if (oCtx && oModel.hasPendingChanges()) {
+        try {
+          oModel.deleteCreatedEntry(oCtx); // removes transient created entry
+        } catch (e) {
+          oModel.resetChanges();
+        }
       }
+
+      this.getOwnerComponent().getRouter().navTo("configurator", {}, true);
     }
 	});
 });

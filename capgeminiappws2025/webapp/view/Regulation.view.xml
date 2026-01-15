@@ -13,16 +13,11 @@
 
     <content>
       <f:SimpleForm editable="true" layout="ResponsiveGridLayout">
-        <Label text="Id" required="true"/>
-        <Input 
-          id="idInput"
-          value="{Id}"
-          required="true"
-          valueStateText="ID is required"
-        />
+        <Label text="Id" visible="{= !!${Id} }"/>
+        <Text text="{Id}" visible="{= !!${Id} }"/>
 
         <Label text="Title" />
-        <Input value="{Title}" required="true"/>
+        <Input id="titleInput" value="{Title}" required="true"/>
 
         <Label text="Description" />
         <TextArea value="{Description}" rows="5" />

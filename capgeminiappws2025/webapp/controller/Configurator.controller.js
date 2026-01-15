@@ -2,11 +2,13 @@ sap.ui.define([
     "sap/ui/core/mvc/Controller",
     "sap/ui/model/json/JSONModel",
 	"sap/ui/core/mvc/View",
-	"capgeminiappws2025/utils/CheckAlgorithm"
+	"capgeminiappws2025/utils/CheckAlgorithm",
+    "sap/m/ColumnListItem",
+    "sap/m/Text"
 ], function (Controller,
 	JSONModel,
 	View,
-	CheckAlgorithm) {
+	CheckAlgorithm, ColumnListItem, Text) {
     "use strict";
 
     return Controller.extend("capgeminiappws2025.controller.Configurator", {
@@ -15,6 +17,12 @@ sap.ui.define([
             this.getOwnerComponent().getRouter()
                 .getRoute("configurator")
                 .attachPatternMatched(this._onRouteMatched, this);
+             this._oFieldTemplate = new sap.m.ColumnListItem({
+                cells: [
+                    new sap.m.Text({ text: "{Viewname}" }),
+                    new sap.m.Text({ text: "{Elementname}" })
+                ]
+            });    
         },
 
         _onRouteMatched: function () {
@@ -28,9 +36,16 @@ sap.ui.define([
         },
         
         onSelectRegulation: function (oEvent) {
-            var oSelectedItem = oEvent.getParameter("listItem");
+            var oSelectedItem = oEvent.getParameter("listItem") || oEvent.getSource();
             var oContext = oSelectedItem.getBindingContext(); // default model
+            if (!oContext) {
+                return;
+            }
             var sPath = oContext.getPath();
+
+            this.byId("detailPanel").bindElement({ path: sPath });
+            this.byId("detailPanel").setVisible(true);
+
             console.log("Selected Regulation Path:", sPath);
 
             var oRulesTable = this.byId("rulesTable");
@@ -38,7 +53,8 @@ sap.ui.define([
 
             oRulesTable.bindItems({ 
                 path: sPath + "/to_Fields",
-                template: oRulesTable.getItems()[0].clone()  // Clone first item as template
+                template: this._oFieldTemplate,
+                templateSharable: true 
              });
 
             this.byId("detailPanel").setVisible(true)
@@ -52,10 +68,11 @@ sap.ui.define([
             
             var oContext = oModel.createEntry(sEntitySetPath, {
                 properties: {
-                    Title: "",
                     Description: ""
                 }
             });
+
+            oModel.setProperty("Id", "", oContext);
             
             oRouter.navTo("Regulation", {
                 contextPath: encodeURIComponent(oContext.getPath())
@@ -93,6 +110,58 @@ sap.ui.define([
                 console.error("Readiness check or report creation failed:", oError);
             });
         },
+        onDeleteRegulation: function () {
+            var oList = this.byId("regulationList");
+            var aItems = oList.getSelectedItems();
 
+            if (!aItems.length) {
+                sap.m.MessageToast.show("Select at least one regulation to delete.");
+                return;
+            }
+
+            sap.m.MessageBox.confirm(
+                "Are you sure you want to delete regulation?",
+                {
+                actions: [sap.m.MessageBox.Action.OK, sap.m.MessageBox.Action.CANCEL],
+                onClose: function (sAction) {
+                    if (sAction !== sap.m.MessageBox.Action.OK) {
+                    return;
+                    }
+
+                    var oModel = this.getView().getModel();
+                    this.getView().setBusy(true);
+
+                    aItems.forEach(function (oItem) {
+                    var oCtx = oItem.getBindingContext();
+                    if (oCtx) {
+                        oModel.remove(oCtx.getPath()); // queues DELETE in $batch
+                    }
+                    });
+
+                    oModel.submitChanges({
+                    success: function () {
+                        this.getView().setBusy(false);
+                        sap.m.MessageToast.show("Deleted.");
+
+                        // refresh list + clear selection
+                        oModel.refresh(true);
+                        oList.removeSelections(true);
+
+                        // hide/clear right-side detail area (optional but recommended)
+                        var oPanel = this.byId("detailPanel");
+                        if (oPanel) {
+                        oPanel.setVisible(false);
+                        oPanel.unbindElement(undefined);
+                        }
+                    }.bind(this),
+                    error: function () {
+                        this.getView().setBusy(false);
+                        sap.m.MessageBox.error("Delete failed.");
+                    }.bind(this)
+                    });
+                }.bind(this)
+                }
+            );
+        },
     });
 });

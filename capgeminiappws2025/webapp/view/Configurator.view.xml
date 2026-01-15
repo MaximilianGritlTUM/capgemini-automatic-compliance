@@ -28,6 +28,11 @@
                                 <Title text="Active Regulations" level="H5" />
                                 <ToolbarSpacer />
                                 <Button
+                                    text="Delete Regulation"
+                                    type="Reject"
+                                    press="onDeleteRegulation"
+                                />                                
+                                <Button
                                     text="Add Regulation"
                                     icon="sap-icon://add"
                                     type="Emphasized"
@@ -44,7 +49,6 @@
                         >
                             <CustomListItem
                                 type="Active"
-                                press="onSelectRegulation"
                             >
                                 <VBox class="sapUiSmallMargin">
                                     <HBox
@@ -52,7 +56,7 @@
                                         alignItems="Center"
                                     >
                                         <Text
-                                            text="{Title}"
+                                            text="{= ${Title} ? ${Title} : '(Untitled regulation)' }"
                                             wrapping="false"
                                         />
                                     </HBox>
