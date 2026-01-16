@@ -14,24 +14,19 @@
                 renderType="Bare"
                 class="sapUiContentPadding"
             >
-
                 <!-- ================= LEFT CARD: Active Regulations ================= -->
-                <VBox
-                    class="sapUiSmallMarginEnd"
-                >
+                <VBox class="sapUiSmallMarginEnd">
                     <Panel
                         class="sapUiResponsiveMargin"
                         backgroundDesign="Solid"
                     >
                         <headerToolbar>
                             <Toolbar>
-                                <Title text="Active Regulations" level="H5" />
-                                <ToolbarSpacer />
-                                <Button
-                                    text="Delete Regulation"
-                                    type="Reject"
-                                    press="onDeleteRegulation"
-                                />                                
+                                <Title
+                                    text="Active Regulations"
+                                    level="H5"
+                                />
+                                <ToolbarSpacer />                           
                                 <Button
                                     text="Add Regulation"
                                     icon="sap-icon://add"
@@ -44,21 +39,57 @@
                         <List
                             id="regulationList"
                             mode="SingleSelectMaster"
-                            items="{ path: '/Z_I_ZREGULATION' }"
-                            selectionChange="onSelectRegulation"
+                            items="{ path: '/Z_I_ZREGULATION', templateShareable: false }"
+                            selectionChange=".onSelectRegulation"
                         >
                             <CustomListItem
                                 type="Active"
                             >
                                 <VBox class="sapUiSmallMargin">
                                     <HBox
-                                        justifyContent="SpaceBetween"
                                         alignItems="Center"
+                                        fitContainer="false"
                                     >
-                                        <Text
-                                            text="{= ${Title} ? ${Title} : '(Untitled regulation)' }"
-                                            wrapping="false"
-                                        />
+                                        <!-- left column: text OR input; grows to fill available space -->
+                                        <VBox width="100%">
+                                            <layoutData>
+                                                <FlexItemData growFactor="1" />
+                                            </layoutData>
+                                            <!-- Display -->
+                                            <Text
+                                                text="{= ${Title} ? ${Title} : '(Untitled regulation)' }"
+                                                visible="{= ${ui>/editRegulationId} !== ${Id} }"
+                                            />
+
+                                            <!-- Edit -->
+                                            <Input
+                                                id="regulationTitleInput"
+                                                value="{path: 'Title', mode: 'sap.ui.model.BindingMode.TwoWay'}"
+                                                visible="{= ${ui>/editRegulationId} === ${Id} }"
+                                                submit=".onSubmitRegulationTitle"
+                                                change=".onSubmitRegulationTitle"
+                                            />
+                                        </VBox>
+
+                                        <!-- right column: action buttons -->
+                                        <HBox
+                                            alignItems="Center"
+                                            justifyContent="End"
+                                            renderType="Bare"
+                                        >
+                                            <Button
+                                                icon="sap-icon://edit"
+                                                type="Transparent"
+                                                press=".onEditRegulation"
+                                                tooltip="Edit regulation"
+                                            />
+                                            <Button
+                                                icon="sap-icon://delete"
+                                                type="Reject"
+                                                press=".onDeleteRegulation"
+                                                tooltip="Delete regulation"
+                                            />
+                                        </HBox>
                                     </HBox>
                                 </VBox>
                             </CustomListItem>
@@ -88,38 +119,19 @@
                             />
                         </VBox>
 
-                        <!-- ===== Basic Settings ===== -->
-                        <!-- <Title
-                            text="Basic Settings"
-                            level="H6"
-                            class="sapUiMediumMarginTop sapUiSmallMarginBegin"
-                        /> -->
-
-                        <!-- <f:SimpleForm
-                            editable="true"
-                            layout="ResponsiveGridLayout"
-                            labelSpanXL="3"
-                            labelSpanL="3"
-                            labelSpanM="3"
-                            labelSpanS="12"
-                        >
-                            <Label text="Regulation Status" />
-                            <Input value="{RegulationStatus}" />
-
-                            <Label text="Applicable Regions" />
-                            <Input value="{ApplicableRegions}" />
-                        </f:SimpleForm> -->
-
                         <!-- ===== Compliance Rules ===== -->
                         <HBox
                             justifyContent="SpaceBetween"
                             class="sapUiMediumMarginTop sapUiSmallMarginBegin sapUiSmallMarginEnd"
                         >
-                            <Title text="Compliance Rules" level="H6" />
+                            <Title
+                                text="Compliance Rules"
+                                level="H6"
+                            />
                             <Button
                                 text="Add Rule"
                                 icon="sap-icon://add"
-                                press="onPressAddRule"
+                                press=".onPressAddRule"
                                 enabled="false"
                             />
                         </HBox>
@@ -139,16 +151,48 @@
                                 <Column hAlign="Center">
                                     <Text text="Active" />
                                 </Column>
+                                <Column
+                                    styleClass="sapUiSmallMarginBegin"
+                                    hAlign="End"
+                                >
+                                    <Text text="Actions" />
+                                </Column>
                             </columns>
 
                             <items>
                                 <ColumnListItem>
                                     <cells>
+                                        <!-- Viewname: display only -->
                                         <Text text="{Viewname}" />
+
+                                        <!-- Elementname: display only -->
                                         <Text text="{Elementname}" />
-                                        <ObjectStatus
-                                            text="{= ${Active} ? 'Active' : 'Inactive'}"
-                                        />
+
+                                        <!-- Active: editable via Switch only -->
+                                        <VBox>
+                                            <Text
+                                                text="{= ${Active} ? 'Active' : 'Inactive'}"
+                                                visible="{= !${ui>/editRuleId} }"
+                                            />
+                                            <!-- keep binding two-way so change handler can update model -->
+                                            <Switch
+                                                state="{path: 'Active', mode: 'sap.ui.model.BindingMode.TwoWay'}"
+                                                change=".onSubmitRuleField"
+                                            />
+                                        </VBox>
+
+                                        <!-- Actions: delete only (no edit) -->
+                                        <HBox
+                                            justifyContent="End"
+                                            renderType="Bare"
+                                        >
+                                            <Button
+                                                icon="sap-icon://delete"
+                                                type="Reject"
+                                                press=".onDeleteRule"
+                                                tooltip="Delete rule"
+                                            />
+                                        </HBox>
                                     </cells>
                                 </ColumnListItem>
                             </items>
@@ -163,19 +207,17 @@
                                 text="Save Configuration"
                                 type="Emphasized"
                                 icon="sap-icon://save"
-                                press="onPressSaveConfiguration"
+                                press=".onPressSaveConfiguration"
                                 enabled="false"
                             />
                             <Button
                                 text="Start Readiness Check"
                                 class="sapUiTinyMarginBegin"
-                                press="onPressStartReadinessCheck"
+                                press=".onPressStartReadinessCheck"
                             />
                         </HBox>
-
                     </Panel>
                 </VBox>
-
             </HBox>
         </content>
     </Page>
