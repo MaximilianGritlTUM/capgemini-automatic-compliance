@@ -97,83 +97,124 @@ sap.ui.define([
                 aReadPromises.push(oPromise);
             });
 
-            // Additional check for BOM - MaterialComposition
+            // Additional check for BOM - Create ReportBOMResults from MaterialComposition data with multi-level hierarchy
             var oBomPromise = new Promise(function (resolve) {
                 // Get active rules for Z_I_Materials
                 var activeRules = aData.filter(function(rule) {
                     return rule.Viewname === "Z_I_Materials";
                 });
 
-                // First fetch Z_I_Materials to get all records
-                oModel.read("/Z_I_Materials", {
-                    urlParameters: { "$top": 10000 },
-                    success: function(oZData) {
-                        var zMaterials = oZData.results;
-                        var materials = zMaterials.map(function(item) {
-                            return item.MaterialID;
-                        });
 
-                        // Then fetch MaterialComposition
-                        oModel.read("/MaterialComposition", {
-                            urlParameters: { "$top": 10000 },
-                            success: function(oCompData) {
-                                // Get unique ParentMaterial values
-                                var compMaterials = [...new Set(oCompData.results.map(function(item) {
-                                    return item.ParentMaterial;
-                                }).filter(function(pm) { return pm; }))]; // filter out null/undefined
-
-                                // For each ParentMaterial that exists in Z_I_Materials, check if all active rule fields have values
-                                compMaterials.forEach(function(pm) {
-                                    if (materials.indexOf(pm) !== -1) {
-                                        // Find the record
-                                        var record = zMaterials.find(function(item) {
-                                            return item.MaterialID === pm;
-                                        });
-                                        if (record) {
-                                            // Check if all active rules have values
-                                            var hasAllData = activeRules.every(function(rule) {
-                                                return record[rule.Elementname];
-                                            });
-                                            aReportResults.push({
-                                                category: "BOM",
-                                                object_id: "MaterialComposition",
-                                                object_name: pm,  // The ParentMaterial value
-                                                avail_cat: hasAllData ? "AVAILABLE" : "MISSING",
-                                                data_quality: hasAllData ? "HIGH" : "LOW",
-                                                gap_desc: hasAllData ? "" : "Missing values in Z_I_Materials for active rules",
-                                                recommendation: hasAllData ? "" : "Maintain missing values in Z_I_Materials",
-                                                data_source: "MaterialComposition"
-                                            });
-                                        }
+                    // Then fetch all MaterialComposition records once
+                    oModel.read("/MaterialComposition", {
+                        urlParameters: { "$top": 10000,
+                            "$expand": "to_ComponentMaterials,to_Material"
+                         },
+                        success: function(oCompData) {
+                            var nodeIdCounter = 1;
+                            var processedParents = {};
+                            oCompData.results.forEach(function(comp) {
+                                var parentMatId = comp.ParentMaterial;
+                                var componentMatId = comp.ComponentMaterial;
+                                
+                                // Only create parent node once per unique parent material
+                                if (!processedParents[parentMatId]) {
+                                    processedParents[parentMatId] = true;
+                                    
+                                    var parentMaterial = comp.to_Material;
+                                    var parentExists = !!parentMaterial;
+                                    
+                                    var parentHasAllData = parentExists && activeRules.every(function(rule) {
+                                        return parentMaterial[rule.Elementname];
+                                    });
+                                    
+                                    var parentGapDesc = "";
+                                    if (!parentExists) {
+                                        parentGapDesc = "ParentMaterial not found in master data";
+                                    } else if (!parentHasAllData) {
+                                        parentGapDesc = "ParentMaterial missing required fields";
                                     }
-                                });
+                                    
+                                    // Assign node ID to this parent and track it
+                                    var parentNodeId = nodeIdCounter++;
+                                    
+                                    // Create parent result entry
+                                    aReportResults.push({
+                                        category: "BOM",
+                                        node_id: parentNodeId,
+                                        parent_node_id: null,
+                                        parent_matnr: parentMatId,
+                                        component_matnr: componentMatId,
+                                        Plant: comp.Plant,
+                                        BomUsage: comp.BomUsage,
+                                        AltBom: comp.AltBom,
+                                        BomNumber: comp.BomNumber,
+                                        ItemNumber: comp.ItemNumber,
+                                        avail_cat: parentHasAllData ? "AVAILABLE" : "MISSING",
+                                        data_quality: parentHasAllData ? "HIGH" : "LOW",
+                                        gap_desc: parentGapDesc,
+                                        recommendation: parentHasAllData ? "" : "Ensure material exists with all required fields filled",
+                                        data_source: "MaterialComposition"
+                                    });
 
-                                resolve();
-                            },
-                            error: function(oError) {
-                                console.error("Read error for MaterialComposition", oError);
-                                resolve();
-                            }
-                        });
-                    },
-                    error: function(oError) {
-                        console.error("Read error for Z_I_Materials in BOM check", oError);
-                        resolve();
-                    }
-                });
+                                    // create component nodes linked to their parents
+                                    
+                                    var componentMaterial = comp.to_ComponentMaterials[0];
+        
+                                    var componentExists = !!componentMaterial;
+                                    
+                                    var componentHasAllData = componentExists && activeRules.every(function(rule) {
+                                        return componentMaterial[rule.Elementname];
+                                    });
+                                    
+                                    var componentGapDesc = "";
+                                    if (!componentExists) {
+                                        componentGapDesc = "ComponentMaterial not found in master data";
+                                    } else if (!componentHasAllData) {
+                                        componentGapDesc = "ComponentMaterial missing required fields";
+                                    }
+                                    
+                                    var isAvailable = componentHasAllData;
+                                    var componentNodeId = nodeIdCounter++;
+                                    
+                                    // Create component result with parent_node_id linking to parent
+                                    aReportResults.push({
+                                        category: "BOM",
+                                        node_id: componentNodeId,
+                                        parent_node_id: parentNodeId,
+                                        parent_matnr: componentMatId,
+                                        component_matnr: "",
+                                        Plant: "",
+                                        BomUsage: "",
+                                        AltBom: "",
+                                        BomNumber: "",
+                                        ItemNumber: "",
+                                        avail_cat: isAvailable ? "AVAILABLE" : "MISSING",
+                                        data_quality: isAvailable ? "HIGH" : "LOW",
+                                        gap_desc: componentGapDesc,
+                                        recommendation: isAvailable ? "" : "Ensure material exists with all required fields filled",
+                                        data_source: "MaterialComposition"
+                                    });
+                                }
+                            });
+
+                            resolve();
+                        },
+                        error: function(oError) {
+                            console.error("Read error for MaterialComposition", oError);
+                            resolve();
+                        }
+                    });
             });
             aReadPromises.push(oBomPromise);
 
             // Wait for all rule checks to complete, then create the report
             return Promise.all(aReadPromises).then(function () {
-                console.log("All readiness checks completed");
-                console.log(aReportResults);
-
                 // Create the compliance report with all collected results
                 return this._createReport(aReportResults, oModel, oSelectedRegulation);
 
             }.bind(this)).catch(function (oError) {
-                console.log("Readiness check failed");
+                console.error("Readiness check failed:", oError);
                 throw oError;  // Re-throw to propagate the error
             });
         },
@@ -188,7 +229,51 @@ sap.ui.define([
 		 * @private
 		 */
         _createReport: function (aResults, oModel, oSelectedRegulation) {
-            console.log("Selected Regulation for Report:", oSelectedRegulation);
+            // Separate BOM results from regular results
+            var aGeneralResults = [];
+            var aBomResults = [];
+            
+            aResults.forEach(function(result) {
+                if (result.category === "BOM") {
+                    aBomResults.push(result);
+                } else {
+                    aGeneralResults.push(result);
+                }
+            });
+
+            // Filter general results to remove internal hierarchy properties not supported by backend
+            var aFilteredGeneralResults = aGeneralResults.map(function(result) {
+                return {
+                    category: result.category,
+                    object_id: result.object_id,
+                    object_name: result.object_name,
+                    avail_cat: result.avail_cat,
+                    data_quality: result.data_quality,
+                    gap_desc: result.gap_desc,
+                    recommendation: result.recommendation,
+                    data_source: result.data_source
+                };
+            });
+
+            // Map BOM results to Z_I_ReportBOMResult structure
+            var aFilteredBomResults = aBomResults.map(function(result) {
+                return {
+                    node_id: parseInt(result.node_id, 10),
+                    parent_node_id: result.parent_node_id ? parseInt(result.parent_node_id, 10) : null,
+                    parent_matnr: result.parent_matnr || "",
+                    component_matnr: result.component_matnr || "",
+                    Plant: result.Plant || "",
+                    BomUsage: result.BomUsage || "",
+                    AltBom: result.AltBom || "",
+                    BomNumber: result.BomNumber || "",
+                    ItemNumber: result.ItemNumber || "",
+                    avail_cat: result.avail_cat,
+                    data_quality: result.data_quality,
+                    gap_desc: result.gap_desc,
+                    recommendation: result.recommendation,
+                    data_source: result.data_source
+                };
+            });
 
             // Prepare the payload for creating the parent report entity
             var oParentPayload = {
@@ -197,17 +282,15 @@ sap.ui.define([
                 degree_fulfill: this._calculateDegree(aResults),      // Percentage of successful checks
                 data_avail_sum: `${aResults.length} checks executed`, // Summary of checks performed
                 status: "COMPLETED",                                  // Report status
-                to_Results: aResults                                  // Associated result details
+                to_Results: aFilteredGeneralResults,                  // Associated general result details
+                to_BOMResults: aFilteredBomResults                    // Associated BOM result details
             };
-
-            console.log("Creating parent report with payload:", oParentPayload);
 
             // Create the report entity in the backend
             return new Promise(function (resolve, reject) {
                 oModel.create("/Report", oParentPayload, {
                     success: function(oParentSuccess) {
                         var sReportId = oParentSuccess.report_id;  // Extract the generated report ID
-                        console.log("Parent report created, ReportId:", sReportId);
                         resolve(sReportId);  // Resolve with the report ID
                     },
                     error: function(oError) {

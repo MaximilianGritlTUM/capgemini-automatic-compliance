@@ -3,8 +3,9 @@ sap.ui.define([
     "sap/m/MessageToast",
     "sap/ui/core/UIComponent",
     "sap/ui/export/Spreadsheet",
-    "sap/ui/model/Filter"
-], function (Controller, MessageToast, UIComponent, Spreadsheet, Filter) {
+    "sap/ui/model/Filter",
+    "sap/ui/model/json/JSONModel"
+], function (Controller, MessageToast, UIComponent, Spreadsheet, Filter, JSONModel) {
     "use strict";
 
     return Controller.extend("capgeminiappws2025.controller.ComplianceReportDetail", {
@@ -17,15 +18,15 @@ sap.ui.define([
 
         _onObjectMatched: function (oEvent) {
             var sReportId = oEvent.getParameter("arguments").reportId;
-
             var oModel = this.getView().getModel();
             var sPath = oModel.createKey("/Report",{
                 report_id: sReportId
             });
+            
             this.getView().bindElement({
                 path: sPath,
                 parameters: {
-                    expand: "to_Results"
+                    expand: "to_Results,to_BOMResults"
                 }
             });
 
@@ -36,12 +37,32 @@ sap.ui.define([
                 oBinding.filter(new Filter("category", "EQ", "GENERAL"));
             }
 
-            // Filter bomTable to show only category BOM
-            var oBomTable = this.byId("bomTable");
-            var oBomBinding = oBomTable.getBinding("items");
-            if (oBomBinding) {
-                oBomBinding.filter(new Filter("category", "EQ", "BOM"));
-            }
+            oModel.read(sPath + "/to_BOMResults", {
+                urlParameters: {
+                    "$expand": "to_Children"
+                },
+                success: function (oData) {
+
+                    // 1. Normalize children arrays
+                    oData.results.forEach(node => {
+                        if (node.to_Children && node.to_Children.results) {
+                            node.to_Children = node.to_Children.results;
+                        } else {
+                            node.to_Children = [];
+                        }
+                    });
+
+                    // 2. Keep ONLY root nodes
+                    const aRoots = oData.results.filter(function (item) {
+                        return !item.parent_node_id;
+                    });
+
+                    console.log(aRoots)
+
+                    const oJsonModel = new sap.ui.model.json.JSONModel(aRoots);
+                    this.getView().setModel(oJsonModel, "bom");
+                }.bind(this)
+            });
         },
 
         onNavBack: function() {
@@ -146,6 +167,18 @@ sap.ui.define([
                 .finally(function () {
                     oSheet.destroy();
                 });
+        },
+
+        onBomRowPress: function (oEvent) {
+            var oSource = oEvent.getSource();
+            var oContext = oSource.getBindingContext();
+            var oData = oContext.getObject();
+            
+            // Toggle expansion only for parent nodes
+            if (oData.node_level === 0) {
+                oData._expanded = !oData._expanded;
+                oContext.getModel().refresh(true);
+            }
         }
     });
 });
