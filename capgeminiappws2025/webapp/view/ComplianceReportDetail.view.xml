@@ -136,12 +136,12 @@
                                         width="150px">
                                         <Label text="BOM Number" />
                                         <table:template>
-                                            <Text text="{bom>bom_number}" />
+                                            <Text text="{= ${bom>bom_number} === '00000000' ? '' : ${bom>bom_number}}" />
                                         </table:template>
                                     </table:Column>
                                     <table:Column
                                         width="150px">
-                                        <Label text="Parent Material" />
+                                        <Label text="Material" />
                                         <table:template>
                                             <Text text="{bom>parent_matnr}" />
                                         </table:template>

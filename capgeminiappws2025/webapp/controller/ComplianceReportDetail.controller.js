@@ -45,10 +45,13 @@ sap.ui.define([
 
                     // 1. Normalize children arrays
                     oData.results.forEach(node => {
-                        if (node.to_Children && node.to_Children.results) {
+                        if (node.to_Children && node.to_Children.results && node.to_Children.results.length > 0) {
                             node.to_Children = node.to_Children.results;
+                            node.to_Children.forEach(child => {
+                                child.to_Children = null; // Prevent deeper nesting
+                            });
                         } else {
-                            node.to_Children = [];
+                            node.to_Children = null;
                         }
                     });
 
