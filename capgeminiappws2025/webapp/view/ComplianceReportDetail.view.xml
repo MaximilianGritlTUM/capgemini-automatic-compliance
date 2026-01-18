@@ -134,16 +134,16 @@
                                 <table:columns>
                                     <table:Column
                                         width="150px">
-                                        <Label text="Parent Material" />
+                                        <Label text="BOM Number" />
                                         <table:template>
-                                            <Text text="{bom>parent_matnr}" />
+                                            <Text text="{bom>bom_number}" />
                                         </table:template>
                                     </table:Column>
                                     <table:Column
                                         width="150px">
-                                        <Label text="Component Material" />
+                                        <Label text="Parent Material" />
                                         <table:template>
-                                            <Text text="{bom>component_matnr}" />
+                                            <Text text="{bom>parent_matnr}" />
                                         </table:template>
                                     </table:Column>
                                     <table:Column

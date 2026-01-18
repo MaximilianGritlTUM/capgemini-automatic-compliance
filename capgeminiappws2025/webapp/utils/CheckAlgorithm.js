@@ -115,11 +115,11 @@ sap.ui.define([
                             var processedParents = {};
                             oCompData.results.forEach(function(comp) {
                                 var parentMatId = comp.ParentMaterial;
+                                var parentBomNumber = comp.BomNumber
                                 var componentMatId = comp.ComponentMaterial;
                                 
-                                // Only create parent node once per unique parent material
-                                if (!processedParents[parentMatId]) {
-                                    processedParents[parentMatId] = true;
+                                // Only create parent node once per unique bom number
+                                if (!processedParents[parentBomNumber]) {
                                     
                                     var parentMaterial = comp.to_Material;
                                     var parentExists = !!parentMaterial;
@@ -137,6 +137,8 @@ sap.ui.define([
                                     
                                     // Assign node ID to this parent and track it
                                     var parentNodeId = nodeIdCounter++;
+
+                                    processedParents[parentBomNumber] = parentNodeId;
                                     
                                     // Create parent result entry
                                     aReportResults.push({
@@ -148,7 +150,7 @@ sap.ui.define([
                                         Plant: comp.Plant,
                                         BomUsage: comp.BomUsage,
                                         AltBom: comp.AltBom,
-                                        BomNumber: comp.BomNumber,
+                                        bom_number: parentBomNumber,
                                         ItemNumber: comp.ItemNumber,
                                         avail_cat: parentHasAllData ? "AVAILABLE" : "MISSING",
                                         data_quality: parentHasAllData ? "HIGH" : "LOW",
@@ -156,46 +158,45 @@ sap.ui.define([
                                         recommendation: parentHasAllData ? "" : "Ensure material exists with all required fields filled",
                                         data_source: "MaterialComposition"
                                     });
-
-                                    // create component nodes linked to their parents
-                                    
-                                    var componentMaterial = comp.to_ComponentMaterials[0];
-        
-                                    var componentExists = !!componentMaterial;
-                                    
-                                    var componentHasAllData = componentExists && activeRules.every(function(rule) {
-                                        return componentMaterial[rule.Elementname];
-                                    });
-                                    
-                                    var componentGapDesc = "";
-                                    if (!componentExists) {
-                                        componentGapDesc = "ComponentMaterial not found in master data";
-                                    } else if (!componentHasAllData) {
-                                        componentGapDesc = "ComponentMaterial missing required fields";
-                                    }
-                                    
-                                    var isAvailable = componentHasAllData;
-                                    var componentNodeId = nodeIdCounter++;
-                                    
-                                    // Create component result with parent_node_id linking to parent
-                                    aReportResults.push({
-                                        category: "BOM",
-                                        node_id: componentNodeId,
-                                        parent_node_id: parentNodeId,
-                                        parent_matnr: componentMatId,
-                                        component_matnr: "",
-                                        Plant: "",
-                                        BomUsage: "",
-                                        AltBom: "",
-                                        BomNumber: "",
-                                        ItemNumber: "",
-                                        avail_cat: isAvailable ? "AVAILABLE" : "MISSING",
-                                        data_quality: isAvailable ? "HIGH" : "LOW",
-                                        gap_desc: componentGapDesc,
-                                        recommendation: isAvailable ? "" : "Ensure material exists with all required fields filled",
-                                        data_source: "MaterialComposition"
-                                    });
                                 }
+                                // create component nodes linked to their parents
+                                
+                                var componentMaterial = comp.to_ComponentMaterials.results[0];
+    
+                                var componentExists = !!componentMaterial;
+                                
+                                var componentHasAllData = componentExists && activeRules.every(function(rule) {
+                                    return componentMaterial[rule.Elementname];
+                                });
+                                
+                                var componentGapDesc = "";
+                                if (!componentExists) {
+                                    componentGapDesc = "ComponentMaterial not found in master data";
+                                } else if (!componentHasAllData) {
+                                    componentGapDesc = "ComponentMaterial missing required fields";
+                                }
+                                
+                                var isAvailable = componentHasAllData;
+                                var componentNodeId = nodeIdCounter++;
+                                
+                                // Create component result with parent_node_id linking to parent
+                                aReportResults.push({
+                                    category: "BOM",
+                                    node_id: componentNodeId,
+                                    parent_node_id: processedParents[parentBomNumber],
+                                    parent_matnr: componentMatId,
+                                    component_matnr: "",
+                                    Plant: "",
+                                    BomUsage: "",
+                                    AltBom: "",
+                                    bom_number: "",
+                                    ItemNumber: "",
+                                    avail_cat: isAvailable ? "AVAILABLE" : "MISSING",
+                                    data_quality: isAvailable ? "HIGH" : "LOW",
+                                    gap_desc: componentGapDesc,
+                                    recommendation: isAvailable ? "" : "Ensure material exists with all required fields filled",
+                                    data_source: "MaterialComposition"
+                                });
                             });
 
                             resolve();
@@ -265,7 +266,7 @@ sap.ui.define([
                     Plant: result.Plant || "",
                     BomUsage: result.BomUsage || "",
                     AltBom: result.AltBom || "",
-                    BomNumber: result.BomNumber || "",
+                    bom_number: result.bom_number || "",
                     ItemNumber: result.ItemNumber || "",
                     avail_cat: result.avail_cat,
                     data_quality: result.data_quality,
