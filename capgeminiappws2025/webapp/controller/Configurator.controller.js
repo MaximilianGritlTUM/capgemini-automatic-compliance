@@ -23,9 +23,19 @@ sap.ui.define(
           new JSONModel({
             editRegulationId: null,
             editRuleId: null,
+            selectedRegulationPath: null
           }),
           "ui"
         );
+
+        this._createAddRuleDialog();
+      },
+
+      onExit: function() {
+        if (this._oAddRuleDialog) {
+          this._oAddRuleDialog.destroy();
+          this._oAddRuleDialog = null;
+        }
       },
 
       onDeleteRegulation: function (oEvent) {
@@ -220,6 +230,8 @@ sap.ui.define(
         var oContext = oSelectedItem.getBindingContext();
         var sPath = oContext.getPath();
 
+        this.getView().getModel("ui").setProperty("/selectedRegulationPath", oContext.getPath());
+
         var oRulesTable = this.byId("rulesTable");
         oRulesTable.bindItems({
           path: sPath + "/to_Fields",
@@ -234,7 +246,103 @@ sap.ui.define(
       },
 
       onPressAddRule: function () {
-        /* add rule logic */
+        var sRegPath = this.getView().getModel("ui").getProperty("/selectedRegulationPath");
+        if (!sRegPath) {
+          MessageToast.show("Please select a regulation first.");
+          return;
+        }
+
+        this._oAddRuleDialog.open();
+      },
+
+      _onConfirmAddRule: function () {
+        var oUI = this.getView().getModel("ui");
+        var sRegPath = oUI.getProperty("/selectedRegulationPath");
+
+        if (!sRegPath) {
+          MessageToast.show("Select a regulation first.");
+          this._oAddRuleDialog.close();
+          return;
+        }
+
+        var oRegItem = this.byId("regulationList").getSelectedItem();
+        if (!oRegItem) {
+          MessageToast.show("Select a regulation first.");
+          this._oAddRuleDialog.close();
+          return;
+        }
+
+        var oRegObj = oRegItem.getBindingContext().getObject();
+        var sRegid = oRegObj && oRegObj.Id;
+        if (!sRegid) {
+          MessageBox.error("Cannot add rule: selected regulation has no Id.");
+          return;
+        }
+
+        var sView = (this.byId("inpRuleView").getValue() || "").trim();
+        var sField = (this.byId("inpRuleField").getValue() || "").trim();
+
+        sView = sView.toUpperCase();
+        sField = sField.toUpperCase();
+
+        if (!sView || !sField) {
+          this._onAddRuleLiveChange();
+          return;
+        }
+
+        var oRulesTable = this.byId("rulesTable");
+        var aExisting = (oRulesTable.getBinding("items")?.getContexts() || []).map(function (c) {
+          return c.getObject();
+        });
+
+        var bExists = aExisting.some(function (r) {
+          return String(r.Regid) === String(sRegid) &&
+            (r.Viewname || "").trim() === sView &&
+            (r.Elementname || "").trim() === sField;
+        });
+
+        if (bExists) {
+          MessageBox.warning("This rule already exists for the selected regulation.");
+          return;
+        }
+
+        var oModel = this.getView().getModel();
+        var sCreatePath = "/Z_I_ZREG_FIELDS";
+
+        var oNewRule = {
+          Regid: sRegid,
+          Viewname: sView,
+          Elementname: sField,
+          Active: true
+        };
+
+        this._oAddRuleDialog.setBusy(true);
+
+        oModel.create(sCreatePath, oNewRule, {
+          success: function () {
+            this._oAddRuleDialog.setBusy(false);
+            this._oAddRuleDialog.close();
+            MessageToast.show("Rule added");
+
+            var oBinding = oRulesTable.getBinding("items");
+            if (oBinding && oBinding.refresh) {
+              oBinding.refresh(true);
+            }
+          }.bind(this),
+
+          error: function (oError) {
+            this._oAddRuleDialog.setBusy(false);
+
+            var sMsg = "Failed to add rule.";
+            try {
+              var oBody = JSON.parse(oError.responseText || "{}");
+              sMsg = (oBody.error && oBody.error.message && oBody.error.message.value) || sMsg;
+            } catch (e) {}
+
+            console.error("Add rule failed:", oError);
+            MessageBox.error(sMsg);
+          }.bind(this)
+        });
       },
 
       onPressSaveConfiguration: function () {
@@ -351,6 +459,68 @@ sap.ui.define(
           },
         });
       },
+
+      _createAddRuleDialog: function () {
+        this._oAddRuleDialog = new sap.m.Dialog({
+          title: "Add Rule",
+          type: sap.m.DialogType.Standard,
+          contentWidth: "28rem",
+          content: [
+            new sap.m.VBox({
+              width: "100%",
+              items: [
+                new sap.m.Label({ text: "View", required: true, labelFor: this.createId("inpRuleView") }),
+                new sap.m.Input(this.createId("inpRuleView"), {
+                  placeholder: "e.g. Z_I_BP",
+                  liveChange: this._onAddRuleLiveChange.bind(this)
+                }),
+                new sap.m.Label({ text: "Field", required: true, labelFor: this.createId("inpRuleField") }),
+                new sap.m.Input(this.createId("inpRuleField"), {
+                  placeholder: "e.g. BusinessPartner",
+                  liveChange: this._onAddRuleLiveChange.bind(this)
+                })
+              ]
+            }).addStyleClass("sapUiSmallMargin")
+          ],
+          beginButton: new sap.m.Button({
+            text: "Add",
+            type: sap.m.ButtonType.Emphasized,
+            enabled: false,
+            press: this._onConfirmAddRule.bind(this)
+          }),
+          endButton: new sap.m.Button({
+            text: "Cancel",
+            press: function () { this._oAddRuleDialog.close(); }.bind(this)
+          }),
+          afterClose: function () {
+            this.byId("inpRuleView").setValue("");
+            this.byId("inpRuleField").setValue("");
+            this._setAddRuleDialogValid(false);
+          }.bind(this)
+        });
+
+        this.getView().addDependent(this._oAddRuleDialog);
+      },
+
+      _onAddRuleLiveChange: function () {
+        var sView = (this.byId("inpRuleView").getValue() || "").trim();
+        var sField = (this.byId("inpRuleField").getValue() || "").trim();
+
+        // simple required validation
+        this._setAddRuleDialogValid(!!sView && !!sField);
+
+        // optional: show value state
+        this.byId("inpRuleView").setValueState(sView ? sap.ui.core.ValueState.None : sap.ui.core.ValueState.Error);
+        this.byId("inpRuleField").setValueState(sField ? sap.ui.core.ValueState.None : sap.ui.core.ValueState.Error);
+      },
+
+      _setAddRuleDialogValid: function (bValid) {
+        var oBeginBtn = this._oAddRuleDialog.getBeginButton();
+        if (oBeginBtn) {
+          oBeginBtn.setEnabled(!!bValid);
+        }
+      },     
+      
     });
   }
 );
