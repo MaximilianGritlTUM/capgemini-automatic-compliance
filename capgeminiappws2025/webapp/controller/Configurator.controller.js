@@ -179,7 +179,6 @@ sap.ui.define(
                 if (typeof oModel.submitChanges === "function") {
                 oModel.submitChanges({
                     success: function () {
-                    // refresh authoritative entity state
                     oModel.read(sPath, {
                         success: function (oEntity) {
                         oModel.setProperty(sPath, oEntity);
@@ -406,58 +405,35 @@ sap.ui.define(
             }
             },
 
-            onDeleteRegulation: function () {
-                var oList = this.byId("regulationList");
-                var aItems = oList.getSelectedItems();
-
-                if (!aItems.length) {
-                    sap.m.MessageToast.show("Select at least one regulation to delete.");
-                    return;
+            onDeleteRegulation: function (oEvent) {
+                var oSource = oEvent.getSource();
+                var oCtx = oSource.getBindingContext();
+                if (!oCtx) {
+                return;
                 }
 
-                sap.m.MessageBox.confirm(
-                    "Are you sure you want to delete this regulation?",
-                    {
-                        actions: [sap.m.MessageBox.Action.OK, sap.m.MessageBox.Action.CANCEL],
-                        onClose: function (sAction) {
-                            if (sAction !== sap.m.MessageBox.Action.OK) {
-                                return;
-                            }
+                var oObject = oCtx.getObject();
+                var sTitle = oObject && oObject.Title ? oObject.Title : "";
+                
+                var sPath = oCtx.getPath();
+                var oModel = oCtx.getModel();
 
-                            var oModel = this.getView().getModel();
-                            this.getView().setBusy(true);
-
-                            aItems.forEach(function (oItem) {
-                                var oCtx = oItem.getBindingContext();
-                                if (oCtx) {
-                                    oModel.remove(oCtx.getPath()); // queues DELETE in $batch
-                                }
-                            });
-
-                            oModel.submitChanges({
-                                success: function () {
-                                    this.getView().setBusy(false);
-                                    sap.m.MessageToast.show("Deleted.");
-
-                                    // refresh list + clear selection
-                                    oModel.refresh(true);
-                                    oList.removeSelections(true);
-
-                                    // hide/clear right-side detail area (optional but recommended)
-                                    var oPanel = this.byId("detailPanel");
-                                    if (oPanel) {
-                                        oPanel.setVisible(false);
-                                        oPanel.unbindElement(undefined);
-                                    }
-                                }.bind(this),
-                                error: function () {
-                                    this.getView().setBusy(false);
-                                    sap.m.MessageBox.error("Delete failed.");
-                                }.bind(this)
-                            });
-                        }.bind(this)
+                MessageBox.confirm("Are you sure about deleting regulation \"" + sTitle + "\"?", {
+                title: "Confirm Delete",
+                onClose: function (sAction) {
+                    if (sAction === MessageBox.Action.OK) {
+                    oModel.remove(sPath, {
+                        success: function () {
+                        MessageToast.show("Regulation deleted");
+                        },
+                        error: function (oError) {
+                        MessageToast.show("Delete failed");
+                        console.error("Delete error:", oError);
+                        },
+                    });
                     }
-                );
+                },
+                });
             }
         });
     }
