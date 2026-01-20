@@ -207,6 +207,8 @@ sap.ui.define([
                         recommendation: aRecommendations.join("; "),
                         data_source: oRule.Viewname
                     });
+
+                    return; // Ensure Promise chain resolves properly
                 });
             } else {
                 // No field definition - use simple empty check (original behavior)
@@ -251,6 +253,21 @@ sap.ui.define([
                 sSummary += "; " + oValidationStats.warnings + " warnings";
             }
 
+            // Strip fields not supported by backend OData service
+            // (validation_status and validation_errors are used internally but not persisted)
+            var aCleanedResults = aResults.map(function(oResult) {
+                return {
+                    category: oResult.category,
+                    object_id: oResult.object_id,
+                    object_name: oResult.object_name,
+                    avail_cat: oResult.avail_cat,
+                    data_quality: oResult.data_quality,
+                    gap_desc: oResult.gap_desc,
+                    recommendation: oResult.recommendation,
+                    data_source: oResult.data_source
+                };
+            });
+
             // Prepare the payload for creating the parent report entity
             var oParentPayload = {
                 regulation: oSelectedRegulation.Id,
@@ -258,7 +275,7 @@ sap.ui.define([
                 degree_fulfill: this._calculateDegree(aResults),
                 data_avail_sum: sSummary,
                 status: "COMPLETED",
-                to_Results: aResults
+                to_Results: aCleanedResults
             };
 
             console.log("Creating parent report with payload:", oParentPayload);

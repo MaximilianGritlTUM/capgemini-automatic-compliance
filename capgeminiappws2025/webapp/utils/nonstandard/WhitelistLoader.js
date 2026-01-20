@@ -45,86 +45,24 @@ sap.ui.define([
 
     /**
      * Load unit codes from SAP table T006
+     * Note: T006Set is not available in Z_CONFIG_SRV_UI, using fallback data
      * @returns {Promise<Set<string>>}
      */
     WhitelistLoader.prototype.loadUnitsFromT006 = function () {
-        var self = this;
-
-        return new Promise(function (resolve, reject) {
-            if (!self._oDataModel) {
-                // Return fallback units if no OData connection
-                resolve(self._getFallbackUnits());
-                return;
-            }
-
-            self._oDataModel.read("/T006Set", {
-                urlParameters: {
-                    "$select": "Msehi" // Unit code field
-                },
-                success: function (oData) {
-                    var units = new Set();
-                    if (oData && oData.results) {
-                        oData.results.forEach(function (row) {
-                            if (row.Msehi) {
-                                units.add(row.Msehi.toUpperCase().trim());
-                            }
-                        });
-                    }
-                    // Add fallback if no data returned
-                    if (units.size === 0) {
-                        resolve(self._getFallbackUnits());
-                    } else {
-                        resolve(units);
-                    }
-                },
-                error: function (oError) {
-                    console.warn("Failed to load T006 units, using fallback:", oError);
-                    resolve(self._getFallbackUnits());
-                }
-            });
-        });
+        // T006Set not available in the current OData service (Z_CONFIG_SRV_UI)
+        // Use fallback units directly to avoid unnecessary OData errors
+        return Promise.resolve(this._getFallbackUnits());
     };
 
     /**
      * Load currency codes from SAP table TCURC
+     * Note: TCURCSet is not available in Z_CONFIG_SRV_UI, using fallback data
      * @returns {Promise<Set<string>>}
      */
     WhitelistLoader.prototype.loadCurrenciesFromTCURC = function () {
-        var self = this;
-
-        return new Promise(function (resolve, reject) {
-            if (!self._oDataModel) {
-                // Return fallback currencies if no OData connection
-                resolve(self._getFallbackCurrencies());
-                return;
-            }
-
-            self._oDataModel.read("/TCURCSet", {
-                urlParameters: {
-                    "$select": "Waers" // Currency code field
-                },
-                success: function (oData) {
-                    var currencies = new Set();
-                    if (oData && oData.results) {
-                        oData.results.forEach(function (row) {
-                            if (row.Waers) {
-                                currencies.add(row.Waers.toUpperCase().trim());
-                            }
-                        });
-                    }
-                    // Add fallback if no data returned
-                    if (currencies.size === 0) {
-                        resolve(self._getFallbackCurrencies());
-                    } else {
-                        resolve(currencies);
-                    }
-                },
-                error: function (oError) {
-                    console.warn("Failed to load TCURC currencies, using fallback:", oError);
-                    resolve(self._getFallbackCurrencies());
-                }
-            });
-        });
+        // TCURCSet not available in the current OData service (Z_CONFIG_SRV_UI)
+        // Use fallback currencies directly to avoid unnecessary OData errors
+        return Promise.resolve(this._getFallbackCurrencies());
     };
 
     /**
