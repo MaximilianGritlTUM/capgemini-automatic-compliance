@@ -270,13 +270,19 @@ sap.ui.define([
         this.registerFieldDef(new FieldDef({
             key: "MaterialType",
             fieldTypeCategory: FieldTypeCategory.DOMAIN,
-            description: "Material type"
+            whitelistSource: WhitelistSource.T134,
+            description: "Material type (T134)"
         }));
 
         this.registerFieldDef(new FieldDef({
             key: "ProductHierarchy",
-            fieldTypeCategory: FieldTypeCategory.DOMAIN,
-            description: "Product hierarchy"
+            fieldTypeCategory: FieldTypeCategory.CHAR,
+            charOptions: {
+                maxLength: 18,
+                alphanumeric: true,
+                fieldName: "Product hierarchy (T179)"
+            },
+            description: "Product hierarchy (T179)"
         }));
 
         this.registerFieldDef(new FieldDef({
@@ -288,8 +294,12 @@ sap.ui.define([
 
         this.registerFieldDef(new FieldDef({
             key: "Division",
-            fieldTypeCategory: FieldTypeCategory.DOMAIN,
-            description: "Division"
+            fieldTypeCategory: FieldTypeCategory.CHAR,
+            charOptions: {
+                exactLength: 2,
+                fieldName: "Division (TSPA)"
+            },
+            description: "Division (TSPA)"
         }));
 
         // Boolean/indicator fields (CDS names)
@@ -301,8 +311,12 @@ sap.ui.define([
 
         this.registerFieldDef(new FieldDef({
             key: "Materialstatus",
-            fieldTypeCategory: FieldTypeCategory.DOMAIN,
-            description: "Material status"
+            fieldTypeCategory: FieldTypeCategory.CHAR,
+            charOptions: {
+                exactLength: 2,
+                fieldName: "Material status"
+            },
+            description: "Material status (CHAR 2)"
         }));
     };
 
@@ -435,6 +449,10 @@ sap.ui.define([
 
                 case FieldTypes.FieldTypeCategory.CODE_ARRAY:
                     result = Validators.validateCodeArray(fieldDef.key, rawValue, whitelist);
+                    break;
+
+                case FieldTypes.FieldTypeCategory.CHAR:
+                    result = Validators.validateCharField(fieldDef.key, rawValue, fieldDef.charOptions);
                     break;
 
                 default:

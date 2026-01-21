@@ -30,7 +30,9 @@ sap.ui.define([], function () {
         /** Boolean indicator fields (X/blank) */
         BOOLEAN: "BOOLEAN",
         /** Array of string codes (e.g., timber codes) */
-        CODE_ARRAY: "CODE_ARRAY"
+        CODE_ARRAY: "CODE_ARRAY",
+        /** Character fields with format/length validation (customer-specific) */
+        CHAR: "CHAR"
     });
 
     /**
@@ -57,6 +59,8 @@ sap.ui.define([], function () {
         T006: "T006",
         /** SAP table TCURC (currency codes) */
         TCURC: "TCURC",
+        /** SAP table T134 (material types) */
+        T134: "T134",
         /** EN 13556 timber species codes */
         EN13556: "EN13556",
         /** Hardcoded/static enum values */
@@ -194,6 +198,46 @@ sap.ui.define([], function () {
     ]);
 
     /**
+     * SAP Material Types (T134 - Materialart)
+     * Standard SAP material type codes
+     * @type {Set<string>}
+     */
+    var MATERIAL_TYPE_CODES = new Set([
+        "ROH",   // Raw materials
+        "HALB",  // Semifinished products
+        "FERT",  // Finished products
+        "HAWA",  // Trading goods
+        "DIEN",  // Services
+        "ERSA",  // Spare parts
+        "HIBE",  // Operating supplies/consumables
+        "NLAG",  // Non-stock materials
+        "UNBW",  // Non-valuated materials
+        "VERP",  // Packaging materials
+        "LEIH",  // Returnable packaging
+        "FHMI",  // Production resources/tools
+        "CONT",  // Kanban container
+        "PIPE",  // Pipeline material
+        "PROD",  // Product groups
+        "HERS",  // Manufacturer parts
+        "KMAT",  // Configurable material
+        "VKHM",  // Additionals
+        "WERB",  // Advertising materials
+        "MODE",  // Apparel
+        "FGTR",  // Beverages (finished goods)
+        "WETT",  // Competitive products
+        "LEER",  // Empties
+        "LGUT",  // Empties (alternative)
+        "FOOD",  // Foods
+        "VOLL",  // Full products
+        "INTR",  // Intra materials
+        "IBAU",  // Maintenance assemblies
+        "NOF1",  // Non-foods
+        "FRIP",  // Perishables
+        "PROC",  // Process materials
+        "WERT"   // Value-only materials
+    ]);
+
+    /**
      * Date format patterns for parsing
      * @type {Array<{pattern: RegExp, groups: Array<string>}>}
      */
@@ -237,6 +281,7 @@ sap.ui.define([], function () {
         SAPBoolean: SAPBoolean,
         FIELD_DEPENDENCIES: FIELD_DEPENDENCIES,
         EN13556_SAMPLE_CODES: EN13556_SAMPLE_CODES,
+        MATERIAL_TYPE_CODES: MATERIAL_TYPE_CODES,
         DATE_PATTERNS: DATE_PATTERNS
     };
 });

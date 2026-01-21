@@ -320,6 +320,63 @@ sap.ui.define([
     }
 
     /**
+     * Validate a character field with format/length constraints
+     * Used for customer-specific fields like ProductHierarchy, Division, Materialstatus
+     *
+     * @param {string} fieldKey - Field key/name
+     * @param {*} rawValue - Raw input value
+     * @param {Object} [options] - Validation options
+     * @param {number} [options.maxLength] - Maximum allowed length
+     * @param {number} [options.exactLength] - Exact required length
+     * @param {boolean} [options.alphanumeric] - If true, only allow alphanumeric characters
+     * @param {string} [options.fieldName] - Human-readable field name for error messages
+     * @returns {FieldResult}
+     */
+    function validateCharField(fieldKey, rawValue, options) {
+        options = options || {};
+
+        // Handle empty values
+        if (rawValue === null || rawValue === undefined || rawValue === "") {
+            return FieldResult.skipped(fieldKey, rawValue);
+        }
+
+        var normalized = String(rawValue).trim().toUpperCase();
+        var fieldName = options.fieldName || fieldKey;
+
+        // Check exact length
+        if (options.exactLength && normalized.length !== options.exactLength) {
+            return FieldResult.failure(
+                fieldKey,
+                rawValue,
+                "Invalid " + fieldName + ": '" + rawValue + "' (length must be exactly " + options.exactLength + " characters)",
+                "Enter exactly " + options.exactLength + " characters"
+            );
+        }
+
+        // Check maximum length
+        if (options.maxLength && normalized.length > options.maxLength) {
+            return FieldResult.failure(
+                fieldKey,
+                rawValue,
+                "Invalid " + fieldName + ": '" + rawValue + "' exceeds maximum length of " + options.maxLength,
+                "Maximum " + options.maxLength + " characters allowed"
+            );
+        }
+
+        // Check alphanumeric
+        if (options.alphanumeric && !/^[A-Z0-9]+$/.test(normalized)) {
+            return FieldResult.failure(
+                fieldKey,
+                rawValue,
+                "Invalid " + fieldName + ": '" + rawValue + "' contains non-alphanumeric characters",
+                "Only letters (A-Z) and numbers (0-9) are allowed"
+            );
+        }
+
+        return FieldResult.success(fieldKey, rawValue, normalized);
+    }
+
+    /**
      * Check dependency between fields (e.g., QUAN requires Unit)
      *
      * @param {string} mainFieldKey - Main field key (e.g., "MENGE")
@@ -410,6 +467,8 @@ sap.ui.define([
                 return validateBoolean;
             case FieldTypes.FieldTypeCategory.CODE_ARRAY:
                 return validateCodeArray;
+            case FieldTypes.FieldTypeCategory.CHAR:
+                return validateCharField;
             default:
                 return null;
         }
@@ -427,6 +486,7 @@ sap.ui.define([
         validateAmount: validateAmount,
         validateCodeArray: validateCodeArray,
         validateDomainCode: validateDomainCode,
+        validateCharField: validateCharField,
         checkDependency: checkDependency,
         getValidator: getValidator
     };

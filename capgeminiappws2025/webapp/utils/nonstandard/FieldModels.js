@@ -26,6 +26,11 @@ sap.ui.define([
      * @param {boolean} [config.mandatory=false] - Whether field is mandatory
      * @param {string} [config.description] - Human-readable description
      * @param {Object} [config.customValidation] - Custom validation function or config
+     * @param {Object} [config.charOptions] - Options for CHAR field type validation
+     * @param {number} [config.charOptions.maxLength] - Maximum allowed length
+     * @param {number} [config.charOptions.exactLength] - Exact required length
+     * @param {boolean} [config.charOptions.alphanumeric] - If true, only allow alphanumeric characters
+     * @param {string} [config.charOptions.fieldName] - Human-readable field name for error messages
      */
     function FieldDef(config) {
         if (!config || !config.key) {
@@ -45,6 +50,7 @@ sap.ui.define([
         this.mandatory = config.mandatory || false;
         this.description = config.description || "";
         this.customValidation = config.customValidation || null;
+        this.charOptions = config.charOptions || null;
     }
 
     /**
@@ -79,7 +85,8 @@ sap.ui.define([
             whitelistSource: this.whitelistSource,
             mandatory: this.mandatory,
             description: this.description,
-            customValidation: this.customValidation
+            customValidation: this.customValidation,
+            charOptions: this.charOptions
         };
         if (overrides) {
             Object.keys(overrides).forEach(function (key) {
@@ -103,7 +110,8 @@ sap.ui.define([
             dependencies: this.dependencies,
             whitelistSource: this.whitelistSource,
             mandatory: this.mandatory,
-            description: this.description
+            description: this.description,
+            charOptions: this.charOptions
         };
     };
 

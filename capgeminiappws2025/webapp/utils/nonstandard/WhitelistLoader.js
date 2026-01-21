@@ -41,6 +41,40 @@ sap.ui.define([
         this._cache.registerLoader(FieldTypes.WhitelistSource.TCURC, function () {
             return self.loadCurrenciesFromTCURC();
         });
+
+        // T134 Material Types loader
+        this._cache.registerLoader(FieldTypes.WhitelistSource.T134, function () {
+            return self.loadMaterialTypes();
+        });
+    };
+
+    /**
+     * Load material type codes from SAP table T134
+     * Uses static list of standard SAP material types
+     * @returns {Promise<Set<string>>}
+     */
+    WhitelistLoader.prototype.loadMaterialTypes = function () {
+        return Promise.resolve(FieldTypes.MATERIAL_TYPE_CODES);
+    };
+
+    /**
+     * Get material types from cache, loading if necessary
+     * @returns {Promise<Set<string>>}
+     */
+    WhitelistLoader.prototype.getMaterialTypes = function () {
+        return this._cache.getOrLoad(FieldTypes.WhitelistSource.T134);
+    };
+
+    /**
+     * Check if a material type code is valid
+     * @param {string} materialType - Material type code to check
+     * @returns {Promise<boolean>}
+     */
+    WhitelistLoader.prototype.isValidMaterialType = function (materialType) {
+        var normalized = String(materialType || "").toUpperCase().trim();
+        return this.getMaterialTypes().then(function (types) {
+            return types.has(normalized);
+        });
     };
 
     /**
@@ -261,12 +295,14 @@ sap.ui.define([
         return Promise.all([
             this.getUnits(),
             this.getCurrencies(),
-            this.getTimberCodes()
+            this.getTimberCodes(),
+            this.getMaterialTypes()
         ]).then(function (results) {
             return {
                 units: results[0],
                 currencies: results[1],
-                timberCodes: results[2]
+                timberCodes: results[2],
+                materialTypes: results[3]
             };
         });
     };
@@ -279,6 +315,7 @@ sap.ui.define([
         this._cache.remove(FieldTypes.WhitelistSource.T006);
         this._cache.remove(FieldTypes.WhitelistSource.TCURC);
         this._cache.remove(FieldTypes.WhitelistSource.EN13556);
+        this._cache.remove(FieldTypes.WhitelistSource.T134);
         return this.preloadAll();
     };
 
