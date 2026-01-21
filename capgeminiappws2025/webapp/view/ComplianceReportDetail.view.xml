@@ -157,14 +157,14 @@
                                         width="100px">
                                         <Label text="BOM Usage" />
                                         <table:template>
-                                            <Text text="{bom>BomUsage}" />
+                                            <Text text="{bom>bom_usage}" />
                                         </table:template>
                                     </table:Column>
                                     <table:Column
                                         width="80px">
                                         <Label text="Alt BOM" />
                                         <table:template>
-                                            <Text text="{bom>AltBom}" />
+                                            <Text text="{bom>alt_bom}" />
                                         </table:template>
                                     </table:Column>
                                     <table:Column
