@@ -244,13 +244,10 @@ sap.ui.define([
             // Calculate validation statistics
             var oValidationStats = this._calculateValidationStats(aResults);
 
-            // Build summary string
-            var sSummary = aResults.length + " checks executed";
-            if (oValidationStats.invalid > 0) {
-                sSummary += "; " + oValidationStats.invalid + " validation errors";
-            }
-            if (oValidationStats.warnings > 0) {
-                sSummary += "; " + oValidationStats.warnings + " warnings";
+            // Build summary string (keep short due to backend field length limit)
+            var sSummary = aResults.length + " checks";
+            if (oValidationStats.invalid > 0 || oValidationStats.warnings > 0) {
+                sSummary += " (" + oValidationStats.invalid + "err/" + oValidationStats.warnings + "warn)";
             }
 
             // Strip fields not supported by backend OData service
