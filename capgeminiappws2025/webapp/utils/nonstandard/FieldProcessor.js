@@ -188,6 +188,122 @@ sap.ui.define([
             whitelistSource: WhitelistSource.EN13556,
             description: "EN 13556 timber species codes"
         }));
+
+        // =====================================================================
+        // CDS View Field Names
+        // These map to the actual field names used in the CDS views
+        // =====================================================================
+
+        // Unit fields (CDS names)
+        this.registerFieldDef(new FieldDef({
+            key: "OrderUnit",
+            fieldTypeCategory: FieldTypeCategory.UNIT,
+            whitelistSource: WhitelistSource.T006,
+            description: "Order unit of measure"
+        }));
+
+        this.registerFieldDef(new FieldDef({
+            key: "WeightUnit",
+            fieldTypeCategory: FieldTypeCategory.UNIT,
+            whitelistSource: WhitelistSource.T006,
+            description: "Weight unit"
+        }));
+
+        this.registerFieldDef(new FieldDef({
+            key: "VolumeUnit",
+            fieldTypeCategory: FieldTypeCategory.UNIT,
+            whitelistSource: WhitelistSource.T006,
+            description: "Volume unit"
+        }));
+
+        // Date fields (CDS names)
+        this.registerFieldDef(new FieldDef({
+            key: "DeliveryDate",
+            fieldTypeCategory: FieldTypeCategory.DATS,
+            description: "Delivery date"
+        }));
+
+        this.registerFieldDef(new FieldDef({
+            key: "PurchaseOrderDate",
+            fieldTypeCategory: FieldTypeCategory.DATS,
+            description: "Purchase order date"
+        }));
+
+        // Quantity fields with dependencies (CDS names)
+        this.registerFieldDef(new FieldDef({
+            key: "NetWeight",
+            fieldTypeCategory: FieldTypeCategory.QUAN,
+            dependencies: ["WeightUnit"],
+            description: "Net weight"
+        }));
+
+        this.registerFieldDef(new FieldDef({
+            key: "OrderQuantity",
+            fieldTypeCategory: FieldTypeCategory.QUAN,
+            dependencies: ["OrderUnit"],
+            description: "Order quantity"
+        }));
+
+        this.registerFieldDef(new FieldDef({
+            key: "Volume",
+            fieldTypeCategory: FieldTypeCategory.QUAN,
+            dependencies: ["VolumeUnit"],
+            description: "Volume"
+        }));
+
+        // Amount fields (CDS names)
+        this.registerFieldDef(new FieldDef({
+            key: "NetOrderValue",
+            fieldTypeCategory: FieldTypeCategory.CURR,
+            description: "Net order value"
+        }));
+
+        // Scientific products - EN 13556 timber codes (CDS name)
+        this.registerFieldDef(new FieldDef({
+            key: "ScientificProducts",
+            fieldTypeCategory: FieldTypeCategory.CODE_ARRAY,
+            whitelistSource: WhitelistSource.EN13556,
+            description: "Scientific product codes (EN 13556)"
+        }));
+
+        // Material master fields (CDS names)
+        this.registerFieldDef(new FieldDef({
+            key: "MaterialType",
+            fieldTypeCategory: FieldTypeCategory.DOMAIN,
+            description: "Material type"
+        }));
+
+        this.registerFieldDef(new FieldDef({
+            key: "ProductHierarchy",
+            fieldTypeCategory: FieldTypeCategory.DOMAIN,
+            description: "Product hierarchy"
+        }));
+
+        this.registerFieldDef(new FieldDef({
+            key: "BaseUnitOfMeasure",
+            fieldTypeCategory: FieldTypeCategory.UNIT,
+            whitelistSource: WhitelistSource.T006,
+            description: "Base unit of measure"
+        }));
+
+        this.registerFieldDef(new FieldDef({
+            key: "Division",
+            fieldTypeCategory: FieldTypeCategory.DOMAIN,
+            description: "Division"
+        }));
+
+        // Boolean/indicator fields (CDS names)
+        this.registerFieldDef(new FieldDef({
+            key: "HazardousMaterialWarning",
+            fieldTypeCategory: FieldTypeCategory.BOOLEAN,
+            description: "Hazardous material warning"
+        }));
+
+        this.registerFieldDef(new FieldDef({
+            key: "Materialstatus",
+            fieldTypeCategory: FieldTypeCategory.DOMAIN,
+            description: "Material status"
+        }));
     };
 
     /**
