@@ -6,6 +6,9 @@ sap.ui.define(
     "sap/m/MessageToast",
     "sap/m/MessageBox",
     "capgeminiappws2025/utils/CheckAlgorithm",
+    "sap/m/BusyDialog",
+    "sap/m/Text",
+    "sap/m/VBox"
   ],
   function (
     Controller,
@@ -13,7 +16,10 @@ sap.ui.define(
     View,
     MessageToast,
     MessageBox,
-    CheckAlgorithm
+    CheckAlgorithm,
+    BusyDialog,
+    Text,
+    VBox
   ) {
     "use strict";
 
@@ -36,6 +42,18 @@ sap.ui.define(
           this._oAddRuleDialog.destroy();
           this._oAddRuleDialog = null;
         }
+        this._busyDialog?.destroy();
+        this._busyDialog = null;
+      },
+      
+        this._busyDialog = new BusyDialog({
+          title: "Starting Readiness Check",
+          content: new VBox({
+            items: [
+              new Text({ text: "Starting Readiness Check..." })
+            ]
+          })
+        });        
       },
 
       onDeleteRegulation: function (oEvent) {
@@ -349,32 +367,44 @@ sap.ui.define(
         /* save config logic */
       },
 
-      onPressStartReadinessCheck: function (oEvent) {
-        var oRulesTable = this.byId("rulesTable");
-        var aContexts = oRulesTable.getBinding("items").getContexts();
-        var aData = aContexts.map(function (oContext) {
-          return oContext.getObject();
-        });
+      onPressStartReadinessCheck: async function () {
+        this._busyDialog.open();
 
-        var oModel = this.getView().getModel();
-        var oRouter = this.getOwnerComponent().getRouter();
+        await new Promise((r) => setTimeout(r, 0));
 
-        var oRegulationList = this.byId("regulationList");
-        var oSelectedRegulation = oRegulationList
-          .getSelectedItem()
-          .getBindingContext()
-          .getObject();
-
-        var oChecker = new CheckAlgorithm();
-        oChecker
-          .do_checking_algorithm(aData, oModel, oSelectedRegulation)
-          .then(function () {
-            oRouter.navTo("ComplianceReport");
-          })
-          .catch(function (oError) {
-            console.error("Readiness check failed:", oError);
+        try {
+          var oRulesTable = this.byId("rulesTable");
+          var oBinding = oRulesTable.getBinding("items");
+          var aContexts = oBinding ? oBinding.getContexts() : [];
+          var aData = aContexts.map(function (oContext) {
+            return oContext.getObject();
           });
+
+          var oModel = this.getView().getModel();
+          var oRouter = this.getOwnerComponent().getRouter();
+
+          var oRegulationList = this.byId("regulationList");
+          var oSelectedItem = oRegulationList.getSelectedItem();
+          if (!oSelectedItem) {
+            throw new Error("No regulation selected.");
+          }
+          var oSelectedRegulation = oSelectedItem.getBindingContext().getObject();
+
+          var oChecker = new CheckAlgorithm();
+
+          await oChecker.do_checking_algorithm(aData, oModel, oSelectedRegulation);
+
+          oRouter.navTo("ComplianceReport");
+        } catch (oError) {
+          console.error("Readiness check failed:", oError);
+          sap.m.MessageBox.error(
+            (oError && oError.message) ? oError.message : "Readiness check failed."
+          );
+        } finally {
+          this._busyDialog.close();
+        }
       },
+
 
       onSubmitRuleField: function (oEvent) {
         var oSource = oEvent.getSource();
