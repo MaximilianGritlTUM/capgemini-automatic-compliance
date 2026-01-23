@@ -6,8 +6,10 @@ sap.ui.define(
         "sap/m/MessageToast",
         "sap/m/MessageBox",
         "capgeminiappws2025/utils/CheckAlgorithm",
+        "sap/m/BusyDialog",
+        "sap/m/Text",
+        "sap/m/VBox",
         "sap/m/ColumnListItem",
-        "sap/m/Text"
     ],
     function (
         Controller,
@@ -15,7 +17,11 @@ sap.ui.define(
         View,
         MessageToast,
         MessageBox,
-        CheckAlgorithm, ColumnListItem, Text
+        CheckAlgorithm,
+        BusyDialog,
+        Text,
+        VBox,
+        ColumnListItem
     ) {
         "use strict";
 
@@ -28,6 +34,16 @@ sap.ui.define(
                     }),
                     "ui"
                 );
+
+                this._busyDialog = new BusyDialog({
+                    title: "Starting Readiness Check",
+                    content: new VBox({
+                        items: [
+                            new Text({ text: "Starting Readiness Check..." })
+                        ]
+                    })
+                });
+
                 this.getOwnerComponent().getRouter()
                     .getRoute("configurator")
                     .attachPatternMatched(this._onRouteMatched, this);
@@ -54,109 +70,137 @@ sap.ui.define(
                 });
             },
 
+            onDeleteRegulation: function (oEvent) {
+                var oSource = oEvent.getSource();
+                var oCtx = oSource.getBindingContext();
+                if (!oCtx) {
+                    return;
+                }
+
+                var sPath = oCtx.getPath();
+                var oModel = oCtx.getModel();
+
+                MessageBox.confirm("Delete this regulation?", {
+                    title: "Confirm Delete",
+                    onClose: function (sAction) {
+                        if (sAction === MessageBox.Action.OK) {
+                            oModel.remove(sPath, {
+                                success: function () {
+                                    MessageToast.show("Regulation deleted");
+                                },
+                                error: function (oError) {
+                                    MessageToast.show("Delete failed");
+                                    console.error("Delete error:", oError);
+                                },
+                            });
+                        }
+                    },
+                });
+            },
+
             onEditRegulation: function (oEvent) {
                 var oCtx = oEvent.getSource().getBindingContext();
                 if (!oCtx) {
-                return;
+                    return;
                 }
                 var sRegulationId = String(oCtx.getProperty("Id"));
 
                 this.getView()
-                .getModel("ui")
-                .setProperty("/editRegulationId", sRegulationId);
+                    .getModel("ui")
+                    .setProperty("/editRegulationId", sRegulationId);
 
                 var oList = this.byId("regulationList");
                 setTimeout(
-                function () {
-                    var sPath = oCtx.getPath();
-                    var oItem = (oList.getItems() || []).find(function (it) {
-                    return (
-                        it.getBindingContext() &&
-                        it.getBindingContext().getPath() === sPath
-                    );
-                    });
-                    if (!oItem) {
-                    return;
-                    }
-
-                    var aContent =
-                    (oItem.getContent && oItem.getContent()) ||
-                    (oItem.getCells && oItem.getCells()) ||
-                    [];
-                    var oInput = aContent.find(function (c) {
-                    return c && c.isA && c.isA("sap.m.Input");
-                    });
-                    if (!oInput) {
-                    return;
-                    }
-
-                    try {
-                    oInput.focus();
-                    } catch (e) {}
-
-                    if (!oInput._bEditHandlersAttached) {
-                    oInput.addEventDelegate({
-                        onAfterRendering: function () {
-                        var oFocusDom =
-                            oInput.getFocusDomRef && oInput.getFocusDomRef();
-                        if (!oFocusDom) {
+                    function () {
+                        var sPath = oCtx.getPath();
+                        var oItem = (oList.getItems() || []).find(function (it) {
+                            return (
+                                it.getBindingContext() &&
+                                it.getBindingContext().getPath() === sPath
+                            );
+                        });
+                        if (!oItem) {
                             return;
                         }
 
-                        var fnCancel = function () {
-                            this.getView()
-                            .getModel("ui")
-                            .setProperty("/editRegulationId", null);
-                        }.bind(this);
+                        var aContent =
+                            (oItem.getContent && oItem.getContent()) ||
+                            (oItem.getCells && oItem.getCells()) ||
+                            [];
+                        var oInput = aContent.find(function (c) {
+                            return c && c.isA && c.isA("sap.m.Input");
+                        });
+                        if (!oInput) {
+                            return;
+                        }
 
-                        var fnKey = function (ev) {
-                            if (ev.key === "Enter" || ev.keyCode === 13) {
-                            try {
-                                oInput.fireSubmit();
-                            } catch (e) {}
-                            setTimeout(
-                                function () {
-                                this.getView()
-                                    .getModel("ui")
-                                    .setProperty("/editRegulationId", null);
-                                }.bind(this),
-                                0
-                            );
-                            }
-                        }.bind(this);
-
-                        oFocusDom.addEventListener("blur", fnCancel);
-                        oFocusDom.addEventListener("keydown", fnKey);
-                        oInput._domHandlers = {
-                            dom: oFocusDom,
-                            blur: fnCancel,
-                            keydown: fnKey,
-                        };
                         try {
                             oInput.focus();
-                        } catch (e) {}
-                        }.bind(this),
+                        } catch (e) { }
 
-                        onBeforeRendering: function () {
-                        if (oInput._domHandlers && oInput._domHandlers.dom) {
-                            try {
-                            oInput._domHandlers.dom.removeEventListener(
-                                "blur",
-                                oInput._domHandlers.blur
-                            );
-                            oInput._domHandlers.dom.removeEventListener(
-                                "keydown",
-                                oInput._domHandlers.keydown
-                            );
-                            } catch (e) {}
-                            oInput._domHandlers = null;
+                        if (!oInput._bEditHandlersAttached) {
+                            oInput.addEventDelegate({
+                                onAfterRendering: function () {
+                                    var oFocusDom =
+                                        oInput.getFocusDomRef && oInput.getFocusDomRef();
+                                    if (!oFocusDom) {
+                                        return;
+                                    }
+
+                                    var fnCancel = function () {
+                                        this.getView()
+                                            .getModel("ui")
+                                            .setProperty("/editRegulationId", null);
+                                    }.bind(this);
+
+                                    var fnKey = function (ev) {
+                                        if (ev.key === "Enter" || ev.keyCode === 13) {
+                                            try {
+                                                oInput.fireSubmit();
+                                            } catch (e) { }
+                                            setTimeout(
+                                                function () {
+                                                    this.getView()
+                                                        .getModel("ui")
+                                                        .setProperty("/editRegulationId", null);
+                                                }.bind(this),
+                                                0
+                                            );
+                                        }
+                                    }.bind(this);
+
+                                    oFocusDom.addEventListener("blur", fnCancel);
+                                    oFocusDom.addEventListener("keydown", fnKey);
+                                    oInput._domHandlers = {
+                                        dom: oFocusDom,
+                                        blur: fnCancel,
+                                        keydown: fnKey,
+                                    };
+                                    try {
+                                        oInput.focus();
+                                    } catch (e) { }
+                                }.bind(this),
+
+                                onBeforeRendering: function () {
+                                    if (oInput._domHandlers && oInput._domHandlers.dom) {
+                                        try {
+                                            oInput._domHandlers.dom.removeEventListener(
+                                                "blur",
+                                                oInput._domHandlers.blur
+                                            );
+                                            oInput._domHandlers.dom.removeEventListener(
+                                                "keydown",
+                                                oInput._domHandlers.keydown
+                                            );
+                                        } catch (e) { }
+                                        oInput._domHandlers = null;
+                                    }
+                                },
+                            });
+                            oInput._bEditHandlersAttached = true;
                         }
-                        },
-                    });
-                    oInput._bEditHandlersAttached = true;
-                    }
-                }.bind(this),
-                0
+                    }.bind(this),
+                    0
                 );
             },
 
@@ -164,7 +208,7 @@ sap.ui.define(
                 var oInput = oEvent.getSource();
                 var oCtx = oInput.getBindingContext();
                 if (!oCtx) {
-                return;
+                    return;
                 }
 
                 var oModel = oCtx.getModel();
@@ -177,36 +221,36 @@ sap.ui.define(
                 oModel.setProperty(sPath + "/" + sProp, sValue);
 
                 if (typeof oModel.submitChanges === "function") {
-                oModel.submitChanges({
-                    success: function () {
-                    oModel.read(sPath, {
-                        success: function (oEntity) {
-                        oModel.setProperty(sPath, oEntity);
-                        MessageToast.show("Regulation updated");
+                    oModel.submitChanges({
+                        success: function () {
+                            oModel.read(sPath, {
+                                success: function (oEntity) {
+                                    oModel.setProperty(sPath, oEntity);
+                                    MessageToast.show("Regulation updated");
+                                },
+                                error: function () {
+                                    MessageToast.show("Regulation updated (refresh failed)");
+                                },
+                            });
                         },
-                        error: function () {
-                        MessageToast.show("Regulation updated (refresh failed)");
+                        error: function (oError) {
+                            console.error("submitChanges error:", oError);
+                            MessageToast.show("Update failed");
                         },
                     });
-                    },
-                    error: function (oError) {
-                    console.error("submitChanges error:", oError);
-                    MessageToast.show("Update failed");
-                    },
-                });
                 } else if (typeof oModel.update === "function") {
-                var payload = {};
-                payload[sProp] = sValue;
-                oModel.update(sPath, payload, {
-                    method: "MERGE",
-                    success: function () {
-                    MessageToast.show("Regulation updated");
-                    },
-                    error: function (oErr) {
-                    console.error("update error:", oErr);
-                    MessageToast.show("Update failed");
-                    },
-                });
+                    var payload = {};
+                    payload[sProp] = sValue;
+                    oModel.update(sPath, payload, {
+                        method: "MERGE",
+                        success: function () {
+                            MessageToast.show("Regulation updated");
+                        },
+                        error: function (oErr) {
+                            console.error("update error:", oErr);
+                            MessageToast.show("Update failed");
+                        },
+                    });
                 }
 
                 this.getView().getModel("ui").setProperty("/editRegulationId", null);
@@ -267,32 +311,44 @@ sap.ui.define(
                 /* save config logic */
             },
 
-            onPressStartReadinessCheck: function (oEvent) {
-                var oRulesTable = this.byId("rulesTable");
-                var aContexts = oRulesTable.getBinding("items").getContexts();
-                var aData = aContexts.map(function (oContext) {
-                    return oContext.getObject();
-                });
+            onPressStartReadinessCheck: async function () {
+                this._busyDialog.open();
 
-                var oModel = this.getView().getModel();
-                var oRouter = this.getOwnerComponent().getRouter();
+                await new Promise((r) => setTimeout(r, 0));
 
-                var oRegulationList = this.byId("regulationList");
-                var oSelectedRegulation = oRegulationList
-                    .getSelectedItem()
-                    .getBindingContext()
-                    .getObject();
-
-                var oChecker = new CheckAlgorithm();
-                oChecker
-                    .do_checking_algorithm(aData, oModel, oSelectedRegulation)
-                    .then(function () {
-                        oRouter.navTo("ComplianceReport");
-                    })
-                    .catch(function (oError) {
-                        console.error("Readiness check failed:", oError);
+                try {
+                    var oRulesTable = this.byId("rulesTable");
+                    var oBinding = oRulesTable.getBinding("items");
+                    var aContexts = oBinding ? oBinding.getContexts() : [];
+                    var aData = aContexts.map(function (oContext) {
+                        return oContext.getObject();
                     });
+
+                    var oModel = this.getView().getModel();
+                    var oRouter = this.getOwnerComponent().getRouter();
+
+                    var oRegulationList = this.byId("regulationList");
+                    var oSelectedItem = oRegulationList.getSelectedItem();
+                    if (!oSelectedItem) {
+                        throw new Error("No regulation selected.");
+                    }
+                    var oSelectedRegulation = oSelectedItem.getBindingContext().getObject();
+
+                    var oChecker = new CheckAlgorithm();
+
+                    await oChecker.do_checking_algorithm(aData, oModel, oSelectedRegulation);
+
+                    oRouter.navTo("ComplianceReport");
+                } catch (oError) {
+                    console.error("Readiness check failed:", oError);
+                    sap.m.MessageBox.error(
+                        (oError && oError.message) ? oError.message : "Readiness check failed."
+                    );
+                } finally {
+                    this._busyDialog.close();
+                }
             },
+
 
             onSubmitRuleField: function (oEvent) {
                 var oSource = oEvent.getSource();
@@ -379,60 +435,60 @@ sap.ui.define(
             },
 
             onRuleActiveChange: function (oEvent) {
-            var oSwitch = oEvent.getSource();
-            var oCtx = oSwitch.getBindingContext();
-            if (!oCtx) {
-                return;
-            }
+                var oSwitch = oEvent.getSource();
+                var oCtx = oSwitch.getBindingContext();
+                if (!oCtx) {
+                    return;
+                }
 
-            var bState = oEvent.getParameter("state");
-            var oModel = oCtx.getModel();
-            var sPath = oCtx.getPath();
+                var bState = oEvent.getParameter("state");
+                var oModel = oCtx.getModel();
+                var sPath = oCtx.getPath();
 
-            // Update local property (keeps UI consistent)
-            oModel.setProperty(sPath + "/Active", bState);
+                // Update local property (keeps UI consistent)
+                oModel.setProperty(sPath + "/Active", bState);
 
-            // Persist depending on model type
-            if (typeof oModel.submitChanges === "function") {
-                oModel.submitChanges({
-                error: function (e) { console.error("Active update failed:", e); }
-                });
-            } else if (typeof oModel.update === "function") {
-                oModel.update(sPath, { Active: bState }, {
-                method: "MERGE",
-                error: function (e) { console.error("Active update failed:", e); }
-                });
-            }
+                // Persist depending on model type
+                if (typeof oModel.submitChanges === "function") {
+                    oModel.submitChanges({
+                        error: function (e) { console.error("Active update failed:", e); }
+                    });
+                } else if (typeof oModel.update === "function") {
+                    oModel.update(sPath, { Active: bState }, {
+                        method: "MERGE",
+                        error: function (e) { console.error("Active update failed:", e); }
+                    });
+                }
             },
 
             onDeleteRegulation: function (oEvent) {
                 var oSource = oEvent.getSource();
                 var oCtx = oSource.getBindingContext();
                 if (!oCtx) {
-                return;
+                    return;
                 }
 
                 var oObject = oCtx.getObject();
                 var sTitle = oObject && oObject.Title ? oObject.Title : "";
-                
+
                 var sPath = oCtx.getPath();
                 var oModel = oCtx.getModel();
 
                 MessageBox.confirm("Are you sure about deleting regulation \"" + sTitle + "\"?", {
-                title: "Confirm Delete",
-                onClose: function (sAction) {
-                    if (sAction === MessageBox.Action.OK) {
-                    oModel.remove(sPath, {
-                        success: function () {
-                        MessageToast.show("Regulation deleted");
-                        },
-                        error: function (oError) {
-                        MessageToast.show("Delete failed");
-                        console.error("Delete error:", oError);
-                        },
-                    });
-                    }
-                },
+                    title: "Confirm Delete",
+                    onClose: function (sAction) {
+                        if (sAction === MessageBox.Action.OK) {
+                            oModel.remove(sPath, {
+                                success: function () {
+                                    MessageToast.show("Regulation deleted");
+                                },
+                                error: function (oError) {
+                                    MessageToast.show("Delete failed");
+                                    console.error("Delete error:", oError);
+                                },
+                            });
+                        }
+                    },
                 });
             }
         });
