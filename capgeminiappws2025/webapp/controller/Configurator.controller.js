@@ -300,9 +300,6 @@ sap.ui.define(
         var sView = (this.byId("inpRuleView").getValue() || "").trim();
         var sField = (this.byId("inpRuleField").getValue() || "").trim();
 
-        sView = sView.toUpperCase();
-        sField = sField.toUpperCase();
-
         if (!sView || !sField) {
           this._onAddRuleLiveChange();
           return;
