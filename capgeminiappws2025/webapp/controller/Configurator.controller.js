@@ -35,6 +35,15 @@ sap.ui.define(
         );
 
         this._createAddRuleDialog();
+
+        this._busyDialog = new BusyDialog({
+          title: "Starting Readiness Check",
+          content: new VBox({
+            items: [
+              new Text({ text: "Starting Readiness Check..." })
+            ]
+          })
+        }); 
       },
 
       onExit: function() {
@@ -44,18 +53,7 @@ sap.ui.define(
         }
         this._busyDialog?.destroy();
         this._busyDialog = null;
-      },
-      
-        this._busyDialog = new BusyDialog({
-          title: "Starting Readiness Check",
-          content: new VBox({
-            items: [
-              new Text({ text: "Starting Readiness Check..." })
-            ]
-          })
-        });        
-      },
-
+      },       
       onDeleteRegulation: function (oEvent) {
         var oSource = oEvent.getSource();
         var oCtx = oSource.getBindingContext();
