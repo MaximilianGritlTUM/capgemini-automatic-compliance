@@ -581,7 +581,7 @@ sap.ui.define(
                 this._oAddRuleDialog = new sap.m.Dialog({
                     title: "Add Rule",
                     type: sap.m.DialogType.Standard,
-                    contentWidth: "22rem",
+                    contentWidth: "18rem",
                     horizontalScrolling: false,
                     verticalScrolling: true,
                     content: [
@@ -593,7 +593,7 @@ sap.ui.define(
                                 new sap.m.Label({ text: "Field", required: true, labelFor: this._oSelRuleField }),
                                 this._oSelRuleField
                             ]
-                        }).addStyleClass("sapUiSmallMargin")
+                        }).addStyleClass("sapUiContentPadding")
                     ],
                     beginButton: new sap.m.Button({
                         text: "Add",
