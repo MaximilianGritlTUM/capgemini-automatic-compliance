@@ -1,26 +1,26 @@
 sap.ui.define([
-	"sap/ui/base/ManagedObject"
-], function(
-	ManagedObject
+    "sap/ui/base/ManagedObject"
+], function (
+    ManagedObject
 ) {
-	"use strict";
+    "use strict";
 
-	/**
-	 * Utility class for performing compliance checking algorithms.
-	 * Handles data validation against configured rules and generates compliance reports.
-	 */
-	return ManagedObject.extend("capgeminiappws2025.utils.CheckAlgorithm", {
+    /**
+     * Utility class for performing compliance checking algorithms.
+     * Handles data validation against configured rules and generates compliance reports.
+     */
+    return ManagedObject.extend("capgeminiappws2025.utils.CheckAlgorithm", {
 
-		/**
-		 * Performs the compliance checking algorithm by validating data against a set of rules.
-		 * For each rule, it checks if the specified element in the CDS view has data.
-		 * Collects results and creates a compliance report.
-		 *
-		 * @param {Array} aData - Array of rule objects containing Viewname, Elementname, Category, etc.
-		 * @param {sap.ui.model.odata.v2.ODataModel} oModel - The OData model for backend communication
-		 * @param {Object} oSelectedRegulation - The selected regulation object containing Id and other properties
-		 * @returns {Promise} Promise that resolves when all checks are complete and report is created
-		 */
+        /**
+         * Performs the compliance checking algorithm by validating data against a set of rules.
+         * For each rule, it checks if the specified element in the CDS view has data.
+         * Collects results and creates a compliance report.
+         *
+         * @param {Array} aData - Array of rule objects containing Viewname, Elementname, Category, etc.
+         * @param {sap.ui.model.odata.v2.ODataModel} oModel - The OData model for backend communication
+         * @param {Object} oSelectedRegulation - The selected regulation object containing Id and other properties
+         * @returns {Promise} Promise that resolves when all checks are complete and report is created
+         */
         do_checking_algorithm: function (aData, oModel, oSelectedRegulation) {
             // Array to store the results of each rule check
             var aReportResults = [];
@@ -68,7 +68,7 @@ sap.ui.define([
                         error: function (oError) {
                             // Extract HTTP status code from the error object
                             var iStatus = oError?.statusCode ||
-                                        oError?.response?.statusCode;
+                                oError?.response?.statusCode;
 
                             if (iStatus === '404') {
                                 // If the CDS view/entity doesn't exist (404), treat as missing data
@@ -100,54 +100,58 @@ sap.ui.define([
             // Additional check for BOM - Create ReportBOMResults from MaterialComposition data with multi-level hierarchy
             var oBomPromise = new Promise(function (resolve) {
                 // Get active rules for Z_I_Materials
-                var activeRules = aData.filter(function(rule) {
+                var activeRules = aData.filter(function (rule) {
                     return rule.Viewname === "Z_I_Materials";
                 });
 
 
                 // Then fetch all MaterialComposition records once
                 oModel.read("/MaterialComposition", {
-                    urlParameters: { "$top": 10000,
+                    urlParameters: {
+                        "$top": 10000,
                         "$expand": "to_ComponentMaterials,to_Material"
                     },
-                    success: function(oCompData) {
+                    success: function (oCompData) {
                         var nodeIdCounter = 1;
                         var processedParents = {};
-                        oCompData.results.forEach(function(comp) {
+                        var processedParentResults = {};
+                        oCompData.results.forEach(function (comp) {
                             var parentMatId = comp.ParentMaterial;
                             var parentBomNumber = comp.BomNumber
                             var componentMatId = comp.ComponentMaterial;
-                            
+
                             // Only create parent node once per unique bom number
                             if (!processedParents[parentBomNumber]) {
-                                
+
                                 var parentMaterial = comp.to_Material;
                                 var parentExists = !!parentMaterial;
-                                
-                                var parentHasAllData = parentExists && activeRules.every(function(rule) {
+
+                                var parentHasAllData = parentExists && activeRules.every(function (rule) {
                                     return parentMaterial[rule.Elementname];
                                 });
-                                
+
                                 var parentGapDesc = "";
                                 if (!parentExists) {
                                     parentGapDesc = "ParentMaterial not found in master data";
                                 } else if (!parentHasAllData) {
                                     parentGapDesc = "ParentMaterial missing required fields";
                                 }
-                                
+
                                 // Assign node ID to this parent and track it
                                 var parentNodeId = nodeIdCounter++;
 
                                 processedParents[parentBomNumber] = parentNodeId;
-                                
+
                                 // Create parent result entry
-                                aReportResults.push({
+                                var oParentResult = {
                                     category: "BOM",
                                     node_id: parentNodeId,
                                     parent_node_id: null,
                                     parent_matnr: parentMatId,
                                     component_matnr: componentMatId,
                                     Plant: comp.Plant,
+                                    material_description: parentMaterial ? parentMaterial.MaterialDescription : "",
+                                    plant_description: parentMaterial ? parentMaterial.PlantDescription : "",
                                     bom_usage: comp.BomUsage,
                                     alt_bom: comp.AltBom,
                                     bom_number: parentBomNumber,
@@ -157,28 +161,30 @@ sap.ui.define([
                                     gap_desc: parentGapDesc,
                                     recommendation: parentHasAllData ? "" : "Ensure material exists with all required fields filled",
                                     data_source: "MaterialComposition"
-                                });
+                                };
+                                processedParentResults[parentBomNumber] = oParentResult;
+                                aReportResults.push(oParentResult);
                             }
                             // create component nodes linked to their parents
-                            
+
                             var componentMaterial = comp.to_ComponentMaterials.results[0];
 
                             var componentExists = !!componentMaterial;
-                            
-                            var componentHasAllData = componentExists && activeRules.every(function(rule) {
+
+                            var componentHasAllData = componentExists && activeRules.every(function (rule) {
                                 return componentMaterial[rule.Elementname];
                             });
-                            
+
                             var componentGapDesc = "";
                             if (!componentExists) {
                                 componentGapDesc = "ComponentMaterial not found in master data";
                             } else if (!componentHasAllData) {
                                 componentGapDesc = "ComponentMaterial missing required fields";
                             }
-                            
+
                             var isAvailable = componentHasAllData;
                             var componentNodeId = nodeIdCounter++;
-                            
+
                             // Create component result with parent_node_id linking to parent
                             aReportResults.push({
                                 category: "BOM",
@@ -186,7 +192,9 @@ sap.ui.define([
                                 parent_node_id: processedParents[parentBomNumber],
                                 parent_matnr: componentMatId,
                                 component_matnr: "",
-                                Plant: "",
+                                Plant: componentMaterial ? componentMaterial.BasicMaterial : "",
+                                material_description: componentMaterial ? componentMaterial.MaterialDescription : "",
+                                plant_description: componentMaterial ? componentMaterial.PlantDescription : "",
                                 bom_usage: "",
                                 alt_bom: "",
                                 bom_number: "",
@@ -197,11 +205,26 @@ sap.ui.define([
                                 recommendation: isAvailable ? "" : "Ensure material exists with all required fields filled",
                                 data_source: "MaterialComposition"
                             });
+
+                            if (!isAvailable) {
+                                var oParent = processedParentResults[parentBomNumber];
+                                if (oParent) {
+                                    oParent.avail_cat = "MISSING";
+                                    var sMissingMsg = "One of the child components has missing data availability";
+                                    if (oParent.gap_desc) {
+                                        if (oParent.gap_desc.indexOf(sMissingMsg) === -1) {
+                                            oParent.gap_desc += "; " + sMissingMsg;
+                                        }
+                                    } else {
+                                        oParent.gap_desc = sMissingMsg;
+                                    }
+                                }
+                            }
                         });
 
                         resolve();
                     },
-                    error: function(oError) {
+                    error: function (oError) {
                         console.error("Read error for MaterialComposition", oError);
                         resolve();
                     }
@@ -220,21 +243,21 @@ sap.ui.define([
             });
         },
 
-		/**
-		 * Creates a compliance report in the backend with the collected check results.
-		 *
-		 * @param {Array} aResults - Array of result objects from the rule checks
-		 * @param {sap.ui.model.odata.v2.ODataModel} oModel - The OData model for backend communication
-		 * @param {Object} oSelectedRegulation - The selected regulation object
-		 * @returns {Promise} Promise that resolves with the created report ID
-		 * @private
-		 */
+        /**
+         * Creates a compliance report in the backend with the collected check results.
+         *
+         * @param {Array} aResults - Array of result objects from the rule checks
+         * @param {sap.ui.model.odata.v2.ODataModel} oModel - The OData model for backend communication
+         * @param {Object} oSelectedRegulation - The selected regulation object
+         * @returns {Promise} Promise that resolves with the created report ID
+         * @private
+         */
         _createReport: function (aResults, oModel, oSelectedRegulation) {
             // Separate BOM results from regular results
             var aGeneralResults = [];
             var aBomResults = [];
-            
-            aResults.forEach(function(result) {
+
+            aResults.forEach(function (result) {
                 if (result.category === "BOM") {
                     aBomResults.push(result);
                 } else {
@@ -243,7 +266,7 @@ sap.ui.define([
             });
 
             // Filter general results to remove internal hierarchy properties not supported by backend
-            var aFilteredGeneralResults = aGeneralResults.map(function(result) {
+            var aFilteredGeneralResults = aGeneralResults.map(function (result) {
                 return {
                     category: result.category,
                     object_id: result.object_id,
@@ -257,13 +280,15 @@ sap.ui.define([
             });
 
             // Map BOM results to Z_I_ReportBOMResult structure
-            var aFilteredBomResults = aBomResults.map(function(result) {
+            var aFilteredBomResults = aBomResults.map(function (result) {
                 return {
                     node_id: parseInt(result.node_id, 10),
                     parent_node_id: result.parent_node_id ? parseInt(result.parent_node_id, 10) : null,
                     parent_matnr: result.parent_matnr || "",
                     component_matnr: result.component_matnr || "",
                     Plant: result.Plant || "",
+                    material_description: result.material_description || "",
+                    plant_description: result.plant_description || "",
                     bom_usage: result.bom_usage || "",
                     alt_bom: result.alt_bom || "",
                     bom_number: result.bom_number || "",
@@ -290,11 +315,11 @@ sap.ui.define([
             // Create the report entity in the backend
             return new Promise(function (resolve, reject) {
                 oModel.create("/Report", oParentPayload, {
-                    success: function(oParentSuccess) {
+                    success: function (oParentSuccess) {
                         var sReportId = oParentSuccess.report_id;  // Extract the generated report ID
                         resolve(sReportId);  // Resolve with the report ID
                     },
-                    error: function(oError) {
+                    error: function (oError) {
                         console.error("Failed to create report:", oError);
                         reject(oError);  // Reject with the error
                     }
@@ -302,13 +327,13 @@ sap.ui.define([
             });
         },
 
-		/**
-		 * Calculates the degree of fulfillment as a percentage based on successful checks.
-		 *
-		 * @param {Array} aResults - Array of result objects
-		 * @returns {number} Percentage of checks that passed (rounded to nearest integer)
-		 * @private
-		 */
+        /**
+         * Calculates the degree of fulfillment as a percentage based on successful checks.
+         *
+         * @param {Array} aResults - Array of result objects
+         * @returns {number} Percentage of checks that passed (rounded to nearest integer)
+         * @private
+         */
         _calculateDegree: function (aResults) {
             // Count how many results have "AVAILABLE" status (successful checks)
             var iOk = aResults.filter(r => r.avail_cat === "AVAILABLE").length;
@@ -316,5 +341,5 @@ sap.ui.define([
             return Math.round((iOk / aResults.length) * 100);
         },
 
-	});
+    });
 });

@@ -147,6 +147,13 @@
                                         </table:template>
                                     </table:Column>
                                     <table:Column
+                                        width="100px">
+                                        <Label text="Material Desc" />
+                                        <table:template>
+                                            <Text text="{bom>material_description}" />
+                                        </table:template>
+                                    </table:Column>
+                                    <table:Column
                                         width="80px">
                                         <Label text="Plant" />
                                         <table:template>
@@ -155,16 +162,9 @@
                                     </table:Column>
                                     <table:Column
                                         width="100px">
-                                        <Label text="BOM Usage" />
+                                        <Label text="Plant Desc" />
                                         <table:template>
-                                            <Text text="{bom>bom_usage}" />
-                                        </table:template>
-                                    </table:Column>
-                                    <table:Column
-                                        width="80px">
-                                        <Label text="Alt BOM" />
-                                        <table:template>
-                                            <Text text="{bom>alt_bom}" />
+                                            <Text text="{bom>plant_description}" />
                                         </table:template>
                                     </table:Column>
                                     <table:Column
