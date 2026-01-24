@@ -26,13 +26,12 @@
                                     text="Active Regulations"
                                     level="H5"
                                 />
-                                <ToolbarSpacer />
+                                <ToolbarSpacer />                           
                                 <Button
                                     text="Add Regulation"
                                     icon="sap-icon://add"
                                     type="Emphasized"
-                                    press=".onPressAddRegulation"
-                                    enabled="false"
+                                    press="onPressAddRegulation"
                                 />
                             </Toolbar>
                         </headerToolbar>
@@ -44,8 +43,7 @@
                             selectionChange=".onSelectRegulation"
                         >
                             <CustomListItem
-                                type="Inactive"
-                                press=".onSelectRegulation"
+                                type="Active"
                             >
                                 <VBox class="sapUiSmallMargin">
                                     <HBox
@@ -59,7 +57,7 @@
                                             </layoutData>
                                             <!-- Display -->
                                             <Text
-                                                text="{Title}"
+                                                text="{= ${Title} ? ${Title} : '(Untitled regulation)' }"
                                                 visible="{= ${ui>/editRegulationId} !== ${Id} }"
                                             />
 

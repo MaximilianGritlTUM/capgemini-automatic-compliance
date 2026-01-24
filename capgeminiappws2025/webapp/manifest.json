@@ -54,7 +54,8 @@
       "minUI5Version": "1.114.10",
       "libs": {
         "sap.m": {},
-        "sap.ui.core": {}
+        "sap.ui.core": {},
+        "sap.ui.layout": {}
       }
     },
     "contentDensities": {
@@ -103,13 +104,6 @@
           "target": "configurator"
         },
         {
-          "name": "RouteMain",
-          "pattern": ":?query:",
-          "target": [
-            "TargetMain"
-          ]
-        },
-        {
           "pattern": "complianceReports",                
           "name": "ComplianceReport",        
           "target": "ComplianceReport"  
@@ -118,6 +112,11 @@
           "pattern": "reportDetail/{reportId}",                
           "name": "ComplianceReportDetail",        
           "target": "ComplianceReportDetail"
+        },
+        {
+          "name": "Regulation",
+          "pattern": "regulation/{contextPath}",
+          "target": "Regulation"
         }
       ],
       "targets": {
@@ -142,6 +141,12 @@
         },
         "ComplianceReportDetail": {
           "viewName": "ComplianceReportDetail",
+          "viewLevel": 2
+        },
+        "Regulation": {
+          "viewId": "Regulation",
+          "viewName": "Regulation",
+          "controlId": "app",
           "viewLevel": 2
         }
       }
