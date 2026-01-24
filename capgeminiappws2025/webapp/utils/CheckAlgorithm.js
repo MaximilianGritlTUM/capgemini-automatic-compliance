@@ -114,7 +114,7 @@ sap.ui.define([
                 // Then fetch all MaterialComposition records once
                 oModel.read("/MaterialComposition", {
                     urlParameters: {
-                        "$top": 10000,
+                        "$top": 1000,
                         "$expand": "to_ComponentMaterials,to_Material"
                     },
                     success: function (oCompData) {
