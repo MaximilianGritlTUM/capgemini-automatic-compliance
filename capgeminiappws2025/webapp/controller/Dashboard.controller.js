@@ -4,6 +4,19 @@ sap.ui.define([
 ], function (Controller, JSONModel) {
     "use strict";
 
+    function normalizeMaterialType(o) {
+        // Keep originals, just ensure MaterialType fields exist if ProductType exists.
+        if (!o) return o;
+
+        if (!o.MaterialType && o.ProductType) {
+            o.MaterialType = o.ProductType;
+        }
+        if (!o.MaterialTypeText && o.ProductTypeText) {
+            o.MaterialTypeText = o.ProductTypeText;
+        }
+        return o;
+    }
+
     return Controller.extend("capgeminiappws2025.controller.Dashboard", {
 
         onInit: function () {
@@ -48,6 +61,8 @@ sap.ui.define([
                     }
                 ]
             };
+
+            oData.Issues = (oData.Issues || []).map(normalizeMaterialType);
 
             const oModel = new JSONModel(oData);
             this.getView().setModel(oModel);

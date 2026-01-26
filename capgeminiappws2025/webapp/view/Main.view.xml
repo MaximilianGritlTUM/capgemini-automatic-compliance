@@ -43,6 +43,7 @@
                         <cells>
                             <Text text="{ProtocolID}" />
                             <Text text="{= ${Material} || ${Product} || ${MaterialDescription} || ${MaterialID} || ${ProductID} }" />
+                            <Text text="{= ${MaterialTypeText} || ${MaterialType} || ${ProductTypeText} || ${ProductType} }" />
                             <Text text="{CNCode}" />
                             <Text text="{DDSReferenceID}" />
                             <Text text="{DDSVerificationID}" />
