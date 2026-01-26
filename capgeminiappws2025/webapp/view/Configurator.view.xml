@@ -132,7 +132,6 @@
                                 text="Add Rule"
                                 icon="sap-icon://add"
                                 press=".onPressAddRule"
-                                enabled="false"
                             />
                         </HBox>
 
