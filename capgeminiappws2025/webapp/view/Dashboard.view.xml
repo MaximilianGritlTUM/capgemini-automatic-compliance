@@ -118,7 +118,7 @@
                 <items>
                     <ColumnListItem>
                         <cells>
-                            <Text text="{= ${MaterialID} || ${ProductID} || ${Material} || ${Product} }" />
+                            <Text text="{= ${Material} || ${Product} || ${MaterialDescription} || ${MaterialID} || ${ProductID} }" />
                             <Text text="{SupplierName}" />
                             <Text text="{Region}" />
                             <Text text="{Regulation}" />
