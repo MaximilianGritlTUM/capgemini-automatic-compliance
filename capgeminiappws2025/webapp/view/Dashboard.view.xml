@@ -42,7 +42,7 @@
                         unit="EA"
                         footer="Current Quarter">
                         <NumericContent
-                            value="{= ${/Kpi/ActiveMaterials} != null ? ${/Kpi/ActiveMaterials} : ${/Kpi/ActiveProducts} }"
+                            value="{parts: [{path: '/Kpi/ActiveMaterials'}, {path: '/Kpi/ActiveProducts'}], formatter: '.formatActiveMaterialsKpi'}"
                             valueColor="Good"
                             withMargin="false" />
                     </TileContent>

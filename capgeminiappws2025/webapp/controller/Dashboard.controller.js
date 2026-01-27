@@ -74,6 +74,13 @@ sap.ui.define([
 
         onPressConfigurator: function (oEvent) {
             this.getRouter().navTo("configurator", {}, {}, false);
+        },
+
+        formatActiveMaterialsKpi: function (activeMaterials, activeProducts) {
+            if (activeMaterials === null || activeMaterials === undefined) {
+                return activeProducts;
+            }
+            return activeMaterials;
         }
 
     });
