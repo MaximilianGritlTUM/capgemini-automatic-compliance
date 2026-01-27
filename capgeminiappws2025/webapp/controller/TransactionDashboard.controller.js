@@ -10,20 +10,178 @@ sap.ui.define([
   return Controller.extend("capgeminiappws2025.controller.TransactionDashboard", {
 
     onInit: function () {
-      // ViewModel for UI binding (KPI + Top table)
+      // ViewModel for UI binding (KPI + Top table + Transaction History)
       const oVm = new JSONModel({
         kpi: {
           total: 0,
           adjustment: 0,
           reversal: 0
         },
-        topMaterials: []
+        topMaterials: [],
+        // Transaction History section
+        history: {
+          kpi: {
+            totalMaterials: 0,
+            totalMovements: 0,
+            totalQuantity: 0,
+            uniquePlants: 0
+          },
+          materials: []
+        }
       });
       this.getView().setModel(oVm, "vm");
 
-      // Initial load
-      this._loadExceptionsAndBuildDashboard();
+      // Wait for OData model to be ready before loading data
+      const oOData = this.getView().getModel();
+      if (oOData) {
+        oOData.metadataLoaded().then(() => {
+          this._loadExceptionsAndBuildDashboard();
+          this._loadTransactionHistory();
+        });
+      }
     },
+
+    // ======================= TRANSACTION HISTORY HANDLERS =======================
+
+    onApplyHistory: function () {
+      this._loadTransactionHistory();
+    },
+
+    onResetHistory: function () {
+      this.byId("inHistoryPlant").setValue("");
+      this.byId("inMinMovements").setValue("");
+      this.byId("inMinQuantity").setValue("");
+      this._loadTransactionHistory();
+    },
+
+    /**
+     * Loads transaction history summary from TASummary entity.
+     * Computes KPIs and identifies materials with meaningful activity.
+     */
+    _loadTransactionHistory: function () {
+      const oOData = this.getView().getModel();
+      if (!oOData) {
+        MessageToast.show("OData model not found.");
+        return;
+      }
+
+      const aFilters = this._buildFiltersForHistory();
+
+      // Entity set exposed as TASummary (from Z_I_TA_HISTORYSUMMARY)
+      const sEntitySet = "/TASummary";
+
+      oOData.read(sEntitySet, {
+        filters: aFilters,
+        urlParameters: {
+          "$top": 1000
+        },
+        success: (oData) => {
+          const aRows = (oData && oData.results) ? oData.results : [];
+          this._processTransactionHistory(aRows);
+        },
+        error: (oErr) => {
+          MessageToast.show("Failed to load /TASummary. Check EntitySet name in Network tab.");
+          console.error("OData read error for TASummary:", oErr);
+        }
+      });
+    },
+
+    /**
+     * Processes transaction history data and updates the view model.
+     * @param {Array} aRows - Raw data from TASummary
+     */
+    _processTransactionHistory: function (aRows) {
+      const oVm = this.getView().getModel("vm");
+
+      // Get filter thresholds from UI
+      const iMinMovements = parseInt(this.byId("inMinMovements").getValue(), 10) || 0;
+      const iMinQuantity = parseFloat(this.byId("inMinQuantity").getValue()) || 0;
+
+      // Filter for meaningful materials based on thresholds
+      let aFiltered = aRows;
+      if (iMinMovements > 0) {
+        aFiltered = aFiltered.filter(function (r) {
+          return (parseInt(r.MovementCount, 10) || 0) >= iMinMovements;
+        });
+      }
+      if (iMinQuantity > 0) {
+        aFiltered = aFiltered.filter(function (r) {
+          return (parseFloat(r.TotalQuantity) || 0) >= iMinQuantity;
+        });
+      }
+
+      // Calculate KPIs
+      let iTotalMovements = 0;
+      let fTotalQuantity = 0;
+      const oPlants = new Set();
+
+      aFiltered.forEach(function (r) {
+        iTotalMovements += parseInt(r.MovementCount, 10) || 0;
+        fTotalQuantity += parseFloat(r.TotalQuantity) || 0;
+        if (r.Plant) {
+          oPlants.add(r.Plant);
+        }
+      });
+
+      // Determine activity status for each material
+      const aMaterials = aFiltered.map(function (r) {
+        const iMoves = parseInt(r.MovementCount, 10) || 0;
+        const fQty = parseFloat(r.TotalQuantity) || 0;
+
+        // Activity classification
+        let sStatus = "Low Activity";
+        let sState = "Warning";
+        if (iMoves >= 5 || fQty >= 500) {
+          sStatus = "High Activity";
+          sState = "Success";
+        } else if (iMoves >= 2 || fQty >= 100) {
+          sStatus = "Medium Activity";
+          sState = "None";
+        }
+
+        return {
+          Material: r.Material || "",
+          Plant: r.Plant || "",
+          BaseUoM: r.BaseUoM || "",
+          MovementCount: iMoves,
+          TotalQuantity: fQty,
+          ActivityStatus: sStatus,
+          ActivityState: sState
+        };
+      });
+
+      // Sort by TotalQuantity descending
+      aMaterials.sort(function (a, b) {
+        return b.TotalQuantity - a.TotalQuantity;
+      });
+
+      // Update view model
+      oVm.setProperty("/history/kpi/totalMaterials", aFiltered.length);
+      oVm.setProperty("/history/kpi/totalMovements", iTotalMovements);
+      oVm.setProperty("/history/kpi/totalQuantity", fTotalQuantity.toFixed(2));
+      oVm.setProperty("/history/kpi/uniquePlants", oPlants.size);
+      oVm.setProperty("/history/materials", aMaterials);
+
+      if (aFiltered.length === 0) {
+        MessageToast.show("No materials found matching the filter criteria.");
+      }
+    },
+
+    /**
+     * Builds OData filters for transaction history based on UI inputs.
+     */
+    _buildFiltersForHistory: function () {
+      const aFilters = [];
+
+      const sPlant = (this.byId("inHistoryPlant").getValue() || "").trim();
+      if (sPlant) {
+        aFilters.push(new Filter("Plant", FilterOperator.EQ, sPlant));
+      }
+
+      return aFilters;
+    },
+
+    // ======================= EXCEPTION HANDLERS =======================
 
     onApply: function () {
       this._loadExceptionsAndBuildDashboard();
