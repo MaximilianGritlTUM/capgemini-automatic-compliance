@@ -86,7 +86,7 @@
                                         <Text text="Data Quality" />
                                     </Column>
                                     <Column>
-                                        <Text text="Data Gaps" />
+                                        <Text text="Data Gaps / Activity" />
                                     </Column>
                                     <Column>
                                         <Text text="Recommendations" />
@@ -105,10 +105,10 @@
                                                 state="{= ${avail_cat} === 'AVAILABLE' ? 'Success' : ${avail_cat} === 'PARTIAL' ? 'Warning' : 'Error'}" />
                                             <ObjectStatus
                                                 text="{data_quality}"
-                                                state="{= ${data_quality} === 'GOOD' ? 'Success' : ${data_quality} === 'MEDIUM' ? 'Warning' : 'Error'}" />
+                                                state="{= ${data_quality} === 'HIGH' ? 'Success' : ${data_quality} === 'MEDIUM' ? 'Warning' : 'Error'}" />
+                                            <!-- Data Gaps includes activity status info -->
                                             <Text text="{gap_desc}" />
                                             <Text text="{recommendation}" />
-                                            <Text text="{data_source}" />
                                         </cells>
                                     </ColumnListItem>
                                 </items>

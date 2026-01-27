@@ -1,9 +1,11 @@
 sap.ui.define([
 	"sap/ui/base/ManagedObject",
-	"./nonstandard/FieldProcessor"
+	"./nonstandard/FieldProcessor",
+	"./TransactionHistoryFilter"
 ], function(
 	ManagedObject,
-	FieldProcessor
+	FieldProcessor,
+	TransactionHistoryFilter
 ) {
 	"use strict";
 
@@ -29,13 +31,29 @@ sap.ui.define([
             // Initialize the FieldProcessor for non-standard field validation
             this._fieldProcessor = FieldProcessor.FieldProcessor.create(oModel);
 
-            // Preload whitelists (T006, TCURC, etc.) before processing
-            return this._fieldProcessor.preloadWhitelists().then(function() {
-                console.log("Whitelists preloaded for field validation");
-                return self._executeRuleChecks(aData, oModel, oSelectedRegulation);
-            }).catch(function(oError) {
-                // If whitelist loading fails, continue without validation
-                console.warn("Whitelist preload failed, continuing without validation:", oError);
+            // Preload whitelists and material activity status in parallel
+            var pWhitelists = this._fieldProcessor.preloadWhitelists()
+                .then(function() {
+                    console.log("Whitelists preloaded for field validation");
+                })
+                .catch(function(oError) {
+                    console.warn("Whitelist preload failed, continuing without validation:", oError);
+                });
+
+            var pActivityStatus = TransactionHistoryFilter.loadMaterialActivityStatus(oModel, 12)
+                .then(function(mActivityStatus) {
+                    console.log("Material activity status loaded");
+                    self._materialActivityStatus = mActivityStatus;
+                    return mActivityStatus;
+                })
+                .catch(function(oError) {
+                    console.warn("Material activity status load failed:", oError);
+                    self._materialActivityStatus = new Map();
+                    return new Map();
+                });
+
+            // Wait for both to complete before running checks
+            return Promise.all([pWhitelists, pActivityStatus]).then(function() {
                 return self._executeRuleChecks(aData, oModel, oSelectedRegulation);
             });
         },
@@ -88,7 +106,11 @@ sap.ui.define([
                                     validation_errors: [],
                                     gap_desc: "Entity or data not found (404)",
                                     recommendation: "Check CDS view or data availability",
-                                    data_source: oRule.Viewname
+                                    data_source: oRule.Viewname,
+                                    // Activity status fields - unknown for 404
+                                    activity_status: "N/A",
+                                    last_transaction_date: null,
+                                    transaction_count: 0
                                 });
 
                                 resolve();
@@ -123,6 +145,9 @@ sap.ui.define([
         _processRuleResults: function(oRule, aRows, aReportResults) {
             var self = this;
             var sFieldName = oRule.Elementname;
+
+            // Calculate activity status for this view/element
+            var oActivitySummary = this._calculateActivitySummary(oRule.Viewname, aRows);
 
             // Check for empty values
             var bHasEmpty = aRows.some(function (oRow) {
@@ -205,7 +230,11 @@ sap.ui.define([
                         validation_errors: aErrors.concat(aWarnings),
                         gap_desc: aGaps.join("; "),
                         recommendation: aRecommendations.join("; "),
-                        data_source: oRule.Viewname
+                        data_source: oRule.Viewname,
+                        // Activity status fields
+                        activity_status: oActivitySummary.status,
+                        last_transaction_date: oActivitySummary.lastTransactionDate,
+                        transaction_count: oActivitySummary.transactionCount
                     });
 
                     return; // Ensure Promise chain resolves properly
@@ -222,11 +251,115 @@ sap.ui.define([
                     validation_errors: [],
                     gap_desc: bHasEmpty ? "Missing values detected" : "",
                     recommendation: bHasEmpty ? "Maintain missing values" : "",
-                    data_source: oRule.Viewname
+                    data_source: oRule.Viewname,
+                    // Activity status fields
+                    activity_status: oActivitySummary.status,
+                    last_transaction_date: oActivitySummary.lastTransactionDate,
+                    transaction_count: oActivitySummary.transactionCount
                 });
 
                 return Promise.resolve();
             }
+        },
+
+        /**
+         * Calculates activity summary for a given view and its data rows.
+         * For Z_I_Materials, uses the pre-loaded activity status map.
+         * For other views, returns "N/A" status.
+         *
+         * @param {string} sViewname - The CDS view name
+         * @param {Array} aRows - The data rows from the view
+         * @returns {Object} Activity summary with status, lastTransactionDate, transactionCount
+         * @private
+         */
+        _calculateActivitySummary: function(sViewname, aRows) {
+            // Only calculate activity for material-related views
+            if (sViewname !== "Z_I_Materials" || !this._materialActivityStatus || this._materialActivityStatus.size === 0) {
+                return {
+                    status: "N/A",
+                    lastTransactionDate: null,
+                    transactionCount: 0
+                };
+            }
+
+            // Aggregate activity statistics from all materials in the rows
+            var mActivityStatus = this._materialActivityStatus;
+            var iActive = 0;
+            var iInactive = 0;
+            var iDormant = 0;
+            var iTotalTransactions = 0;
+            var dLatestTransaction = null;
+
+            aRows.forEach(function(oRow) {
+                // Try to get Material from the row data
+                var sMaterial = oRow.Material || oRow.MATNR;
+                if (!sMaterial) {
+                    iDormant++;
+                    return;
+                }
+
+                var oActivity = mActivityStatus.get(sMaterial);
+                if (!oActivity) {
+                    iDormant++;
+                    return;
+                }
+
+                // Count by status
+                switch (oActivity.status) {
+                    case TransactionHistoryFilter.ActivityStatus.ACTIVE:
+                        iActive++;
+                        break;
+                    case TransactionHistoryFilter.ActivityStatus.INACTIVE:
+                        iInactive++;
+                        break;
+                    default:
+                        iDormant++;
+                }
+
+                // Aggregate transaction counts
+                iTotalTransactions += oActivity.transactionCount || 0;
+
+                // Track latest transaction date
+                if (oActivity.lastTransactionDate) {
+                    var dActivityDate = new Date(oActivity.lastTransactionDate);
+                    if (!dLatestTransaction || dActivityDate > dLatestTransaction) {
+                        dLatestTransaction = dActivityDate;
+                    }
+                }
+            });
+
+            // Determine aggregate status based on majority
+            var sStatus;
+            var iTotal = iActive + iInactive + iDormant;
+            if (iTotal === 0) {
+                sStatus = "N/A";
+            } else if (iActive > 0 && iActive >= iInactive && iActive >= iDormant) {
+                sStatus = "ACTIVE";
+            } else if (iInactive > 0 && iInactive >= iDormant) {
+                sStatus = "INACTIVE";
+            } else {
+                sStatus = "DORMANT";
+            }
+
+            return {
+                status: sStatus,
+                lastTransactionDate: dLatestTransaction ? this._formatDate(dLatestTransaction) : null,
+                transactionCount: iTotalTransactions
+            };
+        },
+
+        /**
+         * Formats a date as YYYY-MM-DD
+         * @private
+         */
+        _formatDate: function(dDate) {
+            if (!dDate) {
+                return null;
+            }
+            var sYear = dDate.getFullYear();
+            var sMonth = String(dDate.getMonth() + 1).padStart(2, "0");
+            var sDay = String(dDate.getDate()).padStart(2, "0");
+            return sYear + "-" + sMonth + "-" + sDay;
         },
 
 		/**
@@ -251,15 +384,29 @@ sap.ui.define([
             }
 
             // Strip fields not supported by backend OData service
-            // (validation_status and validation_errors are used internally but not persisted)
+            // (validation_status, validation_errors, and activity fields are used internally but not persisted)
+            // Activity status fields are stored in gap_desc for display purposes
             var aCleanedResults = aResults.map(function(oResult) {
+                // Include activity status in gap description if available
+                var sGapDesc = oResult.gap_desc || "";
+                if (oResult.activity_status && oResult.activity_status !== "N/A") {
+                    var sActivityInfo = "Activity: " + oResult.activity_status;
+                    if (oResult.transaction_count > 0) {
+                        sActivityInfo += " (" + oResult.transaction_count + " transactions)";
+                    }
+                    if (oResult.last_transaction_date) {
+                        sActivityInfo += ", last: " + oResult.last_transaction_date;
+                    }
+                    sGapDesc = sGapDesc ? sGapDesc + "; " + sActivityInfo : sActivityInfo;
+                }
+
                 return {
                     category: oResult.category,
                     object_id: oResult.object_id,
                     object_name: oResult.object_name,
                     avail_cat: oResult.avail_cat,
                     data_quality: oResult.data_quality,
-                    gap_desc: oResult.gap_desc,
+                    gap_desc: sGapDesc,
                     recommendation: oResult.recommendation,
                     data_source: oResult.data_source
                 };

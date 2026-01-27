@@ -109,7 +109,7 @@ sap.ui.define([
                 { label: "Name",                 property: "ObjectName",           type: "string" },
                 { label: "Availability",         property: "AvailabilityCategory", type: "string" },
                 { label: "Data Quality",         property: "DataQuality",          type: "string" },
-                { label: "Data Gaps",            property: "GapDescription",       type: "string" },
+                { label: "Data Gaps / Activity", property: "GapDescription",       type: "string" },
                 { label: "Recommendations",      property: "Recommendation",       type: "string" },
                 { label: "Data Source",          property: "DataSource",           type: "string" }
             ];
