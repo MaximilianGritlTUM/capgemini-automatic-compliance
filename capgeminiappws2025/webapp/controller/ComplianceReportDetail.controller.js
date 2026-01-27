@@ -2,8 +2,10 @@ sap.ui.define([
     "sap/ui/core/mvc/Controller",
     "sap/m/MessageToast",
     "sap/ui/core/UIComponent",
-    "sap/ui/export/Spreadsheet"
-], function (Controller, MessageToast, UIComponent, Spreadsheet) {
+    "sap/ui/export/Spreadsheet",
+    "sap/ui/model/Filter",
+    "sap/ui/model/FilterOperator"
+], function (Controller, MessageToast, UIComponent, Spreadsheet, Filter, FilterOperator) {
     "use strict";
 
     return Controller.extend("capgeminiappws2025.controller.ComplianceReportDetail", {
@@ -26,7 +28,56 @@ sap.ui.define([
                 parameters: {
                     expand: "to_Results"
                 }
-            })
+            });
+
+            // Reset filter when navigating to a new report
+            var oActivityFilter = this.byId("activityFilter");
+            if (oActivityFilter) {
+                oActivityFilter.setSelectedKey("ALL");
+            }
+        },
+
+        /**
+         * Handles the activity filter change
+         * Filters the table based on activity status in gap_desc field
+         */
+        onActivityFilterChange: function (oEvent) {
+            var sSelectedKey = oEvent.getParameter("selectedItem").getKey();
+            var oTable = this.byId("materialsTable");
+            var oBinding = oTable.getBinding("items");
+
+            if (!oBinding) {
+                return;
+            }
+
+            var aFilters = [];
+
+            if (sSelectedKey !== "ALL") {
+                if (sSelectedKey === "N/A") {
+                    // Filter for items that don't have activity info (no "Activity:" in gap_desc)
+                    // We use a custom filter function
+                    aFilters.push(new Filter({
+                        path: "gap_desc",
+                        test: function (sValue) {
+                            return !sValue || sValue.indexOf("Activity:") === -1;
+                        }
+                    }));
+                } else {
+                    // Filter for specific activity status (ACTIVE, INACTIVE, DORMANT)
+                    aFilters.push(new Filter({
+                        path: "gap_desc",
+                        test: function (sValue) {
+                            return sValue && sValue.indexOf("Activity: " + sSelectedKey) !== -1;
+                        }
+                    }));
+                }
+            }
+
+            oBinding.filter(aFilters);
+
+            // Show message with result count
+            var iCount = oBinding.getLength();
+            MessageToast.show(iCount + " item(s) found");
         },
 
         onNavBack: function() {
