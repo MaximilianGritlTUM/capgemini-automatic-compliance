@@ -4,8 +4,9 @@ sap.ui.define([
     "sap/ui/core/UIComponent",
     "sap/ui/export/Spreadsheet",
     "sap/ui/model/Filter",
-    "sap/ui/model/json/JSONModel"
-], function (Controller, MessageToast, UIComponent, Spreadsheet, Filter, JSONModel) {
+    "sap/ui/model/json/JSONModel",
+    "capgeminiappws2025/utils/TransactionHistoryFilter"
+], function (Controller, MessageToast, UIComponent, Spreadsheet, Filter, JSONModel, TransactionHistoryFilter) {
     "use strict";
 
     return Controller.extend("capgeminiappws2025.controller.ComplianceReportDetail", {
@@ -37,34 +38,61 @@ sap.ui.define([
                 oBinding.filter(new Filter("category", "EQ", "GENERAL"));
             }
 
-            oModel.read(sPath + "/to_BOMResults", {
-                urlParameters: {
-                    "$expand": "to_Children"
-                },
-                success: function (oData) {
-
-                    // 1. Normalize children arrays
-                    oData.results.forEach(node => {
-                        if (node.to_Children && node.to_Children.results && node.to_Children.results.length > 0) {
-                            node.to_Children = node.to_Children.results;
-                            node.to_Children.forEach(child => {
-                                child.to_Children = null; // Prevent deeper nesting
-                            });
-                        } else {
-                            node.to_Children = null;
-                        }
+            // Load BOM results and enrich with activity status
+            var that = this;
+            Promise.all([
+                new Promise(function (resolve) {
+                    oModel.read(sPath + "/to_BOMResults", {
+                        urlParameters: { "$expand": "to_Children" },
+                        success: function (oData) { resolve(oData); },
+                        error: function () { resolve({ results: [] }); }
                     });
+                }),
+                TransactionHistoryFilter.loadMaterialActivityStatus(oModel, 6).catch(function () {
+                    return new Map();
+                })
+            ]).then(function (aRes) {
+                var oData = aRes[0];
+                var mActivityStatus = aRes[1];
 
-                    // 2. Keep ONLY root nodes
-                    const aRoots = oData.results.filter(function (item) {
-                        return !item.parent_node_id;
-                    });
+                // 1. Normalize children arrays
+                oData.results.forEach(function (node) {
+                    if (node.to_Children && node.to_Children.results && node.to_Children.results.length > 0) {
+                        node.to_Children = node.to_Children.results;
+                        node.to_Children.forEach(function (child) {
+                            child.to_Children = null;
+                        });
+                    } else {
+                        node.to_Children = null;
+                    }
+                });
 
-                    console.log(aRoots)
+                // 2. Enrich with activity status
+                oData.results.forEach(function (node) {
+                    var oActivity = TransactionHistoryFilter.getActivityForMaterial(mActivityStatus, node.parent_matnr);
+                    node.activity_status = oActivity.status;
+                    node.last_transaction_date = oActivity.lastTransactionDate;
+                    node.transaction_count = oActivity.transactionCount;
+                    if (node.to_Children) {
+                        node.to_Children.forEach(function (child) {
+                            var oChildActivity = TransactionHistoryFilter.getActivityForMaterial(mActivityStatus, child.parent_matnr);
+                            child.activity_status = oChildActivity.status;
+                            child.last_transaction_date = oChildActivity.lastTransactionDate;
+                            child.transaction_count = oChildActivity.transactionCount;
+                        });
+                    }
+                });
 
-                    const oJsonModel = new sap.ui.model.json.JSONModel(aRoots);
-                    this.getView().setModel(oJsonModel, "bom");
-                }.bind(this)
+                // 3. Keep ONLY root nodes
+                var aRoots = oData.results.filter(function (item) {
+                    return !item.parent_node_id;
+                });
+
+                // Store original BOM data for activity filtering
+                that._aBomDataOriginal = JSON.parse(JSON.stringify(aRoots));
+
+                var oJsonModel = new JSONModel(aRoots);
+                that.getView().setModel(oJsonModel, "bom");
             });
         },
 
@@ -170,6 +198,42 @@ sap.ui.define([
                 .finally(function () {
                     oSheet.destroy();
                 });
+        },
+
+        onActivityFilterChange: function (oEvent) {
+            var sKey = oEvent.getParameter("selectedItem").getKey();
+
+            // 1. Filter Fields tab (materialsTable) — OData filters
+            var oMaterialsTable = this.byId("materialsTable");
+            var oBinding = oMaterialsTable.getBinding("items");
+            if (oBinding) {
+                var aFilters = [new Filter("category", "EQ", "GENERAL")];
+                if (sKey !== "ALL") {
+                    aFilters.push(new Filter("activity_status", "EQ", sKey));
+                }
+                oBinding.filter(aFilters);
+            }
+
+            // 2. Filter BOM tab — client-side JSONModel filtering
+            if (this._aBomDataOriginal) {
+                var aFiltered;
+                if (sKey === "ALL") {
+                    aFiltered = JSON.parse(JSON.stringify(this._aBomDataOriginal));
+                } else {
+                    aFiltered = this._aBomDataOriginal.filter(function (oRoot) {
+                        return oRoot.activity_status === sKey;
+                    }).map(function (oRoot) {
+                        var oCopy = JSON.parse(JSON.stringify(oRoot));
+                        if (oCopy.to_Children && Array.isArray(oCopy.to_Children)) {
+                            oCopy.to_Children = oCopy.to_Children.filter(function (oChild) {
+                                return oChild.activity_status === sKey;
+                            });
+                        }
+                        return oCopy;
+                    });
+                }
+                this.getView().getModel("bom").setData(aFiltered);
+            }
         },
 
         onBomRowPress: function (oEvent) {

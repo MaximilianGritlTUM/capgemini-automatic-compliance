@@ -178,6 +178,9 @@ sap.ui.define([
                                 // Evaluate parent quality asynchronously
                                 var pParent = self._evaluateMaterialQuality(oParentMaterial, aMaterialRules)
                                     .then(function (oQuality) {
+                                        // Look up activity status for parent material
+                                        var oParentActivity = TransactionHistoryFilter.getActivityForMaterial(self._materialActivityStatus, sParentMatId);
+
                                         var oParentResult = {
                                             category: "BOM",
                                             node_id: iParentNodeId,
@@ -195,7 +198,10 @@ sap.ui.define([
                                             data_quality: oQuality.data_quality,
                                             gap_desc: oQuality.gap_desc,
                                             recommendation: oQuality.recommendation,
-                                            data_source: "MaterialComposition"
+                                            data_source: "MaterialComposition",
+                                            activity_status: oParentActivity.status,
+                                            last_transaction_date: oParentActivity.lastTransactionDate,
+                                            transaction_count: oParentActivity.transactionCount
                                         };
                                         aReportResults.push(oParentResult);
                                         return oParentResult;
@@ -230,6 +236,9 @@ sap.ui.define([
                                             }
                                         }
 
+                                        // Look up activity status for component material
+                                        var oCompActivity = TransactionHistoryFilter.getActivityForMaterial(self._materialActivityStatus, sComponentMatId);
+
                                         // Add component result
                                         aReportResults.push({
                                             category: "BOM",
@@ -248,7 +257,10 @@ sap.ui.define([
                                             data_quality: oQuality.data_quality,
                                             gap_desc: oQuality.gap_desc,
                                             recommendation: oQuality.recommendation,
-                                            data_source: "MaterialComposition"
+                                            data_source: "MaterialComposition",
+                                            activity_status: oCompActivity.status,
+                                            last_transaction_date: oCompActivity.lastTransactionDate,
+                                            transaction_count: oCompActivity.transactionCount
                                         });
                                     });
                             });

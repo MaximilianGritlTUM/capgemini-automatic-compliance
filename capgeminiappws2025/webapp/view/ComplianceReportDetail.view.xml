@@ -184,6 +184,15 @@
                                     </table:Column>
                                     <table:Column
                                         width="120px">
+                                        <Label text="Activity Status" />
+                                        <table:template>
+                                            <ObjectStatus
+                                                text="{bom>activity_status}"
+                                                state="{= ${bom>activity_status} === 'ACTIVE' ? 'Success' : ${bom>activity_status} === 'INACTIVE' ? 'Warning' : ${bom>activity_status} === 'DORMANT' ? 'Error' : 'None'}" />
+                                        </table:template>
+                                    </table:Column>
+                                    <table:Column
+                                        width="120px">
                                         <Label text="Data Availability" />
                                         <table:template>
                                             <ObjectStatus
