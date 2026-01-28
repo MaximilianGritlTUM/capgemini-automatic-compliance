@@ -889,8 +889,46 @@ sap.ui.define(
                         MessageBox.error("Could not filter regulations for the selected market.");
                     }
                 });
-            }
+            },
 
+            _initValueHelpModels: function () {
+                var oModel = this.getOwnerComponent().getModel();
+                if (!oModel) {
+                    console.error("ODataModel not available on Component");
+                    return;
+                }
+                var oUI = this.getView().getModel("ui");
+
+                this.getView().setModel(new sap.ui.model.json.JSONModel({ views: [] }), "vhViews");
+                this.getView().setModel(new sap.ui.model.json.JSONModel({ rows: [] }), "vhFields");
+
+                oModel.read("/Z_I_ZREG_FIELDS_VH", {
+                    success: function (oData) {
+                        var aRows = (oData && oData.results) ? oData.results : [];
+
+                        this.getView().getModel("vhFields").setProperty("/rows", aRows);
+
+                        var mSeen = Object.create(null);
+                        var aViews = [];
+                        aRows.forEach(function (r) {
+                            var sV = (r.Viewname || "").trim();
+                            if (!sV || mSeen[sV]) return;
+                            mSeen[sV] = true;
+                            aViews.push({ Viewname: sV });
+                        });
+                        aViews.sort(function (a, b) { return a.Viewname.localeCompare(b.Viewname); });
+
+                        this.getView().getModel("vhViews").setProperty("/views", aViews);
+
+                        if (this._oAddRuleDialog && this._oAddRuleDialog.isOpen()) {
+                            this._applyElementFilter();
+                            this._updateAddRuleButtonState();
+                        }
+                    }.bind(this),
+
+                    error: function (e) { console.error("Failed to read Z_I_ZREG_FIELDS_VH:", e); }
+                });
+            },
         });
     }
 );
