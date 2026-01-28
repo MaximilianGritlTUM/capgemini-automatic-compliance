@@ -4,8 +4,8 @@ sap.ui.define([
     "sap/ui/core/UIComponent",
     "sap/ui/export/Spreadsheet",
     "sap/ui/model/Filter",
-    "sap/ui/model/FilterOperator"
-], function (Controller, MessageToast, UIComponent, Spreadsheet, Filter, FilterOperator) {
+    "sap/ui/model/json/JSONModel"
+], function (Controller, MessageToast, UIComponent, Spreadsheet, Filter, JSONModel) {
     "use strict";
 
     return Controller.extend("capgeminiappws2025.controller.ComplianceReportDetail", {
@@ -18,66 +18,54 @@ sap.ui.define([
 
         _onObjectMatched: function (oEvent) {
             var sReportId = oEvent.getParameter("arguments").reportId;
-
             var oModel = this.getView().getModel();
             var sPath = oModel.createKey("/Report",{
                 report_id: sReportId
             });
+            
             this.getView().bindElement({
                 path: sPath,
                 parameters: {
-                    expand: "to_Results"
+                    expand: "to_Results,to_BOMResults"
                 }
             });
 
-            // Reset filter when navigating to a new report
-            var oActivityFilter = this.byId("activityFilter");
-            if (oActivityFilter) {
-                oActivityFilter.setSelectedKey("ALL");
-            }
-        },
-
-        /**
-         * Handles the activity filter change
-         * Filters the table based on activity status in gap_desc field
-         */
-        onActivityFilterChange: function (oEvent) {
-            var sSelectedKey = oEvent.getParameter("selectedItem").getKey();
-            var oTable = this.byId("materialsTable");
-            var oBinding = oTable.getBinding("items");
-
-            if (!oBinding) {
-                return;
+            // Filter materialsTable to show only category GENERAL
+            var oMaterialsTable = this.byId("materialsTable");
+            var oBinding = oMaterialsTable.getBinding("items");
+            if (oBinding) {
+                oBinding.filter(new Filter("category", "EQ", "GENERAL"));
             }
 
-            var aFilters = [];
+            oModel.read(sPath + "/to_BOMResults", {
+                urlParameters: {
+                    "$expand": "to_Children"
+                },
+                success: function (oData) {
 
-            if (sSelectedKey !== "ALL") {
-                if (sSelectedKey === "N/A") {
-                    // Filter for items that don't have activity info (no "Activity:" in gap_desc)
-                    // We use a custom filter function
-                    aFilters.push(new Filter({
-                        path: "gap_desc",
-                        test: function (sValue) {
-                            return !sValue || sValue.indexOf("Activity:") === -1;
+                    // 1. Normalize children arrays
+                    oData.results.forEach(node => {
+                        if (node.to_Children && node.to_Children.results && node.to_Children.results.length > 0) {
+                            node.to_Children = node.to_Children.results;
+                            node.to_Children.forEach(child => {
+                                child.to_Children = null; // Prevent deeper nesting
+                            });
+                        } else {
+                            node.to_Children = null;
                         }
-                    }));
-                } else {
-                    // Filter for specific activity status (ACTIVE, INACTIVE, DORMANT)
-                    aFilters.push(new Filter({
-                        path: "gap_desc",
-                        test: function (sValue) {
-                            return sValue && sValue.indexOf("Activity: " + sSelectedKey) !== -1;
-                        }
-                    }));
-                }
-            }
+                    });
 
-            oBinding.filter(aFilters);
+                    // 2. Keep ONLY root nodes
+                    const aRoots = oData.results.filter(function (item) {
+                        return !item.parent_node_id;
+                    });
 
-            // Show message with result count
-            var iCount = oBinding.getLength();
-            MessageToast.show(iCount + " item(s) found");
+                    console.log(aRoots)
+
+                    const oJsonModel = new sap.ui.model.json.JSONModel(aRoots);
+                    this.getView().setModel(oJsonModel, "bom");
+                }.bind(this)
+            });
         },
 
         onNavBack: function() {
@@ -182,6 +170,18 @@ sap.ui.define([
                 .finally(function () {
                     oSheet.destroy();
                 });
+        },
+
+        onBomRowPress: function (oEvent) {
+            var oSource = oEvent.getSource();
+            var oContext = oSource.getBindingContext();
+            var oData = oContext.getObject();
+            
+            // Toggle expansion only for parent nodes
+            if (oData.node_level === 0) {
+                oData._expanded = !oData._expanded;
+                oContext.getModel().refresh(true);
+            }
         }
     });
 });
