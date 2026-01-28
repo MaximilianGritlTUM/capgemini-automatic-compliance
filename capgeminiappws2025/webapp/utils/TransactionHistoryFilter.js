@@ -87,7 +87,7 @@ sap.ui.define([], function () {
          */
         _loadTransactionHistory: function (oModel) {
             return new Promise(function (resolve, reject) {
-                oModel.read("/Z_I_TA_HISTORYLINE", {
+                oModel.read("/TransactionalHistory", {
                     urlParameters: {
                         "$select": "Material,PostingDate"
                     },
@@ -95,7 +95,7 @@ sap.ui.define([], function () {
                         resolve(oData.results || []);
                     },
                     error: function (oError) {
-                        console.warn("Could not load Z_I_TA_HISTORYLINE:", oError);
+                        console.warn("Could not load TransactionalHistory:", oError);
                         resolve([]); // Return empty array on error
                     }
                 });
