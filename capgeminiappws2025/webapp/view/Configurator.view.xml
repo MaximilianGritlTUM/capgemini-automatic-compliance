@@ -148,7 +148,6 @@
                                 icon="sap-icon://add"
                                 type="Transparent"
                                 press=".onPressAddRule"
-                                enabled="false"
                             />
                         </HBox>
 
