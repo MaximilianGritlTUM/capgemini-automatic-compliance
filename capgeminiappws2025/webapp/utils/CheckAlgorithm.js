@@ -39,7 +39,7 @@ sap.ui.define([
                 this._fieldProcessor.preloadWhitelists().catch(function (oError) {
                     console.warn("Whitelist preload failed, continuing without validation:", oError);
                 }),
-                TransactionHistoryFilter.loadMaterialActivityStatus(oModel, 6).then(function (mActivityStatus) {
+                TransactionHistoryFilter.loadMaterialActivityStatus(oModel, 72).then(function (mActivityStatus) {
                     self._materialActivityStatus = mActivityStatus;
                     console.log("Material activity status loaded for", mActivityStatus.size, "materials");
                 }).catch(function (oError) {

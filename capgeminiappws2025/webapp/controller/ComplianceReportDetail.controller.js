@@ -48,7 +48,7 @@ sap.ui.define([
                         error: function () { resolve({ results: [] }); }
                     });
                 }),
-                TransactionHistoryFilter.loadMaterialActivityStatus(oModel, 6).catch(function () {
+                TransactionHistoryFilter.loadMaterialActivityStatus(oModel, 72).catch(function () {
                     return new Map();
                 })
             ]).then(function (aRes) {
