@@ -805,6 +805,9 @@ sap.ui.define(
                     }
 
                     oModel.read("/Z_I_ZREG_COUNTRY", {
+                        filters: [
+                            new Filter("Role", FilterOperator.EQ, "Target Market") 
+                        ],
                         urlParameters: {
                             "$select": "Country_Code",
                             "$top": "5000"
@@ -858,7 +861,10 @@ sap.ui.define(
 
                 // 1) Get all Regid values for the selected Country_Code
                 oModel.read("/Z_I_ZREG_COUNTRY", {
-                    filters: [new Filter("Country_Code", FilterOperator.EQ, sCode)],
+                    filters: [
+                        new Filter("Role", FilterOperator.EQ, "Target Market"),
+                        new Filter("Country_Code", FilterOperator.EQ, sCode)
+                    ],
                     urlParameters: {
                         "$select": "Regid",
                         "$top": "5000"
