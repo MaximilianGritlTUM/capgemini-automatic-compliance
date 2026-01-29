@@ -26,11 +26,26 @@
                                     text="Active Regulations"
                                     level="H5"
                                 />
-                                <ToolbarSpacer />                           
+                                <ToolbarSpacer /> 
+                                <Button
+                                    id="btnSelectMarket"
+                                    text="{= ${ui>/selectedMarket} ? 'Market: ' + ${ui>/selectedMarket} : 'Select Market' }"
+                                    icon="sap-icon://world"
+                                    type="Transparent"
+                                    press=".onPressSelectMarket"
+                                />
+
+                                <Button
+                                    icon="sap-icon://sys-cancel"
+                                    tooltip="Clear market filter"
+                                    visible="{= !!${ui>/selectedMarket} }"
+                                    press=".onClearMarketFilter"
+                                />
+
                                 <Button
                                     text="Add Regulation"
                                     icon="sap-icon://add"
-                                    type="Emphasized"
+                                    type="Transparent"
                                     press="onPressAddRegulation"
                                 />
                             </Toolbar>
@@ -131,6 +146,7 @@
                             <Button
                                 text="Add Rule"
                                 icon="sap-icon://add"
+                                type="Transparent"
                                 press=".onPressAddRule"
                             />
                         </HBox>
