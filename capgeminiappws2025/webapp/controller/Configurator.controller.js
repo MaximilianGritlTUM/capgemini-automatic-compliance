@@ -765,7 +765,7 @@ sap.ui.define(
                         var sCode = oItem ? oItem.getTitle() : "";
 
                         this.getView().getModel("ui").setProperty("/selectedMarket", sCode);
-                        this._applyMarketFilterV2(sCode);
+                        this._applyIntersectionFiltersV2();
                     }.bind(this),
 
                     cancel: function () {
@@ -792,8 +792,122 @@ sap.ui.define(
 
             onClearMarketFilter: function () {
                 this.getView().getModel("ui").setProperty("/selectedMarket", "");
-                this._applyMarketFilterV2("");
+                this._applyIntersectionFiltersV2();
             },
+            onPressSelectOrigin: function () {
+                this._ensureOriginDialog()
+                    .then(function () {
+                        this._oOriginDialog.open();
+                    }.bind(this))
+                    .catch(function (e) {
+                        console.error("Origin dialog error:", e);
+                        MessageBox.error("Could not load origins.");
+                    });
+            },
+
+            _ensureOriginDialog: function () {
+                if (this._oOriginDialog) {
+                    return Promise.resolve();
+                }
+
+                this._oOriginDialog = new SelectDialog({
+                    title: "Select Origin",
+
+                    search: function (oEvent) {
+                        var sValue = (oEvent.getParameter("value") || "").trim().toUpperCase();
+                        var oBinding = oEvent.getSource().getBinding("items");
+
+                        if (!oBinding) {
+                            return;
+                        }
+
+                        oBinding.filter(
+                            sValue
+                                ? [new Filter("Country_Code", FilterOperator.Contains, sValue)]
+                                : []
+                        );
+                    },
+
+                    confirm: function (oEvent) {
+                        var oItem = oEvent.getParameter("selectedItem");
+                        var sCode = oItem ? oItem.getTitle() : "";
+
+                        this.getView().getModel("ui").setProperty("/selectedOrigin", sCode);
+                        this._applyIntersectionFiltersV2();
+                    }.bind(this),
+
+                    cancel: function () {
+                        // dialog closes automatically
+                    }
+                });
+
+                return this._loadDistinctOriginsV2().then(function (aOrigins) {
+                    this._oOriginDialog.setModel(
+                        new JSONModel({ Origins: aOrigins }),
+                        "origins"
+                    );
+
+                    this._oOriginDialog.bindAggregation("items", {
+                        path: "origins>/Origins",
+                        template: new StandardListItem({
+                            title: "{origins>Country_Code}"
+                        })
+                    });
+
+                    this.getView().addDependent(this._oOriginDialog);
+                }.bind(this));
+            },
+
+            onClearOriginFilter: function () {
+                this.getView().getModel("ui").setProperty("/selectedOrigin", "");
+                this._applyIntersectionFiltersV2();
+            },
+
+            _loadDistinctOriginsV2: function () {
+                var oModel = this.getView().getModel();
+
+                return new Promise(function (resolve, reject) {
+                    if (!oModel || typeof oModel.read !== "function") {
+                        reject(new Error("OData V2 model missing or read() not available."));
+                        return;
+                    }
+
+                    oModel.read("/Z_I_ZREG_COUNTRY", {
+                        filters: [
+                            new Filter("Role", FilterOperator.EQ, "Supplier Origin")
+                        ],
+                        urlParameters: {
+                            "$select": "Country_Code",
+                            "$top": "5000"
+                        },
+                        success: function (oData) {
+                            var aResults = (oData && oData.results) ? oData.results : [];
+
+                            var oSeen = Object.create(null);
+                            var aDistinct = [];
+
+                            aResults.forEach(function (r) {
+                                var sCode = r && r.Country_Code ? String(r.Country_Code).trim().toUpperCase() : "";
+                                if (!sCode || oSeen[sCode]) {
+                                    return;
+                                }
+                                oSeen[sCode] = true;
+                                aDistinct.push({ Country_Code: sCode });
+                            });
+
+                            aDistinct.sort(function (a, b) {
+                                return a.Country_Code.localeCompare(b.Country_Code);
+                            });
+
+                            resolve(aDistinct);
+                        },
+                        error: function (oErr) {
+                            reject(oErr);
+                        }
+                    });
+                });
+            },
+
             
             _loadDistinctMarketsV2: function () {
                 var oModel = this.getView().getModel();
@@ -841,25 +955,71 @@ sap.ui.define(
             },
 
 
-            _applyMarketFilterV2: function (sCountryCode) {
+_applyIntersectionFiltersV2: function () {
                 var oList = this.byId("regulationList");
                 var oBinding = oList && oList.getBinding("items");
                 var oModel = this.getView().getModel();
+                var oUI = this.getView().getModel("ui");
 
                 if (!oBinding) {
                     MessageBox.error("Regulation list binding not found. Expected List id='regulationList' with aggregation 'items'.");
                     return;
                 }
 
-                // Clear filter
-                if (!sCountryCode) {
+                var sMarket = (oUI.getProperty("/selectedMarket") || "").trim();
+                var sOrigin = (oUI.getProperty("/selectedOrigin") || "").trim();
+
+                // If both filters are empty, clear
+                if (!sMarket && !sOrigin) {
                     oBinding.filter([]);
                     return;
                 }
 
+                // If only one filter is set, apply it
+                if (sMarket && !sOrigin) {
+                    this._getMarketRegids(sMarket, function (aMarketRegids) {
+                        this._applyFilterByRegids(oBinding, aMarketRegids);
+                    }.bind(this));
+                    return;
+                }
+
+                if (sOrigin && !sMarket) {
+                    this._getOriginRegids(sOrigin, function (aOriginRegids) {
+                        this._applyFilterByRegids(oBinding, aOriginRegids);
+                    }.bind(this));
+                    return;
+                }
+
+                // Both filters are set: intersect them
+                Promise.all([
+                    new Promise(function (resolve) {
+                        this._getMarketRegids(sMarket, resolve);
+                    }.bind(this)),
+                    new Promise(function (resolve) {
+                        this._getOriginRegids(sOrigin, resolve);
+                    }.bind(this))
+                ]).then(function (results) {
+                    var aMarketRegids = results[0];
+                    var aOriginRegids = results[1];
+
+                    // Find intersection
+                    var oMarketSet = Object.create(null);
+                    aMarketRegids.forEach(function (sId) {
+                        oMarketSet[sId] = true;
+                    });
+
+                    var aIntersection = aOriginRegids.filter(function (sId) {
+                        return oMarketSet[sId];
+                    });
+
+                    this._applyFilterByRegids(oBinding, aIntersection);
+                }.bind(this));
+            },
+
+            _getMarketRegids: function (sCountryCode, fnCallback) {
+                var oModel = this.getView().getModel();
                 var sCode = String(sCountryCode).trim().toUpperCase();
 
-                // 1) Get all Regid values for the selected Country_Code
                 oModel.read("/Z_I_ZREG_COUNTRY", {
                     filters: [
                         new Filter("Role", FilterOperator.EQ, "Target Market"),
@@ -874,27 +1034,87 @@ sap.ui.define(
                         var aRegids = aResults
                             .map(function (r) { return r && r.Regid ? String(r.Regid) : ""; })
                             .filter(function (x) { return !!x; });
-
-                        // No match -> force empty
-                        if (aRegids.length === 0) {
-                            oBinding.filter([new Filter("Id", FilterOperator.EQ, "__NO_MATCH__")]);
-                            return;
-                        }
-
-                        // 2) OR filter on regulation Id
-                        var aIdFilters = aRegids.map(function (sId) {
-                            return new Filter("Id", FilterOperator.EQ, sId);
-                        });
-
-                        var oOrFilter = new Filter({ filters: aIdFilters, and: false });
-
-                        oBinding.filter([oOrFilter]);
+                        fnCallback(aRegids);
                     },
                     error: function (e) {
-                        console.error("Z_I_ZREG_COUNTRY read failed:", e);
+                        console.error("Z_I_ZREG_COUNTRY market read failed:", e);
                         MessageBox.error("Could not filter regulations for the selected market.");
+                        fnCallback([]);
                     }
                 });
+            },
+
+            _getOriginRegids: function (sCountryCode, fnCallback) {
+                var oModel = this.getView().getModel();
+                var sCode = String(sCountryCode).trim().toUpperCase();
+
+                oModel.read("/Z_I_ZREG_COUNTRY", {
+                    filters: [
+                        new Filter("Role", FilterOperator.EQ, "Supplier Origin"),
+                        new Filter("Country_Code", FilterOperator.EQ, sCode)
+                    ],
+                    urlParameters: {
+                        "$select": "Regid",
+                        "$top": "5000"
+                    },
+                    success: function (oData) {
+                        var aResults = (oData && oData.results) ? oData.results : [];
+                        var aRegids = aResults
+                            .map(function (r) { return r && r.Regid ? String(r.Regid) : ""; })
+                            .filter(function (x) { return !!x; });
+                        fnCallback(aRegids);
+                    },
+                    error: function (e) {
+                        console.error("Z_I_ZREG_COUNTRY origin read failed:", e);
+                        MessageBox.error("Could not filter regulations for the selected origin.");
+                        fnCallback([]);
+                    }
+                });
+            },
+
+            _applyFilterByRegids: function (oBinding, aRegids) {
+                if (!aRegids || aRegids.length === 0) {
+                    oBinding.filter([new Filter("Id", FilterOperator.EQ, "__NO_MATCH__")]);
+                    this._clearSelectionIfNotInRegids(aRegids);
+                    return;
+                }
+
+                var aIdFilters = aRegids.map(function (sId) {
+                    return new Filter("Id", FilterOperator.EQ, sId);
+                });
+
+                var oOrFilter = new Filter({ filters: aIdFilters, and: false });
+                oBinding.filter([oOrFilter]);
+                this._clearSelectionIfNotInRegids(aRegids);
+            },
+
+            _clearSelectionIfNotInRegids: function (aRegids) {
+                var oUI = this.getView().getModel("ui");
+                var sSelectedPath = oUI.getProperty("/selectedRegulationPath");
+
+                if (!sSelectedPath) {
+                    return; // No selection to check
+                }
+
+                // Extract ID from path (e.g., "/Z_I_ZREGULATION('123')" -> "123")
+                var sMatch = sSelectedPath.match(/\('([^']+)'\)/);
+                var sSelectedId = sMatch ? sMatch[1] : null;
+
+                if (!sSelectedId) {
+                    return;
+                }
+
+                // Check if selected ID is in the filtered regids
+                var bStillFiltered = aRegids.some(function (sId) {
+                    return String(sId) === String(sSelectedId);
+                });
+
+                if (!bStillFiltered) {
+                    // Selected regulation is no longer in filtered results - clear it
+                    oUI.setProperty("/selectedRegulationPath", null);
+                    this.byId("detailPanel").setVisible(false);
+                    this.byId("regulationList").removeSelections(true);
+                }
             },
 
             _initValueHelpModels: function () {

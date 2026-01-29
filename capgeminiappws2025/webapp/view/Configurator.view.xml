@@ -15,7 +15,7 @@
                 class="sapUiContentPadding"
             >
                 <!-- ================= LEFT CARD: Active Regulations ================= -->
-                <VBox class="sapUiSmallMarginEnd">
+                <VBox class="sapUiSmallMarginEnd" width="360px">
                     <Panel
                         class="sapUiResponsiveMargin"
                         backgroundDesign="Solid"
@@ -26,22 +26,7 @@
                                     text="Active Regulations"
                                     level="H5"
                                 />
-                                <ToolbarSpacer /> 
-                                <Button
-                                    id="btnSelectMarket"
-                                    text="{= ${ui>/selectedMarket} ? 'Market: ' + ${ui>/selectedMarket} : 'Select Market' }"
-                                    icon="sap-icon://world"
-                                    type="Transparent"
-                                    press=".onPressSelectMarket"
-                                />
-
-                                <Button
-                                    icon="sap-icon://sys-cancel"
-                                    tooltip="Clear market filter"
-                                    visible="{= !!${ui>/selectedMarket} }"
-                                    press=".onClearMarketFilter"
-                                />
-
+                                <ToolbarSpacer />
                                 <Button
                                     text="Add Regulation"
                                     icon="sap-icon://add"
@@ -50,6 +35,41 @@
                                 />
                             </Toolbar>
                         </headerToolbar>
+
+                        <HBox class="sapUiTinyMarginTop sapUiSmallMarginBegin sapUiSmallMarginEnd" width="100%" justifyContent="End">
+                            <Button
+                                icon="sap-icon://sys-cancel"
+                                tooltip="Clear market filter"
+                                visible="{= !!${ui>/selectedMarket} }"
+                                type="Transparent"
+                                press=".onClearMarketFilter"
+                                class="sapUiTinyMarginEnd"
+                            />
+                            <Button
+                                id="btnSelectMarket"
+                                text="{= ${ui>/selectedMarket} ? 'Market: ' + ${ui>/selectedMarket} : 'Select Market' }"
+                                icon="sap-icon://world"
+                                type="Transparent"
+                                press=".onPressSelectMarket"
+                                class="sapUiTinyMarginEnd"
+                            />
+
+                            <Button
+                                icon="sap-icon://sys-cancel"
+                                tooltip="Clear origin filter"
+                                visible="{= !!${ui>/selectedOrigin} }"
+                                type="Transparent"
+                                press=".onClearOriginFilter"
+                                class="sapUiTinyMarginEnd"
+                            />
+                            <Button
+                                id="btnSelectOrigin"
+                                text="{= ${ui>/selectedOrigin} ? 'Origin: ' + ${ui>/selectedOrigin} : 'Select Origin' }"
+                                icon="sap-icon://group"
+                                type="Transparent"
+                                press=".onPressSelectOrigin"
+                            />
+                        </HBox>
 
                         <List
                             id="regulationList"
@@ -118,6 +138,9 @@
                     id="detailPanel"
                     visible="false"
                 >
+                    <layoutData>
+                        <FlexItemData growFactor="1" />
+                    </layoutData>
                     <Panel
                         class="sapUiResponsiveMargin"
                         backgroundDesign="Solid"
