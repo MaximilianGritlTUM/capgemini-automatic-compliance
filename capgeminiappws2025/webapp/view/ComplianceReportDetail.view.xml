@@ -5,7 +5,7 @@
     xmlns:core="sap.ui.core"
     xmlns:table="sap.ui.table">
 
-    <Page id="reportDetailPage" title="Regulatory Readiness Report">
+    <Page id="reportDetailPage" title="Regulatory Readiness Report" enableScrolling="true">
         <headerContent>
             <!-- Export Button -->
             <Button
@@ -144,6 +144,8 @@
                                     }
                                 }"
                                 width="100%"
+                                visibleRowCountMode="Fixed"
+                                visibleRowCount="10"
                                 selectionMode="None">
 
                                 <table:columns>
