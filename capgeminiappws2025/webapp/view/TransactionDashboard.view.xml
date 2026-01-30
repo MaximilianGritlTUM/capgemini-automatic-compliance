@@ -5,81 +5,145 @@
   xmlns:core="sap.ui.core"
   displayBlock="true">
 
-  <Page title="Compliance - Exception Dashboard">
+  <Page title="Transactional History Board">
     <content>
       <VBox class="sapUiSmallMargin sapUiContentPadding">
 
-        <!-- Filter Bar -->
-        <Toolbar>
-          <Title text="Filters" level="H3"/>
-          <ToolbarSpacer/>
-
-          <Label text="From" class="sapUiTinyMarginEnd"/>
-          <DatePicker id="dpFrom" width="10rem"/>
-
-          <Label text="To" class="sapUiTinyMarginBegin sapUiTinyMarginEnd"/>
-          <DatePicker id="dpTo" width="10rem"/>
-
-          <Label text="Plant" class="sapUiTinyMarginBegin sapUiTinyMarginEnd"/>
-          <Input id="inPlant" width="7rem" placeholder="e.g. 1000"/>
-
-          <Button text="Apply" type="Emphasized" press=".onApply" class="sapUiTinyMarginBegin"/>
-          <Button text="Reset" press=".onReset" class="sapUiTinyMarginBegin"/>
-        </Toolbar>
-
-        <!-- KPI Row -->
-        <HBox class="sapUiSmallMarginTop" justifyContent="SpaceBetween" wrap="Wrap">
-          <VBox width="32%">
-            <ObjectStatus title="Total Exceptions"
-              text="{vm>/kpi/total}"
-              state="Information"/>
-          </VBox>
-
-          <VBox width="32%">
-            <ObjectStatus title="Adjustments (701/702)"
-              text="{vm>/kpi/adjustment}"
-              state="Warning"/>
-          </VBox>
-
-          <VBox width="32%">
-            <ObjectStatus title="Reversals (102/122/262/602)"
-              text="{vm>/kpi/reversal}"
-              state="Error"/>
-          </VBox>
-        </HBox>
-
-        <!-- Top Materials Table -->
-        <Table
-          id="tblTopMaterials"
+        <IconTabBar
+          id="tabBar"
           class="sapUiSmallMarginTop"
-          headerText="Top Materials (by exception count)"
-          growing="true"
-          growingScrollToLoad="true"
-          mode="None"
-          items="{vm>/topMaterials}">
-
-          <columns>
-            <Column width="16rem">
-              <Text text="Material"/>
-            </Column>
-            <Column hAlign="End" width="10rem">
-              <Text text="Exception Count"/>
-            </Column>
-          </columns>
+          selectedKey="{vm>/mode}"
+          select=".onTabSelect">
 
           <items>
-            <ColumnListItem>
-              <cells>
-                <Text text="{vm>Material}"/>
-                <ObjectNumber number="{vm>ExceptionCount}"/>
-              </cells>
-            </ColumnListItem>
-          </items>
-        </Table>
 
-        <!-- Optional: Raw Exceptions count info -->
-        <Text class="sapUiTinyMarginTop"
-          text="Tip: If KPIs are 0, check browser Network tab for the /Exceptions call and verify EntitySet name."/>
+            <!-- Transactional History -->
+            <IconTabFilter key="COM" text="Transactional History" icon="sap-icon://business-objects-experience">
+
+              <!-- Toggle in the top toolbar -->
+              <Toolbar class="sapUiSmallMarginTop">
+                <Title text="Top Materials (Frequency / Quantity)" level="H3"/>
+                <ToolbarSpacer/>
+                <SearchField
+                    id="sfMaterial"
+                    width="16rem"
+                    placeholder="Search material in Top N ..."
+                    liveChange=".onMaterialSearchLive"
+                    search=".onMaterialSearch" />
+                <Select
+                    id="selTopN"
+                    width="6rem"
+                    selectedKey="{vm>/com/topN}"
+                    change=".onTopNChange">
+                    <items>
+                      <core:Item key="20" text="20"/>
+                      <core:Item key="50" text="50"/>
+                      <core:Item key="100" text="100"/>
+                      <core:Item key="200" text="200"/>
+                    </items>
+                </Select>
+
+                <SegmentedButton
+                  selectedKey="{vm>/com/sortBy}"
+                  selectionChange=".onSortSelect"
+                  width="20rem">
+                  <items>
+                    <SegmentedButtonItem key="FREQ" text="Top Frequency" icon="sap-icon://number-sign"/>
+                    <SegmentedButtonItem key="VOL"  text="Top Quantity"  icon="sap-icon://measure"/>
+                  </items>
+                </SegmentedButton>
+              </Toolbar>
+
+              <!-- KPI: Top N -->
+              <HBox class="sapUiSmallMarginTop" justifyContent="SpaceBetween" wrap="Wrap">
+                <VBox width="49%">
+                  <ObjectStatus title="Total Movements (Top N only)"
+                    text="{vm>/com/kpi/totalMovements}"
+                    state="Information"/>
+                </VBox>
+
+                <VBox width="49%">
+                  <ObjectStatus title="Total Quantity (Top N only)"
+                    text="{vm>/com/kpi/totalVolume}"
+                    state="Success"/>
+                </VBox>
+              </HBox>
+
+              <Text class="sapUiTinyMarginTop" text="{vm>/com/note}"/>
+
+              <!-- OData Binding Table -->
+              <Table
+                id="tblTopMaterialsCom"
+                class="sapUiSmallMarginTop"
+                headerText="Results are sorted with Top Frequency/Top Quantity"
+                growing="false"
+                mode="None">
+
+                <columns>
+                  <Column width="16rem"><Text text="Material"/></Column>
+                  <Column width="8rem"><Text text="Plant"/></Column>
+                  <Column hAlign="End" width="10rem"><Text text="Frequency"/></Column>
+                  <Column hAlign="End" width="10rem"><Text text="Quantity"/></Column>
+                  <Column width="6rem"><Text text="UoM"/></Column>
+                  <Column hAlign="End" width="8rem"><Text text="Last Date"/></Column>
+                </columns>
+
+              </Table>
+
+            </IconTabFilter>
+
+            <!-- Exceptions Tab SECOND  -->
+            <IconTabFilter key="EX" text="Exceptions" icon="sap-icon://alert">
+
+              <HBox class="sapUiSmallMarginTop" justifyContent="SpaceBetween" wrap="Wrap">
+                <VBox width="32%">
+                  <ObjectStatus title="Total Exceptions"
+                    text="{vm>/ex/kpi/total}"
+                    state="Information"/>
+                </VBox>
+
+                <VBox width="32%">
+                  <ObjectStatus title="Adjustments (701/702)"
+                    text="{vm>/ex/kpi/adjustment}"
+                    state="Warning"/>
+                </VBox>
+
+                <VBox width="32%">
+                  <ObjectStatus title="Reversals (102/122/262/602)"
+                    text="{vm>/ex/kpi/reversal}"
+                    state="Error"/>
+                </VBox>
+              </HBox>
+
+              <Table
+                id="tblTopMaterialsEx"
+                class="sapUiSmallMarginTop"
+                headerText="Top Materials (by exception count)"
+                growing="true"
+                growingScrollToLoad="true"
+                mode="None"
+                items="{vm>/ex/topMaterials}">
+
+                <columns>
+                  <Column width="16rem"><Text text="Material"/></Column>
+                  <Column hAlign="End" width="10rem"><Text text="Exception Count"/></Column>
+                </columns>
+
+                <items>
+                  <ColumnListItem>
+                    <cells>
+                      <Text text="{vm>Material}"/>
+                      <ObjectNumber number="{vm>ExceptionCount}"/>
+                    </cells>
+                  </ColumnListItem>
+                </items>
+              </Table>
+
+            </IconTabFilter>
+
+          </items>
+        </IconTabBar>
+
       </VBox>
     </content>
   </Page>
