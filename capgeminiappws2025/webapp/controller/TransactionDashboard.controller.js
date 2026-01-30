@@ -20,7 +20,6 @@ sap.ui.define([
           sortBy: "FREQ", // FREQ or VOL
           topN: "50",
           query: "",
-          note: "Note: KPIs below are calculated from the loaded Top N rows (not the full dataset).",
           kpi: { totalMovements: 0, totalVolume: 0 }
         }
       });

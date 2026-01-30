@@ -9,8 +9,7 @@
             <VBox class="sapUiResponsiveMargin">
                 
                 <VBox class="sapUiSmallMarginBottom">
-                    <Title text="Welcome back, Marcel" level="H1" />
-                    <Text text="You have 5 pending reports to review today." />
+                    <Title text="Welcome" level="H1" />
                 </VBox>
 
                 <Title text="Quick Actions" level="H3" class="sapUiSmallMarginBottom" />
@@ -35,7 +34,7 @@
                             press=".onNavToReports"
                             class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
                             <TileContent footer="{dashboard>/TodayCount} New Items">
-                                <ImageContent src="sap-icon://report" />
+                                <ImageContent src="sap-icon://manager-insight" />
                             </TileContent>
                         </GenericTile>
 
