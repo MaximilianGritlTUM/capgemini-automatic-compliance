@@ -75,7 +75,7 @@ sap.ui.define([
             });
         },
 
-        onNavToReports: function (oEvent) {
+        onClickToReports: function (oEvent) {
             var oItem = oEvent.getSource();
             var oCtx = oItem.getBindingContext("dashboard");
             var sReportId = oCtx.getProperty("report_id");

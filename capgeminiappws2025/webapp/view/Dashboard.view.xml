@@ -60,7 +60,7 @@
                         <Column hAlign="End"><Text text="Status" /></Column>
                     </columns>
                     <items>
-                        <ColumnListItem type="Navigation" press=".onNavToReports">
+                        <ColumnListItem type="Navigation" press=".onClickToReports">
                             <cells>
                                 <Text text="{dashboard>report_id}" /> 
                                 <ObjectStatus 
