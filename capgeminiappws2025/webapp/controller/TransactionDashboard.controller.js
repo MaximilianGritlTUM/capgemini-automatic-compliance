@@ -2,26 +2,20 @@ sap.ui.define([
   "sap/ui/core/mvc/Controller",
   "sap/ui/model/json/JSONModel",
   "sap/m/MessageToast",
-  "sap/ui/model/Sorter"
-], function (Controller, JSONModel, MessageToast, Sorter) {
+  "sap/ui/model/Sorter",
+  "sap/ui/model/Filter",
+  "sap/ui/model/FilterOperator"
+], function (Controller, JSONModel, MessageToast, Sorter, Filter, FilterOperator) {
   "use strict";
 
   return Controller.extend("capgeminiappws2025.controller.TransactionDashboard", {
 
     _ENTITY: {
-      EXCEPTIONS: "/Exceptions",
       HIST_SUMMARY: "/TASummary"
     },
 
     onInit: function () {
       const oVm = new JSONModel({
-        mode: "COM",
-
-        ex: {
-          kpi: { total: 0, adjustment: 0, reversal: 0 },
-          topMaterials: []
-        },
-
         com: {
           sortBy: "FREQ", // FREQ or VOL
           topN: "50",
@@ -33,15 +27,17 @@ sap.ui.define([
       this.getView().setModel(oVm, "vm");
 
       this._bindCommercialTable();
-
       this._applyCommercialSort();
     },
 
-    onMaterialSearchLive: function (oEvent) {
-    const s = (oEvent.getParameter("newValue") || "").trim();
-    this.getView().getModel("vm").setProperty("/com/query", s);
+    /* =========================
+       Search Logic
+       ========================= */
 
-    this._debouncedApplyCommercialQuery();
+    onMaterialSearchLive: function (oEvent) {
+      const s = (oEvent.getParameter("newValue") || "").trim();
+      this.getView().getModel("vm").setProperty("/com/query", s);
+      this._debouncedApplyCommercialQuery();
     },
 
     onMaterialSearch: function (oEvent) {
@@ -56,62 +52,53 @@ sap.ui.define([
     },
 
     _applyCommercialQuery: function () {
-    const oTable = this.byId("tblTopMaterialsCom");
-    const oBinding = oTable && oTable.getBinding("items");
-    if (!oBinding) return;
+      const oTable = this.byId("tblTopMaterialsCom");
+      const oBinding = oTable && oTable.getBinding("items");
+      if (!oBinding) return;
 
-    const oVm = this.getView().getModel("vm");
-    const sSortKey = oVm.getProperty("/com/sortBy") || "FREQ";
-    const sQuery = (oVm.getProperty("/com/query") || "").trim();
-
-    const sPath = (sSortKey === "VOL") ? "TotalQuantity" : "MovementCount";
-    oBinding.sort([
-      new sap.ui.model.Sorter(sPath, true),
-      new sap.ui.model.Sorter("LastDate", true)
-    ]);
-
-
-    const aFilters = [];
-    if (sQuery) {
-      aFilters.push(new sap.ui.model.Filter("Material", sap.ui.model.FilterOperator.Contains, sQuery));
-    }
-    oBinding.filter(aFilters);
-    },
-
-    onTopNChange: function (oEvent) {
-        const sKey = oEvent.getSource().getSelectedKey(); // "20","50","100","200"
-        this.getView().getModel("vm").setProperty("/com/topN", sKey); 
-
-        this._rebindCommercialTable();
-        MessageToast.show("Top " + sKey);
-    },
-
-    _rebindCommercialTable: function () {
-        const oTable = this.byId("tblTopMaterialsCom");
-        if (!oTable) return;
-
-        oTable.unbindItems();
-        this._bindCommercialTable();
-
-        this._applyCommercialQuery();
-    },
-
-
-
-    onTabSelect: function (oEvent) {
-      const sKey = oEvent.getParameter("key");
       const oVm = this.getView().getModel("vm");
-      oVm.setProperty("/mode", sKey);
+      const sSortKey = oVm.getProperty("/com/sortBy") || "FREQ";
+      const sQuery = (oVm.getProperty("/com/query") || "").trim();
 
-      if (sKey === "COM") {
-        this._applyCommercialSort();
-      } else {
-        this._loadExceptionsAndBuildDashboard();
+      // Sort 재적용
+      const sPath = (sSortKey === "VOL") ? "TotalQuantity" : "MovementCount";
+      oBinding.sort([
+        new Sorter(sPath, true),
+        new Sorter("LastDate", true)
+      ]);
+
+      // Filter 적용
+      const aFilters = [];
+      if (sQuery) {
+        aFilters.push(new Filter("Material", FilterOperator.Contains, sQuery));
       }
+      oBinding.filter(aFilters);
     },
 
     /* =========================
-       Commercial
+       Top N Logic
+       ========================= */
+
+    onTopNChange: function (oEvent) {
+      const sKey = oEvent.getSource().getSelectedKey(); // "20","50","100","200"
+      this.getView().getModel("vm").setProperty("/com/topN", sKey);
+
+      this._rebindCommercialTable();
+      MessageToast.show("Top " + sKey);
+    },
+
+    _rebindCommercialTable: function () {
+      const oTable = this.byId("tblTopMaterialsCom");
+      if (!oTable) return;
+
+      oTable.unbindItems();
+      this._bindCommercialTable();
+      this._applyCommercialQuery();
+    },
+
+
+    /* =========================
+       Commercial Table Logic
        ========================= */
 
     onSortSelect: function (oEvent) {
@@ -149,8 +136,7 @@ sap.ui.define([
       oTable.bindItems({
         path: this._ENTITY.HIST_SUMMARY,
         template: oTemplate,
-        //parameters: { "$top": iTopN },
-        length: iTopN,
+        length: iTopN, 
         events: { dataReceived: this._onCommercialDataReceived.bind(this) }
       });
     },
@@ -188,54 +174,7 @@ sap.ui.define([
       const oVm = this.getView().getModel("vm");
       oVm.setProperty("/com/kpi/totalMovements", totalMovements);
       oVm.setProperty("/com/kpi/totalVolume", totalVolume);
-    },
-
-    /* =========================
-       Exceptions (기존 유지)
-       ========================= */
-
-    _loadExceptionsAndBuildDashboard: function () {
-      const oOData = this.getOwnerComponent().getModel();
-      if (!oOData) {
-        MessageToast.show("OData model not found (default model).");
-        return;
-      }
-
-      oOData.read(this._ENTITY.EXCEPTIONS, {
-        urlParameters: { "$top": 5000 },
-        success: (oData) => {
-          const aRows = (oData && oData.results) ? oData.results : [];
-
-          let total = 0, adj = 0, rev = 0;
-          const byMaterial = new Map();
-
-          for (let i = 0; i < aRows.length; i++) {
-            const r = aRows[i];
-            total += 1;
-
-            if (r.ExceptionType === "ADJUSTMENT") adj += 1;
-            else if (r.ExceptionType === "REVERSAL") rev += 1;
-
-            const m = (r.Material && String(r.Material).trim()) ? r.Material : "(blank)";
-            byMaterial.set(m, (byMaterial.get(m) || 0) + 1);
-          }
-
-          const aTop = Array.from(byMaterial.entries())
-            .map(([Material, ExceptionCount]) => ({ Material, ExceptionCount }))
-            .sort((a, b) => b.ExceptionCount - a.ExceptionCount)
-            .slice(0, 20);
-
-          const oVm = this.getView().getModel("vm");
-          oVm.setProperty("/ex/kpi/total", total);
-          oVm.setProperty("/ex/kpi/adjustment", adj);
-          oVm.setProperty("/ex/kpi/reversal", rev);
-          oVm.setProperty("/ex/topMaterials", aTop);
-        },
-        error: () => {
-          MessageToast.show("Failed to load Exceptions.");
-        }
-      });
     }
-
+    
   });
 });
