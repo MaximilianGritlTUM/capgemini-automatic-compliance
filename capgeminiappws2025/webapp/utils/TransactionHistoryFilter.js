@@ -3,7 +3,7 @@
  *
  * Utility for classifying materials based on transaction history.
  * Determines activity status (ACTIVE, INACTIVE, DORMANT) by analyzing
- * posting dates from Z_I_TA_HISTORYLINE.
+ * posting dates from TAHistRelevantMats (BOM-relevant materials only).
  *
  * @module utils/TransactionHistoryFilter
  */
@@ -30,8 +30,8 @@ sap.ui.define([], function () {
         ActivityStatus: ActivityStatus,
 
         /**
-         * Loads material activity status by cross-referencing Z_I_Materials
-         * with Z_I_TA_HISTORYLINE transaction data.
+         * Loads material activity status from TAHistRelevantMats, which
+         * contains only transaction history for materials present in the BOM.
          *
          * @param {sap.ui.model.odata.v2.ODataModel} oModel - The OData model
          * @param {number} [iMonths=12] - Number of months to consider as "recent"
@@ -45,49 +45,31 @@ sap.ui.define([], function () {
             var dCutoffDate = new Date();
             dCutoffDate.setMonth(dCutoffDate.getMonth() - iMonths);
 
-            return Promise.all([
-                self._loadMaterials(oModel),
-                self._loadTransactionHistory(oModel)
-            ]).then(function (aResults) {
-                var aMaterials = aResults[0];
-                var aTransactions = aResults[1];
+            return self._loadTransactionHistory(oModel).then(function (aTransactions) {
+                // Extract unique materials from the results
+                var aMaterials = [];
+                var sSeenMaterials = new Set();
+                aTransactions.forEach(function (oTx) {
+                    if (!sSeenMaterials.has(oTx.Material)) {
+                        sSeenMaterials.add(oTx.Material);
+                        aMaterials.push({ Material: oTx.Material });
+                    }
+                });
 
                 return self._classifyAllMaterials(aMaterials, aTransactions, dCutoffDate);
             }).catch(function (oError) {
                 console.warn("Failed to load material activity status:", oError);
-                // Return empty map on failure - allow compliance check to continue
                 return new Map();
             });
         },
 
         /**
-         * Loads all materials from Z_I_Materials
-         * @private
-         */
-        _loadMaterials: function (oModel) {
-            return new Promise(function (resolve, reject) {
-                oModel.read("/Z_I_Materials", {
-                    urlParameters: {
-                        "$select": "Material"
-                    },
-                    success: function (oData) {
-                        resolve(oData.results || []);
-                    },
-                    error: function (oError) {
-                        console.warn("Could not load Z_I_Materials:", oError);
-                        resolve([]); // Return empty array on error
-                    }
-                });
-            });
-        },
-
-        /**
-         * Loads transaction history from Z_I_TA_HISTORYLINE
+         * Loads transaction history from TAHistRelevantMats (BOM-relevant materials only)
          * @private
          */
         _loadTransactionHistory: function (oModel) {
             return new Promise(function (resolve, reject) {
-                oModel.read("/TransactionalHistory", {
+                oModel.read("/TAHistRelevantMats", {
                     urlParameters: {
                         "$select": "Material,PostingDate"
                     },
@@ -95,8 +77,8 @@ sap.ui.define([], function () {
                         resolve(oData.results || []);
                     },
                     error: function (oError) {
-                        console.warn("Could not load TransactionalHistory:", oError);
-                        resolve([]); // Return empty array on error
+                        console.warn("Could not load TAHistRelevantMats:", oError);
+                        resolve([]);
                     }
                 });
             });
@@ -105,8 +87,8 @@ sap.ui.define([], function () {
         /**
          * Classifies all materials based on transaction history
          * @private
-         * @param {Array} aMaterials - Materials from Z_I_Materials
-         * @param {Array} aTransactions - Transactions from Z_I_TA_HISTORYLINE
+         * @param {Array} aMaterials - Unique materials extracted from transactions
+         * @param {Array} aTransactions - Transactions from TAHistRelevantMats
          * @param {Date} dCutoffDate - Cutoff date for "recent" transactions
          * @returns {Map<string, Object>} Map of Material -> activity info
          */
@@ -130,14 +112,6 @@ sap.ui.define([], function () {
                 var aMaterialTx = mTransactionsByMaterial.get(sMaterial) || [];
                 var oClassification = self._classifyMaterial(sMaterial, aMaterialTx, dCutoffDate);
                 mActivityStatus.set(sMaterial, oClassification);
-            });
-
-            // Also add materials that only exist in transaction history but not in Z_I_Materials
-            mTransactionsByMaterial.forEach(function (aTx, sMaterial) {
-                if (!mActivityStatus.has(sMaterial)) {
-                    var oClassification = self._classifyMaterial(sMaterial, aTx, dCutoffDate);
-                    mActivityStatus.set(sMaterial, oClassification);
-                }
             });
 
             console.log("Material activity classification complete:", mActivityStatus.size, "materials classified");

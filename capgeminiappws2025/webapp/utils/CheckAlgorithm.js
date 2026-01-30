@@ -154,12 +154,35 @@ sap.ui.define([
                     return rule.Viewname === "Z_I_Materials";
                 });
 
-                // Fetch all MaterialComposition records with expanded details
+                // Build OData filter from preloaded activity status to scope
+                // MaterialComposition to only BOM parents with transaction history.
+                // TAHistRelevantMats is an inner join of transaction history with
+                // MaterialComposition, so its Material values are valid ParentMaterial keys.
+                var aParentMaterials = [];
+                if (self._materialActivityStatus && self._materialActivityStatus.size > 0) {
+                    self._materialActivityStatus.forEach(function (value, key) {
+                        aParentMaterials.push(key);
+                    });
+                }
+
+                var oUrlParams = {
+                    "$expand": "to_ComponentMaterials,to_Material"
+                };
+
+                if (aParentMaterials.length > 0) {
+                    // Build filter: ParentMaterial eq 'MAT1' or ParentMaterial eq 'MAT2' ...
+                    var sFilter = aParentMaterials.map(function (sMat) {
+                        return "ParentMaterial eq '" + sMat + "'";
+                    }).join(" or ");
+                    oUrlParams["$filter"] = sFilter;
+                } else {
+                    // No activity data available — fall back to limited unfiltered fetch
+                    oUrlParams["$top"] = 1000;
+                }
+
+                // Fetch MaterialComposition records filtered to regulation-relevant BOMs
                 oModel.read("/MaterialComposition", {
-                    urlParameters: {
-                        "$top": 1000,
-                        "$expand": "to_ComponentMaterials,to_Material"
-                    },
+                    urlParameters: oUrlParams,
                     success: function (oCompData) {
                         var iNodeIdCounter = 1;
                         var oProcessedParentPromises = {}; // Map BomNumber -> Promise resolving to Parent Result
