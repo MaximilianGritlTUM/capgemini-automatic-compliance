@@ -39,7 +39,7 @@
                     <ColumnListItem>
                         <cells>
                             <Text text="{ProtocolID}" />
-                            <Text text="{Material}" />
+                            <Text text="{= ${Material} || ${Product} || ${MaterialDescription} || ${MaterialID} || ${ProductID} }" />
                             <Text text="{CNCode}" />
                             <Text text="{DDSReferenceID}" />
                             <Text text="{DDSVerificationID}" />

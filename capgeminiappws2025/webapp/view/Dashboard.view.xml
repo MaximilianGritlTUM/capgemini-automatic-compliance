@@ -42,7 +42,7 @@
                         unit="EA"
                         footer="Current Quarter">
                         <NumericContent
-                            value="{/Kpi/ActiveMaterials}"
+                            value="{parts: [{path: '/Kpi/ActiveMaterials'}, {path: '/Kpi/ActiveProducts'}], formatter: '.formatActiveMaterialsKpi'}"
                             valueColor="Good"
                             withMargin="false" />
                     </TileContent>
@@ -118,7 +118,7 @@
                 <items>
                     <ColumnListItem>
                         <cells>
-                            <Text text="{MaterialID}" />
+                            <Text text="{= ${Material} || ${Product} || ${MaterialDescription} || ${MaterialID} || ${ProductID} }" />
                             <Text text="{SupplierName}" />
                             <Text text="{Region}" />
                             <Text text="{Regulation}" />
