@@ -7,13 +7,26 @@
     "applicationVersion": {
       "version": "0.0.1"
     },
-    "title": "{{Capgemini Compliance Check}}",
+    "title": "{{appTitle}}",
     "description": "{{appDescription}}",
     "resources": "resources.json",
     "sourceTemplate": {
       "id": "@sap/generator-fiori:basic",
       "version": "1.19.1",
       "toolsId": "c51afef8-2a01-4fe6-ae75-0beda66caa08"
+    },
+    "crossNavigation": {
+      "inbounds": {
+        "app-preview": {
+          "semanticObject": "app",
+          "action": "preview",
+          "title": "App Preview",
+          "signature": {
+            "parameters": {},
+            "additionalParameters": "allowed"
+          }
+        }
+      }
     },
     "dataSources": {
       "Z_CONFIG_SRV_UI_VAN": {
