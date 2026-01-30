@@ -55,7 +55,9 @@
       "libs": {
         "sap.m": {},
         "sap.ui.core": {},
-        "sap.ui.layout": {}
+        "sap.ui.layout": {},
+        "sap.f": {},
+        "sap.suite.ui.microchart": {}
       }
     },
     "contentDensities": {
