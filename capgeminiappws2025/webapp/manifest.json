@@ -144,7 +144,7 @@
         },
         "configurator": {
           "viewId": "configurator",
-          "viewName": "Configurator",
+          "viewName": "configurator.ConfiguratorMain",
           "ControlId": "app",
           "viewLevel": 1
         },
