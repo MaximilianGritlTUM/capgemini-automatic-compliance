@@ -68,12 +68,17 @@
       "libs": {
         "sap.m": {},
         "sap.ui.core": {},
-        "sap.ui.layout": {}
+        "sap.ui.layout": {},
+        "sap.f": {},
+        "sap.suite.ui.microchart": {}
       }
     },
     "contentDensities": {
       "compact": true,
       "cozy": true
+    },
+    "config": {
+      "fullWidth": true
     },
     "models": {
       "i18n": {
@@ -130,6 +135,11 @@
           "name": "Regulation",
           "pattern": "regulation/{contextPath}",
           "target": "Regulation"
+        },
+        {
+          "pattern": "transactionDashboard",
+          "name": "TransactionDashboard",
+          "target": "TransactionDashboard"
         }
       ],
       "targets": {
@@ -161,6 +171,10 @@
           "viewName": "Regulation",
           "controlId": "app",
           "viewLevel": 2
+        },
+        "TransactionDashboard":{
+          "viewName": "TransactionDashboard",
+          "viewType": "XML"
         }
       }
     },
