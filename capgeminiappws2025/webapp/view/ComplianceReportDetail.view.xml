@@ -146,6 +146,7 @@
                                 width="100%"
                                 visibleRowCountMode="Fixed"
                                 visibleRowCount="10"
+                                rowHeight="48"
                                 selectionMode="None">
 
                                 <table:columns>
@@ -216,14 +217,14 @@
                                         width="150px">
                                         <Label text="Data Gaps" />
                                         <table:template>
-                                            <Text text="{bom>gap_desc}" />
+                                            <Text text="{bom>gap_desc}" maxLines="2" tooltip="{bom>gap_desc}" />
                                         </table:template>
                                     </table:Column>
                                     <table:Column
                                         width="200px">
                                         <Label text="Recommendations" />
                                         <table:template>
-                                            <Text text="{bom>recommendation}" />
+                                            <Text text="{bom>recommendation}" maxLines="2" tooltip="{bom>recommendation}" />
                                         </table:template>
                                     </table:Column>
                                 </table:columns>
