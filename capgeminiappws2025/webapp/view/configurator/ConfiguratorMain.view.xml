@@ -158,9 +158,20 @@
                         </VBox>
 
                         <mvc:XMLView viewName="capgeminiappws2025.view.configurator.ConfiguratorRules" />
-                        <mvc:XMLView viewName="capgeminiappws2025.view.configurator.ConfiguratorSupplierOrigin" />
-                        <mvc:XMLView viewName="capgeminiappws2025.view.configurator.ConfiguratorTargetMarket" />
-                        
+                        <VBox
+                            justifyContent="SpaceBetween"
+                            class="sapUiMediumMarginTop sapUiSmallMarginBegin sapUiSmallMarginEnd"
+                        ></VBox>
+                        <HBox class="sapUiSmallMargin">
+                            <mvc:XMLView viewName="capgeminiappws2025.view.configurator.ConfiguratorSupplierOrigin" />
+                            <mvc:XMLView viewName="capgeminiappws2025.view.configurator.ConfiguratorTargetMarket" />
+                        </HBox>
+                        <VBox
+                            justifyContent="SpaceBetween"
+                            class="sapUiSmallMarginBegin sapUiSmallMarginEnd"
+                        >
+                            <Text text="Note: Supplier Origin and Target Market currently are only used to filter the Regulations. They don't affect the readiness check results." class="sapUiTinyMargin"/>
+                        </VBox>
                         <!-- ===== Footer Actions ===== -->
                         <HBox
                             class="sapUiMediumMargin"
