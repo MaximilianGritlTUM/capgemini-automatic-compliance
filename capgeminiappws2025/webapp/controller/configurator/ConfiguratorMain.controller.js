@@ -235,6 +235,7 @@ sap.ui.define(
                 }
 
                 this.getOwnerComponent().getModel("ui").setProperty("/selectedRegulationPath", oContext.getPath());
+                this.getOwnerComponent().getModel("ui").setProperty("/selectedRegulationDescription", oContext.getObject().Description);
 
                 this.byId("detailPanel").setVisible(true)
             },

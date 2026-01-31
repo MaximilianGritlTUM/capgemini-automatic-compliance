@@ -146,14 +146,14 @@
                         backgroundDesign="Solid"
                     >
                         <!-- Header -->
-                        <VBox class="sapUiSmallMargin">
+                        <VBox class="sapUiSmallMargin sapUiMediumMarginTop">
                             <Title
-                                text="{Title}"
+                                text="Description"
                                 level="H4"
                             />
                             <Text
-                                text="{Description}"
-                                class="sapUiTinyMarginBottom"
+                                text="{ui>/selectedRegulationDescription}"
+                                class="sapUiTinyMarginBottom sapUiSmallMarginBegin"
                             />
                         </VBox>
 
