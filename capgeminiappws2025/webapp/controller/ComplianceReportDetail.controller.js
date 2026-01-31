@@ -108,31 +108,20 @@ sap.ui.define([
             }
         },
 
-        //TODO: Not fully Implemented. After connecting to the backend, needed to be change
         onExportReport: function () {
             var oView = this.getView();
 
-            // 1. Get the table from Material/Supplier
-
+            // 1. Extract Fields data (Materials + Suppliers)
+            var aFieldsData = [];
             var oMaterialsTable = oView.byId("materialsTable");
             var oSuppliersTable = oView.byId("suppliersTable");
 
-            if(!oMaterialsTable && !oSuppliersTable) {
-                MessageToast.show("No Tables found for export.");
-                return; 
-            }
-
-            //2. Extract binded data from each tables
-            var aExportData =[];
-            if(oMaterialsTable) {
-                oMaterialsTable.getItems().forEach(function(oItem) {
+            if (oMaterialsTable) {
+                oMaterialsTable.getItems().forEach(function (oItem) {
                     var oCtx = oItem.getBindingContext();
-                    if(!oCtx) {
-                        return;
-                    }
+                    if (!oCtx) { return; }
                     var oObj = oCtx.getObject();
-
-                    aExportData.push({
+                    aFieldsData.push({
                         Type: "Material",
                         ObjectId: oObj.object_id,
                         ObjectName: oObj.object_name,
@@ -144,14 +133,13 @@ sap.ui.define([
                     });
                 });
             }
-            
-             if (oSuppliersTable) {
+
+            if (oSuppliersTable) {
                 oSuppliersTable.getItems().forEach(function (oItem) {
                     var oCtx = oItem.getBindingContext();
                     if (!oCtx) { return; }
                     var oObj = oCtx.getObject();
-
-                    aExportData.push({
+                    aFieldsData.push({
                         Type: "Supplier",
                         ObjectId: oObj.object_id,
                         ObjectName: oObj.object_name,
@@ -164,40 +152,91 @@ sap.ui.define([
                 });
             }
 
-            if (!aExportData.length) {
+            // 2. Extract BOM data from the bom JSONModel
+            var aBomData = [];
+            var oBomModel = oView.getModel("bom");
+            if (oBomModel) {
+                var aBomRaw = oBomModel.getData() || [];
+                aBomRaw.forEach(function (oRoot) {
+                    var aNodes = [oRoot];
+                    if (oRoot.to_Children && oRoot.to_Children.length) {
+                        aNodes = aNodes.concat(oRoot.to_Children);
+                    }
+                    aNodes.forEach(function (oNode) {
+                        aBomData.push({
+                            ID: oNode.parent_matnr || "",
+                            Name: oNode.material_description || "",
+                            "BOM Number": oNode.bom_number || "",
+                            Plant: oNode.Plant || "",
+                            "Activity Status": oNode.activity_status || "",
+                            Availability: oNode.avail_cat || "",
+                            "Data Quality": oNode.data_quality || "",
+                            "Data Gaps": oNode.gap_desc || "",
+                            Recommendations: oNode.recommendation || ""
+                        });
+                    });
+                });
+            }
+
+            if (!aFieldsData.length && !aBomData.length) {
                 MessageToast.show("No data available to export.");
                 return;
             }
 
-            // 3. Define Excel column
-            var aCols = [
-                { label: "Type",                 property: "Type",                 type: "string" },
-                { label: "ID",                   property: "ObjectId",             type: "string" },
-                { label: "Name",                 property: "ObjectName",           type: "string" },
-                { label: "Availability",         property: "AvailabilityCategory", type: "string" },
-                { label: "Data Quality",         property: "DataQuality",          type: "string" },
-                { label: "Data Gaps / Activity", property: "GapDescription",       type: "string" },
-                { label: "Recommendations",      property: "Recommendation",       type: "string" },
-                { label: "Data Source",          property: "DataSource",           type: "string" }
-            ];
-            
-            var oSettings = {
-                workbook: {
-                    columns: aCols
-                },
-                dataSource: aExportData,
-                fileName: "ReadinessReport_Detail.xlsx",
-                worker: true
-            };
+            // 3. Build multi-sheet workbook using SheetJS (xlsx)
+            var that = this;
+            this._loadXlsx().then(function (XLSX) {
+                var wb = XLSX.utils.book_new();
 
-            var oSheet = new Spreadsheet(oSettings);
-            oSheet.build()
-                .then(function () {
-                    MessageToast.show("Report exported successfully.");
-                })
-                .finally(function () {
-                    oSheet.destroy();
-                });
+                // Fields sheet
+                if (aFieldsData.length) {
+                    var wsFields = XLSX.utils.json_to_sheet(aFieldsData, {
+                        header: ["Type", "ObjectId", "ObjectName", "AvailabilityCategory", "DataQuality", "GapDescription", "Recommendation", "DataSource"]
+                    });
+                    // Rename headers to friendly labels
+                    wsFields["A1"].v = "Type";
+                    wsFields["B1"].v = "ID";
+                    wsFields["C1"].v = "Name";
+                    wsFields["D1"].v = "Availability";
+                    wsFields["E1"].v = "Data Quality";
+                    wsFields["F1"].v = "Data Gaps / Activity";
+                    wsFields["G1"].v = "Recommendations";
+                    wsFields["H1"].v = "Data Source";
+                    XLSX.utils.book_append_sheet(wb, wsFields, "Fields");
+                }
+
+                // BOM sheet
+                if (aBomData.length) {
+                    var wsBom = XLSX.utils.json_to_sheet(aBomData);
+                    XLSX.utils.book_append_sheet(wb, wsBom, "BOM");
+                }
+
+                XLSX.writeFile(wb, "ReadinessReport_Detail.xlsx");
+                MessageToast.show("Report exported successfully.");
+            }).catch(function () {
+                MessageToast.show("Failed to load export library.");
+            });
+        },
+
+        /**
+         * Loads the SheetJS (xlsx) library dynamically from CDN.
+         * @returns {Promise} Resolves with the XLSX global object.
+         */
+        _loadXlsx: function () {
+            if (window.XLSX) {
+                return Promise.resolve(window.XLSX);
+            }
+            return new Promise(function (resolve, reject) {
+                var script = document.createElement("script");
+                script.src = "https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js";
+                script.onload = function () {
+                    resolve(window.XLSX);
+                };
+                script.onerror = function () {
+                    reject(new Error("Failed to load SheetJS library"));
+                };
+                document.head.appendChild(script);
+            });
         },
 
         onActivityFilterChange: function (oEvent) {
