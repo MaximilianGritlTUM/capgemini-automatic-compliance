@@ -180,6 +180,7 @@
                             <Button
                                 text="Start Readiness Check"
                                 class="sapUiTinyMarginBegin"
+                                icon="sap-icon://begin"
                                 press=".onPressStartReadinessCheck"
                             />
                         </HBox>
