@@ -70,6 +70,43 @@
                     </items>
                 </Table>
 
+                <Title text="Recent Compliance Issues" level="H3" class="sapUiMediumMarginTop sapUiSmallMarginBottom" />
+
+                <Table
+                    id="complianceTable"
+                    headerText="Recent Compliance Issues"
+                    items="{dashboard>/Issues}">
+
+                    <columns>
+                        <Column><Text text="Material ID" /></Column>
+                        <Column><Text text="Material Description" /></Column>
+                        <Column><Text text="Material Type" /></Column>
+                        <Column><Text text="Supplier" /></Column>
+                        <Column><Text text="Region" /></Column>
+                        <Column><Text text="Regulation" /></Column>
+                        <Column><Text text="Status" /></Column>
+                        <Column><Text text="Last Updated" /></Column>
+                    </columns>
+
+                    <items>
+                        <ColumnListItem>
+                            <cells>
+                                <Text text="{dashboard>MaterialID}" />
+                                <Text text="{dashboard>MaterialDescription}" />
+                                <Text text="{dashboard>MaterialType}" />
+                                <Text text="{dashboard>SupplierName}" />
+                                <Text text="{dashboard>Region}" />
+                                <Text text="{dashboard>Regulation}" />
+                                <ObjectStatus
+                                    text="{dashboard>Status}"
+                                    state="{= ${dashboard>Status} === 'Non-Compliant' ? 'Error' : ${dashboard>Status} === 'Under Review' ? 'Warning' : 'Success'}" />
+                                <Text text="{dashboard>LastUpdated}" />
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+
+                </Table>
+
             </VBox>
         </content>
     </Page>
