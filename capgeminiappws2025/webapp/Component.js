@@ -5,9 +5,10 @@
 sap.ui.define([
         "sap/ui/core/UIComponent",
         "sap/ui/Device",
-        "capgeminiappws2025/model/models"
+        "capgeminiappws2025/model/models",
+        "sap/ui/model/json/JSONModel"
     ],
-    function (UIComponent, Device, models) {
+    function (UIComponent, Device, models, JSONModel) {
         "use strict";
 
         return UIComponent.extend("capgeminiappws2025.Component", {
@@ -29,6 +30,26 @@ sap.ui.define([
 
                 // set the device model
                 this.setModel(models.createDeviceModel(), "device");
+
+
+                const oUiModel = new JSONModel({
+                    editRegulationId: null,
+                    editRuleId: null,
+                    selectedRegulationPath: null,
+                    addRule: {
+                        view: "",
+                        element: ""
+                    },
+                    addSupplierOrigin: {
+                        country: ""
+                    },
+                    addTargetMarket: {
+                        country: ""
+                    },
+                    selectedMarket: ""
+                })
+
+                this.setModel(oUiModel, "ui");
             }
         });
     }

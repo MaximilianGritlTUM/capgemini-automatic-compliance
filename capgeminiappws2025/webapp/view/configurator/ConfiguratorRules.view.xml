@@ -1,0 +1,85 @@
+<mvc:View
+    controllerName="capgeminiappws2025.controller.configurator.ConfiguratorRules"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+>
+    <!-- ===== Compliance Rules ===== -->
+    <HBox
+        justifyContent="SpaceBetween"
+        class="sapUiMediumMarginTop sapUiSmallMarginBegin sapUiSmallMarginEnd"
+    >
+        <Title
+            text="Compliance Rules"
+            level="H6"
+        />
+        <Button
+            text="Add Rule"
+            icon="sap-icon://add"
+            type="Transparent"
+            press=".onPressAddRule"
+        />
+    </HBox>
+
+    <Table
+        id="rulesTable"
+        class="sapUiMediumMargin"
+        width="90%"
+    >
+        <columns>
+            <Column>
+                <Text text="View" />
+            </Column>
+            <Column>
+                <Text text="Field" />
+            </Column>
+            <Column hAlign="Center">
+                <Text text="Active" />
+            </Column>
+            <Column
+                styleClass="sapUiSmallMarginBegin"
+                hAlign="End"
+            >
+                <Text text="Actions" />
+            </Column>
+        </columns>
+
+        <items>
+            <ColumnListItem>
+                <cells>
+                    <!-- Viewname: display only -->
+                    <Text text="{Viewname}" />
+
+                    <!-- Elementname: display only -->
+                    <Text text="{Elementname}" />
+
+                    <!-- Active: editable via Switch only -->
+                    <VBox>
+                        <Text
+                            text="{= ${Active} ? 'Active' : 'Inactive'}"
+                            visible="{= !${ui>/editRuleId} }"
+                        />
+                        <!-- keep binding two-way so change handler can update model -->
+                        <Switch
+                            state="{path: 'Active', mode: 'sap.ui.model.BindingMode.TwoWay'}"
+                            change=".onSubmitRuleField"
+                        />
+                    </VBox>
+
+                    <!-- Actions: delete only (no edit) -->
+                    <HBox
+                        justifyContent="End"
+                        renderType="Bare"
+                    >
+                        <Button
+                            icon="sap-icon://delete"
+                            type="Reject"
+                            press=".onDeleteRule"
+                            tooltip="Delete rule"
+                        />
+                    </HBox>
+                </cells>
+            </ColumnListItem>
+        </items>
+    </Table>
+</mvc:View>
