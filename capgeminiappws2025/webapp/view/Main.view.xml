@@ -13,6 +13,9 @@
                         <Text text="Material" />
                     </Column>
                     <Column>
+                        <Text text="Material Type" />
+                    </Column>
+                    <Column>
                         <Text text="CN Code" />
                     </Column>
                     <Column>
@@ -40,6 +43,7 @@
                         <cells>
                             <Text text="{ProtocolID}" />
                             <Text text="{= ${Material} || ${Product} || ${MaterialDescription} || ${MaterialID} || ${ProductID} }" />
+                            <Text text="{= ${MaterialTypeText} || ${MaterialType} || ${ProductTypeText} || ${ProductType} }" />
                             <Text text="{CNCode}" />
                             <Text text="{DDSReferenceID}" />
                             <Text text="{DDSVerificationID}" />

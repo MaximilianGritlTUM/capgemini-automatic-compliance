@@ -6,6 +6,19 @@ sap.ui.define([
 ], function (Controller, JSONModel, Filter, FilterOperator) {
     "use strict";
 
+    function normalizeMaterialType(o) {
+        // Keep originals, just ensure MaterialType fields exist if ProductType exists.
+        if (!o) return o;
+
+        if (!o.MaterialType && o.ProductType) {
+            o.MaterialType = o.ProductType;
+        }
+        if (!o.MaterialTypeText && o.ProductTypeText) {
+            o.MaterialTypeText = o.ProductTypeText;
+        }
+        return o;
+    }
+
     return Controller.extend("capgeminiappws2025.controller.Dashboard", {
         
         onInit: function () {
@@ -46,8 +59,7 @@ sap.ui.define([
                 },
                 success: function (oData) {
                     oView.setBusy(false);
-                    var aResults = oData.results || [];
-                    
+                    var aResults = (oData.results || []).map(normalizeMaterialType);
                     
                     aResults.sort(function(a, b) {
                         return new Date(b.run_timestamp) - new Date(a.run_timestamp);
@@ -56,9 +68,22 @@ sap.ui.define([
                     aResults = aResults.slice(0, 10); // Keep only the latest 10 reports
 
                     var oRecentModel = new JSONModel({
-                        RecentReports: aResults
+                        RecentReports: aResults, 
+                        TotalCount: aResults.length,
+                        TodayCount: aTodayReports.length,
+                        Issues: []
                     });
                     oView.setModel(oRecentModel, "dashboard");
+
+                    oModel.read("/Z_C_DashboardRow", {
+                        success: function (oIssuesData) {
+                            var aIssues = (oIssuesData.results || []).map(normalizeMaterialType);
+                            oRecentModel.setProperty("/Issues", aIssues);
+                        },
+                        error: function (oError) {
+                            console.error("OData call error (Z_C_DashboardRow):", oError);
+                        }
+                    });
                 },
                 error: function (oError) {
                     oView.setBusy(false);
