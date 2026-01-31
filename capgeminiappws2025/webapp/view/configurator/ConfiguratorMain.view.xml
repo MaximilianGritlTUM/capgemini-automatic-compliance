@@ -167,13 +167,6 @@
                             justifyContent="Start"
                         >
                             <Button
-                                text="Save Configuration"
-                                type="Emphasized"
-                                icon="sap-icon://save"
-                                press=".onPressSaveConfiguration"
-                                enabled="false"
-                            />
-                            <Button
                                 text="Start Readiness Check"
                                 class="sapUiTinyMarginBegin"
                                 press=".onPressStartReadinessCheck"

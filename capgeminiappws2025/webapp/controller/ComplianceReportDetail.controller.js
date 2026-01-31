@@ -26,7 +26,7 @@ sap.ui.define([
             this.getView().bindElement({
                 path: sPath,
                 parameters: {
-                    expand: "to_Results,to_BOMResults"
+                    expand: "to_Results,to_BOMResults,to_Regulation"
                 }
             });
 

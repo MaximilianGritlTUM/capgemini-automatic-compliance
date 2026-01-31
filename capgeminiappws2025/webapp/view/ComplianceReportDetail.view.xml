@@ -19,46 +19,23 @@
             <VBox width="100%" renderType="Div" class="sapUiSmallMargin">
                 <!-- Header: Regulation, Fulfillment, Timestamp, Audit Trail etc -->
                 <ObjectHeader
-                    title="{regulation}"
-                    intro="Regulation"
+                    title="{report_id}"
+                    intro="Report ID"
                     number="{degree_fulfill}"
                     numberUnit="% Fulfillment"
                     responsive="true">
                     <attributes>
                         <ObjectAttribute
-                            title="Report ID"
-                            text="{report_id}" />
+                            title="Regulation ID"
+                            text="{regulation}" />
+                        <ObjectAttribute
+                            title="Regulation Title"
+                            text="{to_Regulation/Title}" />
                         <ObjectAttribute
                             title="Run Timestamp"
-                            text="{run_timestamp}" />
-                        <ObjectAttribute
-                            title="Compliance Relevance"
-                            text="{ComplianceRelevance}" />
-                        <ObjectAttribute
-                            title="Audit Trail ID"
-                            text="{AuditTrailId}" />
+                            text="{path: 'run_timestamp', type: 'sap.ui.model.type.Date', formatOptions: { pattern: 'yyyy-MM-dd HH:mm:ss' }}" />
                     </attributes>
                 </ObjectHeader>
-
-                <!--  Data availability / quality / gap / recommendations -->
-                <HBox class="sapUiSmallMarginTop sapUiSmallMarginBottom" justifyContent="SpaceBetween">
-                    <VBox class="sapUiTinyMarginEnd" width="25%">
-                        <Title text="Data Availability" level="H5" />
-                        <Text text="Available, partially available, missing data overview" />
-                    </VBox>
-                    <VBox class="sapUiTinyMarginEnd" width="25%">
-                        <Title text="Data Quality" level="H5" />
-                        <Text text="{DataQualitySummary}" />
-                    </VBox>
-                    <VBox class="sapUiTinyMarginEnd" width="25%">
-                        <Title text="Data Gaps" level="H5" />
-                        <Text text="{DataGapsSummary}" />
-                    </VBox>
-                    <VBox width="25%">
-                        <Title text="Actionable Recommendations" level="H5" />
-                        <Text text="{RecommendationsSummary}" />
-                    </VBox>
-                </HBox>
 
                 <!-- Material / Supplier Result -->
                 <IconTabBar expandable="false" class="sapUiSmallMarginTop">
@@ -106,7 +83,8 @@
                                                 state="{= ${avail_cat} === 'AVAILABLE' ? 'Success' : ${avail_cat} === 'PARTIAL' ? 'Warning' : 'Error'}" />
                                             <ObjectStatus
                                                 text="{data_quality}"
-                                                state="{= ${data_quality} === 'GOOD' ? 'Success' : ${data_quality} === 'MEDIUM' ? 'Warning' : 'Error'}" />
+                                                icon="{= ${data_quality} === 'HIGH' ? 'sap-icon://accept' : ${data_quality} === 'MEDIUM' ? 'sap-icon://alert' : 'sap-icon://error'}"
+                                                state="{= ${data_quality} === 'HIGH' ? 'Success' : ${data_quality} === 'MEDIUM' ? 'Warning' : 'Error'}" />
                                             <Text text="{gap_desc}" />
                                             <Text text="{recommendation}" />
                                             <Text text="{data_source}" />
@@ -183,7 +161,8 @@
                                         <table:template>
                                             <ObjectStatus
                                                 text="{bom>data_quality}"
-                                                state="{= ${bom>data_quality} === 'GOOD' ? 'Success' : ${bom>data_quality} === 'MEDIUM' ? 'Warning' : 'Error'}" />
+                                                icon="{= ${bom>data_quality} === 'HIGH' ? 'sap-icon://accept' : ${bom>data_quality} === 'MEDIUM' ? 'sap-icon://alert' : 'sap-icon://error'}"
+                                                state="{= ${bom>data_quality} === 'HIGH' ? 'Success' : ${bom>data_quality} === 'MEDIUM' ? 'Warning' : 'Error'}" />
                                         </table:template>
                                     </table:Column>
                                     <table:Column

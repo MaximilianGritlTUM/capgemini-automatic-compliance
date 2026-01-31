@@ -51,7 +51,7 @@
                     </items>
                 </HBox>
 
-                <Title text="Recently Generated Reports (Last 3 Days)" level="H3" class="sapUiMediumMarginTop sapUiSmallMarginBottom" />
+                <Title text="Recently Generated Reports (Last 10)" level="H3" class="sapUiMediumMarginTop sapUiSmallMarginBottom" />
 
                 <Table id="recentReportsTable" items="{dashboard>/RecentReports}">
                     <columns>
