@@ -1,0 +1,64 @@
+<mvc:View
+    controllerName="capgeminiappws2025.controller.configurator.ConfiguratorSupplierOrigin"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+>
+    <!-- ===== Supplier Origin ===== -->
+    <HBox
+        justifyContent="SpaceBetween"
+        class="sapUiMediumMarginTop sapUiSmallMarginBegin sapUiSmallMarginEnd"
+    >
+        <Title
+            text="Supplier Origin"
+            level="H6"
+        />
+        <Button
+            text="Add Supplier Origin"
+            icon="sap-icon://add"
+            type="Transparent"
+            press=".onPressAddSupplierOrigin"
+        />
+    </HBox>
+
+    <Table
+        id="supplierOriginTable"
+        class="sapUiMediumMargin"
+        width="90%"
+    >
+        <columns>
+            <Column>
+                <Text text="Country Code" />
+            </Column>
+            <Column
+                styleClass="sapUiSmallMarginBegin"
+                hAlign="End"
+            >
+                <Text text="Actions" />
+            </Column>
+        </columns>
+
+        <items>
+            <ColumnListItem>
+                <cells>
+                    <!-- Country Code: display only -->
+                    <Text text="{Country_Code}" />
+
+                    <!-- Actions: delete only (no edit) -->
+                    <HBox
+                        justifyContent="End"
+                        renderType="Bare"
+                    >
+                        <Button
+                            icon="sap-icon://delete"
+                            type="Reject"
+                            press=".onDeleteSupplierOrigin"
+                            tooltip="Delete supplier origin"
+                        />
+                    </HBox>
+                </cells>
+            </ColumnListItem>
+        </items>
+    </Table>
+
+</mvc:View>

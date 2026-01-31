@@ -1,0 +1,132 @@
+diff --git a/capgeminiappws2025/webapp/controller/Dashboard.controller.js b/capgeminiappws2025/webapp/controller/Dashboard.controller.js
+index f85360c..04de384 100644
+--- a/capgeminiappws2025/webapp/controller/Dashboard.controller.js
++++ b/capgeminiappws2025/webapp/controller/Dashboard.controller.js
+@@ -4,6 +4,19 @@ sap.ui.define([
+ ], function (Controller, JSONModel) {
+     "use strict";
+ 
++    function normalizeMaterialType(o) {
++        // Keep originals, just ensure MaterialType fields exist if ProductType exists.
++        if (!o) return o;
++
++        if (!o.MaterialType && o.ProductType) {
++            o.MaterialType = o.ProductType;
++        }
++        if (!o.MaterialTypeText && o.ProductTypeText) {
++            o.MaterialTypeText = o.ProductTypeText;
++        }
++        return o;
++    }
++
+     return Controller.extend("capgeminiappws2025.controller.Dashboard", {
+ 
+         onInit: function () {
+@@ -18,6 +31,7 @@ sap.ui.define([
+                 Issues: [
+                     {
+                         MaterialID: "MAT-1001",
++                        MaterialType: "Finished",
+                         SupplierName: "Alpha Timber GmbH",
+                         Region: "DE",
+                         Regulation: "EUDR",
+@@ -27,6 +41,7 @@ sap.ui.define([
+                     },
+                     {
+                         MaterialID: "MAT-1023",
++                        MaterialType: "Semi-finished",
+                         SupplierName: "EcoWood AG",
+                         Region: "FR",
+                         Regulation: "CSDDD",
+@@ -36,6 +51,7 @@ sap.ui.define([
+                     },
+                     {
+                         MaterialID: "MAT-1042",
++                        MaterialType: "Raw",
+                         SupplierName: "Nordic Metals AB",
+                         Region: "SE",
+                         Regulation: "Machinery",
+@@ -46,6 +62,8 @@ sap.ui.define([
+                 ]
+             };
+ 
++            oData.Issues = (oData.Issues || []).map(normalizeMaterialType);
++
+             const oModel = new JSONModel(oData);
+             this.getView().setModel(oModel);
+         },
+diff --git a/capgeminiappws2025/webapp/controller/Main.controller.js b/capgeminiappws2025/webapp/controller/Main.controller.js
+index 4361a67..40c03dd 100644
+--- a/capgeminiappws2025/webapp/controller/Main.controller.js
++++ b/capgeminiappws2025/webapp/controller/Main.controller.js
+@@ -4,9 +4,27 @@ sap.ui.define([
+ function (Controller) {
+     "use strict";
+ 
++    function normalizeMaterialType(o) {
++        // Keep originals, just ensure MaterialType fields exist if ProductType exists.
++        if (!o) return o;
++
++        if (!o.MaterialType && o.ProductType) {
++            o.MaterialType = o.ProductType;
++        }
++        if (!o.MaterialTypeText && o.ProductTypeText) {
++            o.MaterialTypeText = o.ProductTypeText;
++        }
++        return o;
++    }
++
+     return Controller.extend("capgeminiappws2025.controller.Main", {
+         onInit: function () {
+-
++            var oModel = this.getView().getModel();
++            if (oModel && typeof oModel.getData === "function" && typeof oModel.setData === "function") {
++                var oData = oModel.getData();
++                oData.Protocols = (oData.Protocols || []).map(normalizeMaterialType);
++                oModel.setData(oData);
++            }
+         }
+     });
+ });
+diff --git a/capgeminiappws2025/webapp/view/Dashboard.view.xml b/capgeminiappws2025/webapp/view/Dashboard.view.xml
+index 00a2726..a0d650a 100644
+--- a/capgeminiappws2025/webapp/view/Dashboard.view.xml
++++ b/capgeminiappws2025/webapp/view/Dashboard.view.xml
+@@ -107,6 +107,7 @@
+ 
+                 <columns>
+                     <Column><Text text="Material" /></Column>
++                    <Column><Text text="Material Type" /></Column>
+                     <Column><Text text="Supplier" /></Column>
+                     <Column><Text text="Region" /></Column>
+                     <Column><Text text="Regulation" /></Column>
+@@ -119,6 +120,7 @@
+                     <ColumnListItem>
+                         <cells>
+                             <Text text="{= ${Material} || ${Product} || ${MaterialDescription} || ${MaterialID} || ${ProductID} }" />
++                            <Text text="{= ${MaterialTypeText} || ${MaterialType} || ${ProductTypeText} || ${ProductType} }" />
+                             <Text text="{SupplierName}" />
+                             <Text text="{Region}" />
+                             <Text text="{Regulation}" />
+diff --git a/capgeminiappws2025/webapp/view/Main.view.xml b/capgeminiappws2025/webapp/view/Main.view.xml
+index 43fc8d2..918d66e 100644
+--- a/capgeminiappws2025/webapp/view/Main.view.xml
++++ b/capgeminiappws2025/webapp/view/Main.view.xml
+@@ -12,6 +12,9 @@
+                     <Column>
+                         <Text text="Material" />
+                     </Column>
++                    <Column>
++                        <Text text="Material Type" />
++                    </Column>
+                     <Column>
+                         <Text text="CN Code" />
+                     </Column>
+@@ -40,6 +43,7 @@
+                         <cells>
+                             <Text text="{ProtocolID}" />
+                             <Text text="{= ${Material} || ${Product} || ${MaterialDescription} || ${MaterialID} || ${ProductID} }" />
++                            <Text text="{= ${MaterialTypeText} || ${MaterialType} || ${ProductTypeText} || ${ProductType} }" />
+                             <Text text="{CNCode}" />
+                             <Text text="{DDSReferenceID}" />
+                             <Text text="{DDSVerificationID}" />
