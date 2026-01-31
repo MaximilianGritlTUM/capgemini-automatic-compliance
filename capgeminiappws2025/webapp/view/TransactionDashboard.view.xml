@@ -10,7 +10,7 @@
       <VBox class="sapUiSmallMargin sapUiContentPadding">
 
         <Toolbar>
-          <Title text="Top Materials (Frequency / Quantity)" level="H3"/>
+          <Title text="Top Materials" level="H3"/>
           <ToolbarSpacer/>
           
           <SearchField
@@ -46,13 +46,13 @@
 
         <HBox class="sapUiSmallMarginTop" justifyContent="SpaceBetween" wrap="Wrap">
           <VBox width="49%">
-            <ObjectStatus title="Total Movements (Top {vm>/com/topN} only)"
+            <ObjectStatus title="Total Movements (Top {vm>/com/topN})"
               text="{vm>/com/kpi/totalMovements}"
               state="Information"/>
           </VBox>
 
           <VBox width="49%">
-            <ObjectStatus title="Total Quantity (Top {vm>/com/topN} only)"
+            <ObjectStatus title="Total Quantity (Top {vm>/com/topN})"
               text="{vm>/com/kpi/totalVolume}"
               state="Success"/>
           </VBox>
@@ -63,7 +63,7 @@
         <Table
           id="tblTopMaterialsCom"
           class="sapUiSmallMarginTop"
-          headerText="Results are sorted with Top Frequency/Top Quantity"
+          headerText="Results are sorted in Top {= ${vm>/com/sortBy} === 'FREQ' ? 'Frequency' : 'Quantity'}"
           growing="false"
           mode="None">
 
