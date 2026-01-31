@@ -19,15 +19,11 @@
             <VBox width="100%" renderType="Div" class="sapUiSmallMargin">
                 <!-- Header: Regulation, Fulfillment, Timestamp, Audit Trail etc -->
                 <ObjectHeader
-                    title="{report_id}"
-                    intro="Report ID"
+                    title="Report ID: {report_id}"
                     number="{degree_fulfill}"
                     numberUnit="% Fulfillment"
                     responsive="true">
                     <attributes>
-                        <ObjectAttribute
-                            title="Regulation ID"
-                            text="{regulation}" />
                         <ObjectAttribute
                             title="Regulation Title"
                             text="{to_Regulation/Title}" />

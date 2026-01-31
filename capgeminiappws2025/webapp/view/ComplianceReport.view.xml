@@ -41,7 +41,6 @@
 
                 <columns>
                     <Column><Text text="Report ID" /></Column>
-                    <Column><Text text="Regulation" /></Column>
                     <Column><Text text="Regulation Title" /></Column>
                     <Column><Text text="Run Timestamp" /></Column>
                     <Column><Text text="Degree of Fulfillment (%)" /></Column>
@@ -53,7 +52,6 @@
                     <ColumnListItem type="Navigation">
                         <cells>
                             <Text text="{report_id}" />
-                            <Text text="{regulation}" />
                             <Text text="{to_Regulation/Title}" />
                             <Text text="{path: 'run_timestamp', type: 'sap.ui.model.type.Date', formatOptions: { pattern: 'yyyy-MM-dd HH:mm:ss' }}" />
                             <ObjectStatus
