@@ -8,7 +8,7 @@
     <HBox
         justifyContent="SpaceBetween"
         alignItems="Center"
-        class="sapUiMediumMarginTop sapUiSmallMarginBegin sapUiSmallMarginEnd"
+        class="sapUiMediumMarginTop sapUiSmallMarginBegin sapUiLargeMarginEnd"
     >
         <Title
             text="Compliance Rules"
