@@ -6,7 +6,7 @@
     "metadataFilename": "",
     "serviceUrl": "https://s40lp1.ucc.cit.tum.de/sap/opu/odata/sap/ZDDSPILOT_SB/",
     "appName": "capgeminiappws2025",
-    "appTitle": "App Title",
+    "appTitle": "Capgemini Compliance Checker",
     "appDescription": "Capgemini SAP application.",
     "appNamespace": "",
     "ui5Theme": "sap_fiori_3",

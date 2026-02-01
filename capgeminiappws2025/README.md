@@ -9,7 +9,7 @@
 |**Service Type**<br>OData URL|
 |**Service URL**<br>https://s40lp1.ucc.cit.tum.de/sap/opu/odata/sap/ZDDSPILOT_SB/|
 |**Module Name**<br>capgeminiappws2025|
-|**Application Title**<br>App Title|
+|**Application Title**<br>Capgemini Compliance Checker|
 |**Namespace**<br>|
 |**UI5 Theme**<br>sap_fiori_3|
 |**UI5 Version**<br>1.114.10|
