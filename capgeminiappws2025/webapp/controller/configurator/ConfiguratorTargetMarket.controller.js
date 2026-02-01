@@ -310,8 +310,8 @@ sap.ui.define(
 
                     this.getView().getModel("vhCountry").setProperty("/countries", aCountries);
 
-                    if (this._oAddSupplierOriginDialog && this._oAddSupplierOriginDialog.isOpen()) {
-                        this._updateAddSupplierOriginButtonState();
+                    if (this._oAddTargetMarketDialog && this._oAddTargetMarketDialog.isOpen()) {
+                        this._updateAddTargetMarketButtonState();
                     }
                 }.bind(this),
 
