@@ -9,7 +9,7 @@
             <VBox class="sapUiResponsiveMargin">
                 
                 <VBox class="sapUiSmallMarginBottom">
-                    <Title text="Welcome" level="H1" />
+                    <Title text="Welcome!" level="H1" />
                 </VBox>
 
                 <Title text="Quick Actions" level="H3" class="sapUiSmallMarginBottom" />

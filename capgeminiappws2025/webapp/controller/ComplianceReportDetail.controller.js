@@ -130,7 +130,6 @@ sap.ui.define([
                     }
 
                     aFieldsData.push({
-                        Type: sType,
                         ObjectId: oObj.object_id,
                         ObjectName: oObj.object_name,
                         AvailabilityCategory: oObj.avail_cat,
@@ -202,7 +201,7 @@ sap.ui.define([
                     XLSX.utils.book_append_sheet(wb, wsBom, "BOM");
                 }
 
-                XLSX.writeFile(wb, "ReadinessReport_Detail.xlsx");
+                XLSX.writeFile(wb, `${that.getView().getBindingContext().getObject().report_id}_Detail.xlsx`);
                 MessageToast.show("Report exported successfully.");
             }).catch(function () {
                 MessageToast.show("Failed to load export library.");
