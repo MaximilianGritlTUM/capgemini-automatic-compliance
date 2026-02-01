@@ -184,14 +184,13 @@ sap.ui.define([
                         header: ["Type", "ObjectId", "ObjectName", "AvailabilityCategory", "DataQuality", "GapDescription", "Recommendation", "DataSource"]
                     });
                     // Rename headers to friendly labels
-                    wsFields["A1"].v = "Type";
-                    wsFields["B1"].v = "ID";
-                    wsFields["C1"].v = "Name";
-                    wsFields["D1"].v = "Availability";
-                    wsFields["E1"].v = "Data Quality";
-                    wsFields["F1"].v = "Data Gaps / Activity";
-                    wsFields["G1"].v = "Recommendations";
-                    wsFields["H1"].v = "Data Source";
+                    wsFields["A1"].v = "ID";
+                    wsFields["B1"].v = "Name";
+                    wsFields["C1"].v = "Availability";
+                    wsFields["D1"].v = "Data Quality";
+                    wsFields["E1"].v = "Data Gaps / Activity";
+                    wsFields["F1"].v = "Recommendations";
+                    wsFields["G1"].v = "Data Source";
                     XLSX.utils.book_append_sheet(wb, wsFields, "Fields");
                 }
 
