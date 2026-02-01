@@ -20,7 +20,7 @@
         <Input id="titleInput" value="{Title}" required="true"/>
 
         <Label text="Description" />
-        <TextArea value="{Description}" rows="5" />
+        <TextArea id="descriptionInput" value="{Description}" rows="5" />
       </f:SimpleForm>
     </content>
 

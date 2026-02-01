@@ -231,6 +231,13 @@ sap.ui.define(
                 } else {
                     this.getView().getModel().refresh(true);
                 }
+
+                if (this.getOwnerComponent().getModel("ui").getProperty("/selectedRegulationPath")) {
+                    oList.setSelectedItem(oList.getItems().find(function (it) {
+                        return ( it.getBindingContext() && it.getBindingContext().getPath() === this.getOwnerComponent().getModel("ui").getProperty("/selectedRegulationPath") );
+                    }.bind(this)));
+                    this.byId("detailPanel").setVisible(true);
+                }
             },
 
             onSelectRegulation: function (oEvent) {
