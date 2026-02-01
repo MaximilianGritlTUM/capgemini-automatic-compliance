@@ -7,6 +7,7 @@
     <!-- ===== Supplier Origin ===== -->
     <HBox
         justifyContent="SpaceBetween"
+        alignItems="Center"
         class="sapUiMediumMarginTop sapUiSmallMarginBegin sapUiSmallMarginEnd"
     >
         <Title

@@ -235,6 +235,7 @@ sap.ui.define(
                 }
 
                 this.getOwnerComponent().getModel("ui").setProperty("/selectedRegulationPath", oContext.getPath());
+                this.getOwnerComponent().getModel("ui").setProperty("/selectedRegulationDescription", oContext.getObject().Description);
 
                 this.byId("detailPanel").setVisible(true)
             },
@@ -322,6 +323,10 @@ sap.ui.define(
                 var sPath = oCtx.getPath();
                 var oModel = oCtx.getModel();
 
+                var oUi = this.getOwnerComponent().getModel("ui");
+                var sSelectedPath = oUi.getProperty("/selectedRegulationPath");
+                var detailPanel = this.byId("detailPanel");
+
                 MessageBox.confirm("Are you sure about deleting regulation \"" + sTitle + "\"?", {
                     title: "Confirm Delete",
                     onClose: function (sAction) {
@@ -329,6 +334,11 @@ sap.ui.define(
                             oModel.remove(sPath, {
                                 success: function () {
                                     MessageToast.show("Regulation deleted");
+                                    if (sPath === sSelectedPath) {
+                                        oUi.setProperty("/selectedRegulationPath", null);
+                                        oUi.setProperty("/selectedRegulationDescription", null);
+                                        detailPanel.setVisible(false);
+                                    }
                                 },
                                 error: function (oError) {
                                     MessageToast.show("Delete failed");

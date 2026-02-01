@@ -64,7 +64,7 @@ sap.ui.define([
                     aResults.sort(function(a, b) {
                         return new Date(b.run_timestamp) - new Date(a.run_timestamp);
                     });
-                    
+
                     var sToday = new Date().toISOString().split('T')[0];
                     var aTodayReports = aResults.filter(function(oReport) {
                         if (!oReport.run_timestamp) return false;
@@ -73,7 +73,9 @@ sap.ui.define([
                         : oReport.run_timestamp;
                         return sReportDate === sToday;
                     });
-                    
+
+                    aResults = aResults.slice(0, 10); // Keep only the latest 10 reports
+
                     var oRecentModel = new JSONModel({
                         RecentReports: aResults, 
                         TotalCount: aResults.length,
@@ -81,6 +83,7 @@ sap.ui.define([
                         Issues: []
                     });
                     oView.setModel(oRecentModel, "dashboard");
+
 
                     oModel.read("/Z_C_DashboardRow", {
                         success: function (oIssuesData) {

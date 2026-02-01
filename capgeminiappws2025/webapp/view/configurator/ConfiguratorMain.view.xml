@@ -146,36 +146,41 @@
                         backgroundDesign="Solid"
                     >
                         <!-- Header -->
-                        <VBox class="sapUiSmallMargin">
+                        <VBox class="sapUiSmallMargin sapUiMediumMarginTop">
                             <Title
-                                text="{Title}"
+                                text="Description"
                                 level="H4"
                             />
                             <Text
-                                text="{Description}"
-                                class="sapUiTinyMarginBottom"
+                                text="{ui>/selectedRegulationDescription}"
+                                class="sapUiTinyMarginBottom sapUiSmallMarginBegin"
                             />
                         </VBox>
 
                         <mvc:XMLView viewName="capgeminiappws2025.view.configurator.ConfiguratorRules" />
-                        <mvc:XMLView viewName="capgeminiappws2025.view.configurator.ConfiguratorSupplierOrigin" />
-                        <mvc:XMLView viewName="capgeminiappws2025.view.configurator.ConfiguratorTargetMarket" />
-                        
+                        <VBox
+                            justifyContent="SpaceBetween"
+                            class="sapUiMediumMarginTop sapUiSmallMarginBegin sapUiSmallMarginEnd"
+                        ></VBox>
+                        <HBox class="sapUiSmallMargin">
+                            <mvc:XMLView viewName="capgeminiappws2025.view.configurator.ConfiguratorSupplierOrigin" />
+                            <mvc:XMLView viewName="capgeminiappws2025.view.configurator.ConfiguratorTargetMarket" />
+                        </HBox>
+                        <VBox
+                            justifyContent="SpaceBetween"
+                            class="sapUiSmallMarginBegin sapUiSmallMarginEnd"
+                        >
+                            <Text text="Note: Supplier Origin and Target Market currently are only used to filter the Regulations. They don't affect the readiness check results." class="sapUiTinyMargin"/>
+                        </VBox>
                         <!-- ===== Footer Actions ===== -->
                         <HBox
                             class="sapUiMediumMargin"
                             justifyContent="Start"
                         >
                             <Button
-                                text="Save Configuration"
-                                type="Emphasized"
-                                icon="sap-icon://save"
-                                press=".onPressSaveConfiguration"
-                                enabled="false"
-                            />
-                            <Button
                                 text="Start Readiness Check"
                                 class="sapUiTinyMarginBegin"
+                                icon="sap-icon://begin"
                                 press=".onPressStartReadinessCheck"
                             />
                         </HBox>

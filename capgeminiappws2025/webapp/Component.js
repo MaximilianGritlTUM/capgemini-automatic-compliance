@@ -36,6 +36,7 @@ sap.ui.define([
                     editRegulationId: null,
                     editRuleId: null,
                     selectedRegulationPath: null,
+                    selectedRegulationDescription: null,
                     addRule: {
                         view: "",
                         element: ""
