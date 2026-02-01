@@ -152,7 +152,7 @@
                                 level="H4"
                             />
                             <Text
-                                text="{ui>/selectedRegulationDescription}"
+                                text="{= ${ui>/selectedRegulationDescription} ? ${ui>/selectedRegulationDescription} : 'No description provided.' }"
                                 class="sapUiTinyMarginBottom sapUiSmallMarginBegin"
                             />
                         </VBox>
