@@ -60,21 +60,6 @@
                     </VBox>
                 </HBox>
 
-                <!-- Filter Bar -->
-                <HBox class="sapUiSmallMarginTop sapUiSmallMarginBottom" alignItems="Center">
-                    <Label text="Filter by Activity:" class="sapUiTinyMarginEnd" />
-                    <Select
-                        id="activityFilter"
-                        change=".onActivityFilterChange"
-                        width="200px">
-                        <core:Item key="ALL" text="All" />
-                        <core:Item key="ACTIVE" text="Active" />
-                        <core:Item key="INACTIVE" text="Inactive" />
-                        <core:Item key="DORMANT" text="Dormant" />
-                        <core:Item key="N/A" text="No Activity Info" />
-                    </Select>
-                </HBox>
-
                 <!-- Material / Supplier Result -->
                 <IconTabBar expandable="false" class="sapUiSmallMarginTop">
                     <!-- Materials Tab -->
@@ -135,6 +120,19 @@
                         <IconTabFilter
                             text="BOM"
                             icon="sap-icon://product">
+                            <HBox class="sapUiSmallMarginTop sapUiSmallMarginBottom" alignItems="Center">
+                                <Label text="Filter by Activity:" class="sapUiTinyMarginEnd" />
+                                <Select
+                                    id="activityFilter"
+                                    change=".onActivityFilterChange"
+                                    width="200px">
+                                    <core:Item key="ALL" text="All" />
+                                    <core:Item key="ACTIVE" text="Active" />
+                                    <core:Item key="INACTIVE" text="Inactive" />
+                                    <core:Item key="DORMANT" text="Dormant" />
+                                    <core:Item key="N/A" text="No Activity Info" />
+                                </Select>
+                            </HBox>
                             <table:TreeTable
                                 id="bomTable"
                                 rows="{

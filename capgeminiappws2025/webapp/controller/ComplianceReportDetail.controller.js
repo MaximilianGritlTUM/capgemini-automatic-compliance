@@ -242,18 +242,7 @@ sap.ui.define([
         onActivityFilterChange: function (oEvent) {
             var sKey = oEvent.getParameter("selectedItem").getKey();
 
-            // 1. Filter Fields tab (materialsTable) — OData filters
-            var oMaterialsTable = this.byId("materialsTable");
-            var oBinding = oMaterialsTable.getBinding("items");
-            if (oBinding) {
-                var aFilters = [new Filter("category", "EQ", "GENERAL")];
-                if (sKey !== "ALL") {
-                    aFilters.push(new Filter("activity_status", "EQ", sKey));
-                }
-                oBinding.filter(aFilters);
-            }
-
-            // 2. Filter BOM tab — client-side JSONModel filtering
+            // Filter BOM tab — client-side JSONModel filtering
             if (this._aBomDataOriginal) {
                 var aFiltered;
                 if (sKey === "ALL") {
