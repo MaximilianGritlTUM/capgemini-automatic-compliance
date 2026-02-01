@@ -166,7 +166,8 @@ sap.ui.define([
                 }
 
                 var oUrlParams = {
-                    "$expand": "to_ComponentMaterials,to_Material"
+                    "$expand": "to_ComponentMaterials,to_Material",
+                    "$top": 1000
                 };
 
                 if (aParentMaterials.length > 0) {
@@ -175,9 +176,6 @@ sap.ui.define([
                         return "ParentMaterial eq '" + sMat + "'";
                     }).join(" or ");
                     oUrlParams["$filter"] = sFilter;
-                } else {
-                    // No activity data available — fall back to limited unfiltered fetch
-                    oUrlParams["$top"] = 1000;
                 }
 
                 // Fetch MaterialComposition records filtered to regulation-relevant BOMs
