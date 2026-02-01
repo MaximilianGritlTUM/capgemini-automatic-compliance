@@ -46,7 +46,7 @@
 
         <HBox class="sapUiSmallMarginTop" justifyContent="SpaceBetween" wrap="Wrap">
           <VBox width="49%">
-            <ObjectStatus title="Total Movements (Top {vm>/com/topN})"
+            <ObjectStatus title="Total Frequencies (Top {vm>/com/topN})"
               text="{vm>/com/kpi/totalMovements}"
               state="Information"/>
           </VBox>
