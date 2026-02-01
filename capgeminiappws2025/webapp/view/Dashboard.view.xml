@@ -29,7 +29,7 @@
 
                         <GenericTile 
                             header="Report List" 
-                            subheader="Review Pending" 
+                            subheader="Check Results" 
                             frameType="TwoByOne"
                             press=".onNavToReports"
                             class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
