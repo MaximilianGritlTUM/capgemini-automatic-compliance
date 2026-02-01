@@ -128,8 +128,8 @@ sap.ui.define(
             }
 
             var oModel = this.getView().getModel();
-            var sCreatePath = "/Z_I_ZREG_FIELDS";
-
+            var sCreatePath = "/Z_I_ZREGULATION('" + sRegid + "')/_Fields";
+            console.log("Creating rule at", sCreatePath);
             var oNewRule = {
                 Regid: sRegid,
                 Viewname: sView,
