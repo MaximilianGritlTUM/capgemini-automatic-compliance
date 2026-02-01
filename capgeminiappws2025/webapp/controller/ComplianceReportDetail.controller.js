@@ -5,11 +5,12 @@ sap.ui.define([
     "sap/ui/export/Spreadsheet",
     "sap/ui/model/Filter",
     "sap/ui/model/json/JSONModel",
-    "capgeminiappws2025/utils/TransactionHistoryFilter"
-], function (Controller, MessageToast, UIComponent, Spreadsheet, Filter, JSONModel, TransactionHistoryFilter) {
+    "capgeminiappws2025/utils/TransactionHistoryFilter",
+    "capgeminiappws2025/controller/BaseController"
+], function (Controller, MessageToast, UIComponent, Spreadsheet, Filter, JSONModel, TransactionHistoryFilter, BaseController) {
     "use strict";
 
-    return Controller.extend("capgeminiappws2025.controller.ComplianceReportDetail", {
+    return BaseController.extend("capgeminiappws2025.controller.ComplianceReportDetail", {
 
         onInit: function () {
             // Get ReportId from Router and Bind here

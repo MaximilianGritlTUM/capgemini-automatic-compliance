@@ -13,7 +13,8 @@ sap.ui.define(
         "sap/m/StandardListItem",
         "sap/ui/model/Filter",
         "sap/ui/model/FilterOperator",
-        "sap/m/Button"
+        "sap/m/Button",
+        "capgeminiappws2025/controller/BaseController"
 
     ],
     function (
@@ -30,11 +31,12 @@ sap.ui.define(
         StandardListItem,
         Filter,
         FilterOperator,
-        Button
-    ) {
+        Button,
+        BaseController
+        ) {
         "use strict";
 
-        return Controller.extend("capgeminiappws2025.controller.configurator.ConfiguratorMain", {
+        return BaseController.extend("capgeminiappws2025.controller.configurator.ConfiguratorMain", {
             onInit: function () {
                 this._busyDialog = new BusyDialog({
                     title: "Starting Readiness Check",
