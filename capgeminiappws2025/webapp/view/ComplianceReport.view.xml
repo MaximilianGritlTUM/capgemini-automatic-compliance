@@ -5,27 +5,14 @@
     <!--http://localhost:8080/index.html#/complianceReports-->
     <Page
         id="complianceReportPage"
-        title="Compliance Report"
+        title="Compliance Report List"
         class="sapUiNoContentPadding">
 
         <content>
 
-            <Title
-                text="Detailed Compliance Results"
-                level="H2"
-                class="sapUiSmallMarginTop sapUiSmallMarginBottom
-                       sapUiSmallMarginBegin sapUiSmallMarginEnd" />
-
-            <!-- Toolbar: Export Report / Filter Button -->
-            <Toolbar
-                class="sapUiSmallMarginBegin sapUiSmallMarginEnd sapUiTinyMarginBottom">
-                <Title text="Detailed Results" level="H3" />
-            </Toolbar>
-
             <!-- Results Table -->
             <Table
                 id="reportTable"
-                headerText="Compliance Report List"
                 items="{
                     path: '/Report',
                     sorter: { path: 'run_timestamp', descending: true },
