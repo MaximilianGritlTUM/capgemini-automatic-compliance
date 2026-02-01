@@ -6,7 +6,9 @@
     <Page
         id="complianceReportPage"
         title="Compliance Report List"
-        class="sapUiNoContentPadding">
+        class="sapUiNoContentPadding"
+        showNavButton="true"
+        navButtonPress="onNavBack">
 
         <content>
 

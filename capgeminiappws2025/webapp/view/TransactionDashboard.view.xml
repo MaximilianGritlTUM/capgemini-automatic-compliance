@@ -5,7 +5,8 @@
   xmlns:core="sap.ui.core"
   displayBlock="true">
 
-  <Page title="Transactional History Board">
+  <Page title="Transactional History Board" showNavButton="true"
+        navButtonPress="onNavBack">
     <content>
       <VBox class="sapUiSmallMargin sapUiContentPadding">
 

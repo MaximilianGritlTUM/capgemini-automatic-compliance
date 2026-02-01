@@ -2,13 +2,14 @@ sap.ui.define([
 	"sap/ui/core/mvc/Controller",
   "sap/m/MessageToast",
   "sap/m/MessageBox",
-  "sap/ui/core/routing/History"
+  "sap/ui/core/routing/History",
+  "capgeminiappws2025/controller/BaseController"
 ], function(
-	Controller, MessageToast, MessageBox, History
+	Controller, MessageToast, MessageBox, History, BaseController
 ) {
 	"use strict";
 
-	return Controller.extend("capgeminiappws2025.controller.Regulation", {
+	return BaseController.extend("capgeminiappws2025.controller.Regulation", {
             onInit: function () {
       this.getOwnerComponent().getRouter()
         .getRoute("Regulation")
