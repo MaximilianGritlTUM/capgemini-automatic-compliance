@@ -189,7 +189,7 @@ sap.ui.define(
                     this._oAddTargetMarketDialog.setBusy(false);
                     this._oAddTargetMarketDialog.close();
                     MessageToast.show("Target Market added");
-                    var oBinding = oSupplierOriginTable.getBinding("items");
+                    var oBinding = oTargetMarketTable.getBinding("items");
                     if (oBinding && oBinding.refresh) {
                         oBinding.refresh(true);
                     }
