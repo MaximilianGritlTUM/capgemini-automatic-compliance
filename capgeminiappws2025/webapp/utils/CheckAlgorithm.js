@@ -637,7 +637,7 @@ sap.ui.define([
 
                 if (aMissing.length > 0) {
                     data_quality = "LOW";
-                    gap_desc = "Missing required fields: " + aMissing.map(function (r) { return r.field; }).join(", ");
+                    gap_desc = aMissing.map(function (r) { return r.field; }).join(", ");
                     recommendation = "Maintain missing values";
                 }
 

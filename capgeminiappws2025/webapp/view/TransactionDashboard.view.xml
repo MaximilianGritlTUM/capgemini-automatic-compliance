@@ -5,185 +5,81 @@
   xmlns:core="sap.ui.core"
   displayBlock="true">
 
-  <Page title="Transaction Analysis Dashboard">
+  <Page title="Transactional History Board">
     <content>
       <VBox class="sapUiSmallMargin sapUiContentPadding">
 
-        <!-- ======================= TRANSACTION HISTORY SECTION ======================= -->
-        <Panel headerText="Transaction History - Material Activity" expanded="true" class="sapUiSmallMarginBottom">
+        <Toolbar>
+          <Title text="Top Materials" level="H3"/>
+          <ToolbarSpacer/>
+          
+          <SearchField
+            id="sfMaterial"
+            width="16rem"
+            placeholder="Search material in Top {vm>/com/topN} ..."
+            liveChange=".onMaterialSearchLive"
+            search=".onMaterialSearch" />
 
-          <!-- Transaction History Filter Bar -->
-          <Toolbar>
-            <Title text="Filters" level="H4"/>
-            <ToolbarSpacer/>
-
-            <Label text="Plant" class="sapUiTinyMarginEnd"/>
-            <Input id="inHistoryPlant" width="7rem" placeholder="e.g. DL00"/>
-
-            <Label text="Min. Movements" class="sapUiTinyMarginBegin sapUiTinyMarginEnd"/>
-            <Input id="inMinMovements" width="6rem" placeholder="e.g. 1" type="Number"/>
-
-            <Label text="Min. Quantity" class="sapUiTinyMarginBegin sapUiTinyMarginEnd"/>
-            <Input id="inMinQuantity" width="8rem" placeholder="e.g. 100" type="Number"/>
-
-            <Button text="Apply" type="Emphasized" press=".onApplyHistory" class="sapUiTinyMarginBegin"/>
-            <Button text="Reset" press=".onResetHistory" class="sapUiTinyMarginBegin"/>
-          </Toolbar>
-
-          <!-- Transaction History KPIs -->
-          <HBox class="sapUiSmallMarginTop" justifyContent="SpaceBetween" wrap="Wrap">
-            <VBox width="24%">
-              <ObjectStatus title="Materials with Activity"
-                text="{vm>/history/kpi/totalMaterials}"
-                state="Success"/>
-            </VBox>
-
-            <VBox width="24%">
-              <ObjectStatus title="Total Movements"
-                text="{vm>/history/kpi/totalMovements}"
-                state="Information"/>
-            </VBox>
-
-            <VBox width="24%">
-              <ObjectStatus title="Total Quantity"
-                text="{vm>/history/kpi/totalQuantity}"
-                state="Information"/>
-            </VBox>
-
-            <VBox width="24%">
-              <ObjectStatus title="Unique Plants"
-                text="{vm>/history/kpi/uniquePlants}"
-                state="None"/>
-            </VBox>
-          </HBox>
-
-          <!-- Meaningful Materials Table -->
-          <Table
-            id="tblMaterialActivity"
-            class="sapUiSmallMarginTop"
-            headerText="Material Transaction Summary (sorted by Total Quantity)"
-            growing="true"
-            growingThreshold="20"
-            growingScrollToLoad="true"
-            mode="None"
-            items="{vm>/history/materials}">
-
-            <columns>
-              <Column width="12rem">
-                <Text text="Material"/>
-              </Column>
-              <Column width="8rem">
-                <Text text="Plant"/>
-              </Column>
-              <Column width="6rem">
-                <Text text="UoM"/>
-              </Column>
-              <Column hAlign="End" width="10rem">
-                <Text text="Movement Count"/>
-              </Column>
-              <Column hAlign="End" width="12rem">
-                <Text text="Total Quantity"/>
-              </Column>
-              <Column width="10rem">
-                <Text text="Activity Status"/>
-              </Column>
-            </columns>
-
+          <Select
+            id="selTopN"
+            width="6rem"
+            selectedKey="{vm>/com/topN}"
+            change=".onTopNChange">
             <items>
-              <ColumnListItem>
-                <cells>
-                  <Text text="{vm>Material}"/>
-                  <Text text="{vm>Plant}"/>
-                  <Text text="{vm>BaseUoM}"/>
-                  <ObjectNumber number="{vm>MovementCount}"/>
-                  <ObjectNumber number="{vm>TotalQuantity}" unit="{vm>BaseUoM}"/>
-                  <ObjectStatus text="{vm>ActivityStatus}" state="{vm>ActivityState}"/>
-                </cells>
-              </ColumnListItem>
+              <core:Item key="20" text="20"/>
+              <core:Item key="50" text="50"/>
+              <core:Item key="100" text="100"/>
+              <core:Item key="200" text="200"/>
             </items>
-          </Table>
+          </Select>
 
-          <MessageStrip
-            class="sapUiSmallMarginTop"
-            text="Materials shown above have transaction activity. Use filters to identify meaningful suppliers/products for compliance evaluation."
-            type="Information"
-            showIcon="true"/>
-        </Panel>
-
-        <!-- ======================= EXCEPTIONS SECTION ======================= -->
-        <Panel headerText="Exception Analysis - Anomalies" expanded="false">
-
-          <!-- Exception Filter Bar -->
-          <Toolbar>
-            <Title text="Filters" level="H4"/>
-            <ToolbarSpacer/>
-
-            <Label text="From" class="sapUiTinyMarginEnd"/>
-            <DatePicker id="dpFrom" width="10rem"/>
-
-            <Label text="To" class="sapUiTinyMarginBegin sapUiTinyMarginEnd"/>
-            <DatePicker id="dpTo" width="10rem"/>
-
-            <Label text="Plant" class="sapUiTinyMarginBegin sapUiTinyMarginEnd"/>
-            <Input id="inPlant" width="7rem" placeholder="e.g. 1000"/>
-
-            <Button text="Apply" type="Emphasized" press=".onApply" class="sapUiTinyMarginBegin"/>
-            <Button text="Reset" press=".onReset" class="sapUiTinyMarginBegin"/>
-          </Toolbar>
-
-          <!-- Exception KPI Row -->
-          <HBox class="sapUiSmallMarginTop" justifyContent="SpaceBetween" wrap="Wrap">
-            <VBox width="32%">
-              <ObjectStatus title="Total Exceptions"
-                text="{vm>/kpi/total}"
-                state="Information"/>
-            </VBox>
-
-            <VBox width="32%">
-              <ObjectStatus title="Adjustments (701/702)"
-                text="{vm>/kpi/adjustment}"
-                state="Warning"/>
-            </VBox>
-
-            <VBox width="32%">
-              <ObjectStatus title="Reversals (102/122/262/602)"
-                text="{vm>/kpi/reversal}"
-                state="Error"/>
-            </VBox>
-          </HBox>
-
-          <!-- Top Materials Table -->
-          <Table
-            id="tblTopMaterials"
-            class="sapUiSmallMarginTop"
-            headerText="Top Materials (by exception count)"
-            growing="true"
-            growingScrollToLoad="true"
-            mode="None"
-            items="{vm>/topMaterials}">
-
-            <columns>
-              <Column width="16rem">
-                <Text text="Material"/>
-              </Column>
-              <Column hAlign="End" width="10rem">
-                <Text text="Exception Count"/>
-              </Column>
-            </columns>
-
+          <SegmentedButton
+            selectedKey="{vm>/com/sortBy}"
+            selectionChange=".onSortSelect"
+            width="20rem">
             <items>
-              <ColumnListItem>
-                <cells>
-                  <Text text="{vm>Material}"/>
-                  <ObjectNumber number="{vm>ExceptionCount}"/>
-                </cells>
-              </ColumnListItem>
+              <SegmentedButtonItem key="FREQ" text="Top Frequency" icon="sap-icon://number-sign"/>
+              <SegmentedButtonItem key="VOL"  text="Top Quantity"  icon="sap-icon://measure"/>
             </items>
-          </Table>
+          </SegmentedButton>
+        </Toolbar>
 
-          <Text class="sapUiTinyMarginTop"
-            text="Tip: If KPIs are 0, check browser Network tab for the /Exceptions call and verify EntitySet name."/>
-        </Panel>
+        <HBox class="sapUiSmallMarginTop" justifyContent="SpaceBetween" wrap="Wrap">
+          <VBox width="49%">
+            <ObjectStatus title="Total Movements (Top {vm>/com/topN})"
+              text="{vm>/com/kpi/totalMovements}"
+              state="Information"/>
+          </VBox>
+
+          <VBox width="49%">
+            <ObjectStatus title="Total Quantity (Top {vm>/com/topN})"
+              text="{vm>/com/kpi/totalVolume}"
+              state="Success"/>
+          </VBox>
+        </HBox>
+
+        <Text class="sapUiTinyMarginTop" text="{vm>/com/note}"/>
+
+        <Table
+          id="tblTopMaterialsCom"
+          class="sapUiSmallMarginTop"
+          headerText="Results are sorted in Top {= ${vm>/com/sortBy} === 'FREQ' ? 'Frequency' : 'Quantity'}"
+          growing="false"
+          mode="None">
+
+          <columns>
+            <Column width="16rem"><Text text="Material"/></Column>
+            <Column width="8rem"><Text text="Plant"/></Column>
+            <Column hAlign="End" width="10rem"><Text text="Frequency"/></Column>
+            <Column hAlign="End" width="10rem"><Text text="Quantity"/></Column>
+            <Column width="6rem"><Text text="UoM"/></Column>
+            <Column hAlign="End" width="8rem"><Text text="Last Date"/></Column>
+          </columns>
+          
+          <items>
+          </items>
+
+        </Table>
 
       </VBox>
     </content>

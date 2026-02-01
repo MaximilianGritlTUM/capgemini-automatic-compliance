@@ -1,5 +1,5 @@
 <mvc:View
-    controllerName="capgeminiappws2025.controller.Configurator"
+    controllerName="capgeminiappws2025.controller.configurator.ConfiguratorMain"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m"
     xmlns:f="sap.ui.layout.form"
@@ -15,7 +15,7 @@
                 class="sapUiContentPadding"
             >
                 <!-- ================= LEFT CARD: Active Regulations ================= -->
-                <VBox class="sapUiSmallMarginEnd">
+                <VBox class="sapUiSmallMarginEnd" width="360px">
                     <Panel
                         class="sapUiResponsiveMargin"
                         backgroundDesign="Solid"
@@ -26,15 +26,50 @@
                                     text="Active Regulations"
                                     level="H5"
                                 />
-                                <ToolbarSpacer />                           
+                                <ToolbarSpacer />
                                 <Button
                                     text="Add Regulation"
                                     icon="sap-icon://add"
-                                    type="Emphasized"
+                                    type="Transparent"
                                     press="onPressAddRegulation"
                                 />
                             </Toolbar>
                         </headerToolbar>
+
+                        <HBox class="sapUiTinyMarginTop sapUiSmallMarginBegin sapUiSmallMarginEnd" width="100%" justifyContent="End">
+                            <Button
+                                icon="sap-icon://sys-cancel"
+                                tooltip="Clear market filter"
+                                visible="{= !!${ui>/selectedMarket} }"
+                                type="Transparent"
+                                press=".onClearMarketFilter"
+                                class="sapUiTinyMarginEnd"
+                            />
+                            <Button
+                                id="btnSelectMarket"
+                                text="{= ${ui>/selectedMarket} ? 'Market: ' + ${ui>/selectedMarket} : 'Select Market' }"
+                                icon="sap-icon://world"
+                                type="Transparent"
+                                press=".onPressSelectMarket"
+                                class="sapUiTinyMarginEnd"
+                            />
+
+                            <Button
+                                icon="sap-icon://sys-cancel"
+                                tooltip="Clear origin filter"
+                                visible="{= !!${ui>/selectedOrigin} }"
+                                type="Transparent"
+                                press=".onClearOriginFilter"
+                                class="sapUiTinyMarginEnd"
+                            />
+                            <Button
+                                id="btnSelectOrigin"
+                                text="{= ${ui>/selectedOrigin} ? 'Origin: ' + ${ui>/selectedOrigin} : 'Select Origin' }"
+                                icon="sap-icon://group"
+                                type="Transparent"
+                                press=".onPressSelectOrigin"
+                            />
+                        </HBox>
 
                         <List
                             id="regulationList"
@@ -103,115 +138,49 @@
                     id="detailPanel"
                     visible="false"
                 >
+                    <layoutData>
+                        <FlexItemData growFactor="1" />
+                    </layoutData>
                     <Panel
                         class="sapUiResponsiveMargin"
                         backgroundDesign="Solid"
                     >
                         <!-- Header -->
-                        <VBox class="sapUiSmallMargin">
+                        <VBox class="sapUiSmallMargin sapUiMediumMarginTop">
                             <Title
-                                text="{Title}"
+                                text="Description"
                                 level="H4"
                             />
                             <Text
-                                text="{Description}"
-                                class="sapUiTinyMarginBottom"
+                                text="{ui>/selectedRegulationDescription}"
+                                class="sapUiTinyMarginBottom sapUiSmallMarginBegin"
                             />
                         </VBox>
 
-                        <!-- ===== Compliance Rules ===== -->
-                        <HBox
+                        <mvc:XMLView viewName="capgeminiappws2025.view.configurator.ConfiguratorRules" />
+                        <VBox
                             justifyContent="SpaceBetween"
                             class="sapUiMediumMarginTop sapUiSmallMarginBegin sapUiSmallMarginEnd"
-                        >
-                            <Title
-                                text="Compliance Rules"
-                                level="H6"
-                            />
-                            <Button
-                                text="Add Rule"
-                                icon="sap-icon://add"
-                                press=".onPressAddRule"
-                            />
+                        ></VBox>
+                        <HBox class="sapUiSmallMargin">
+                            <mvc:XMLView viewName="capgeminiappws2025.view.configurator.ConfiguratorSupplierOrigin" />
+                            <mvc:XMLView viewName="capgeminiappws2025.view.configurator.ConfiguratorTargetMarket" />
                         </HBox>
-
-                        <Table
-                            id="rulesTable"
-                            class="sapUiMediumMargin"
-                            width="90%"
+                        <VBox
+                            justifyContent="SpaceBetween"
+                            class="sapUiSmallMarginBegin sapUiSmallMarginEnd"
                         >
-                            <columns>
-                                <Column>
-                                    <Text text="View" />
-                                </Column>
-                                <Column>
-                                    <Text text="Field" />
-                                </Column>
-                                <Column hAlign="Center">
-                                    <Text text="Active" />
-                                </Column>
-                                <Column
-                                    styleClass="sapUiSmallMarginBegin"
-                                    hAlign="End"
-                                >
-                                    <Text text="Actions" />
-                                </Column>
-                            </columns>
-
-                            <items>
-                                <ColumnListItem>
-                                    <cells>
-                                        <!-- Viewname: display only -->
-                                        <Text text="{Viewname}" />
-
-                                        <!-- Elementname: display only -->
-                                        <Text text="{Elementname}" />
-
-                                        <!-- Active: editable via Switch only -->
-                                        <VBox>
-                                            <Text
-                                                text="{= ${Active} ? 'Active' : 'Inactive'}"
-                                                visible="{= !${ui>/editRuleId} }"
-                                            />
-                                            <!-- keep binding two-way so change handler can update model -->
-                                            <Switch
-                                                state="{path: 'Active', mode: 'sap.ui.model.BindingMode.TwoWay'}"
-                                                change=".onSubmitRuleField"
-                                            />
-                                        </VBox>
-
-                                        <!-- Actions: delete only (no edit) -->
-                                        <HBox
-                                            justifyContent="End"
-                                            renderType="Bare"
-                                        >
-                                            <Button
-                                                icon="sap-icon://delete"
-                                                type="Reject"
-                                                press=".onDeleteRule"
-                                                tooltip="Delete rule"
-                                            />
-                                        </HBox>
-                                    </cells>
-                                </ColumnListItem>
-                            </items>
-                        </Table>
-
+                            <Text text="Note: Supplier Origin and Target Market currently are only used to filter the Regulations. They don't affect the readiness check results." class="sapUiTinyMargin"/>
+                        </VBox>
                         <!-- ===== Footer Actions ===== -->
                         <HBox
                             class="sapUiMediumMargin"
                             justifyContent="Start"
                         >
                             <Button
-                                text="Save Configuration"
-                                type="Emphasized"
-                                icon="sap-icon://save"
-                                press=".onPressSaveConfiguration"
-                                enabled="false"
-                            />
-                            <Button
                                 text="Start Readiness Check"
                                 class="sapUiTinyMarginBegin"
+                                icon="sap-icon://begin"
                                 press=".onPressStartReadinessCheck"
                             />
                         </HBox>

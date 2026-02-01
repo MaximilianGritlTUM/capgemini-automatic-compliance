@@ -27,7 +27,7 @@ sap.ui.define([
             this.getView().bindElement({
                 path: sPath,
                 parameters: {
-                    expand: "to_Results,to_BOMResults"
+                    expand: "to_Results,to_BOMResults,to_Regulation"
                 }
             });
 
@@ -121,8 +121,17 @@ sap.ui.define([
                     var oCtx = oItem.getBindingContext();
                     if (!oCtx) { return; }
                     var oObj = oCtx.getObject();
-                    aFieldsData.push({
-                        Type: "Material",
+
+                    var sType = oObj.category || oObj.Category || oObj.object_type || oObj.objectType || "Material";
+                    if (typeof sType === "string") {
+                        var sTypeLower = sType.trim().toLowerCase();
+                        if (sTypeLower === "product" || sTypeLower === "products" || sTypeLower === "material" || sTypeLower === "materials") {
+                            sType = "Material";
+                        }
+                    }
+
+                    aExportData.push({
+                        Type: sType,
                         ObjectId: oObj.object_id,
                         ObjectName: oObj.object_name,
                         AvailabilityCategory: oObj.avail_cat,

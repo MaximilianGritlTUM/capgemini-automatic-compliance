@@ -1,296 +1,179 @@
 sap.ui.define([
   "sap/ui/core/mvc/Controller",
   "sap/ui/model/json/JSONModel",
+  "sap/m/MessageToast",
+  "sap/ui/model/Sorter",
   "sap/ui/model/Filter",
-  "sap/ui/model/FilterOperator",
-  "sap/m/MessageToast"
-], function (Controller, JSONModel, Filter, FilterOperator, MessageToast) {
+  "sap/ui/model/FilterOperator"
+], function (Controller, JSONModel, MessageToast, Sorter, Filter, FilterOperator) {
   "use strict";
 
   return Controller.extend("capgeminiappws2025.controller.TransactionDashboard", {
 
+    _ENTITY: {
+      HIST_SUMMARY: "/TASummary"
+    },
+
     onInit: function () {
-      // ViewModel for UI binding (KPI + Top table + Transaction History)
       const oVm = new JSONModel({
-        kpi: {
-          total: 0,
-          adjustment: 0,
-          reversal: 0
-        },
-        topMaterials: [],
-        // Transaction History section
-        history: {
-          kpi: {
-            totalMaterials: 0,
-            totalMovements: 0,
-            totalQuantity: 0,
-            uniquePlants: 0
-          },
-          materials: []
+        com: {
+          sortBy: "FREQ", // FREQ or VOL
+          topN: "50",
+          query: "",
+          kpi: { totalMovements: 0, totalVolume: 0 }
         }
       });
       this.getView().setModel(oVm, "vm");
 
-      // Wait for OData model to be ready before loading data
-      const oOData = this.getView().getModel();
-      if (oOData) {
-        oOData.metadataLoaded().then(() => {
-          this._loadExceptionsAndBuildDashboard();
-          this._loadTransactionHistory();
-        });
-      }
+      this._bindCommercialTable();
+      this._applyCommercialSort();
     },
 
-    // ======================= TRANSACTION HISTORY HANDLERS =======================
+    /* =========================
+       Search Logic
+       ========================= */
 
-    onApplyHistory: function () {
-      this._loadTransactionHistory();
+    onMaterialSearchLive: function (oEvent) {
+      const s = (oEvent.getParameter("newValue") || "").trim();
+      this.getView().getModel("vm").setProperty("/com/query", s);
+      this._debouncedApplyCommercialQuery();
     },
 
-    onResetHistory: function () {
-      this.byId("inHistoryPlant").setValue("");
-      this.byId("inMinMovements").setValue("");
-      this.byId("inMinQuantity").setValue("");
-      this._loadTransactionHistory();
+    onMaterialSearch: function (oEvent) {
+      const s = (oEvent.getParameter("query") || "").trim();
+      this.getView().getModel("vm").setProperty("/com/query", s);
+      this._applyCommercialQuery();
     },
 
-    /**
-     * Loads transaction history summary from TASummary entity.
-     * Computes KPIs and identifies materials with meaningful activity.
-     */
-    _loadTransactionHistory: function () {
-      const oOData = this.getView().getModel();
-      if (!oOData) {
-        MessageToast.show("OData model not found.");
-        return;
-      }
-
-      const aFilters = this._buildFiltersForHistory();
-
-      // Entity set exposed as TASummary (from Z_I_TA_HISTORYSUMMARY)
-      const sEntitySet = "/TASummary";
-
-      oOData.read(sEntitySet, {
-        filters: aFilters,
-        urlParameters: {
-          "$top": 1000
-        },
-        success: (oData) => {
-          const aRows = (oData && oData.results) ? oData.results : [];
-          this._processTransactionHistory(aRows);
-        },
-        error: (oErr) => {
-          MessageToast.show("Failed to load /TASummary. Check EntitySet name in Network tab.");
-          console.error("OData read error for TASummary:", oErr);
-        }
-      });
+    _debouncedApplyCommercialQuery: function () {
+      clearTimeout(this._tSearch);
+      this._tSearch = setTimeout(() => this._applyCommercialQuery(), 250);
     },
 
-    /**
-     * Processes transaction history data and updates the view model.
-     * @param {Array} aRows - Raw data from TASummary
-     */
-    _processTransactionHistory: function (aRows) {
+    _applyCommercialQuery: function () {
+      const oTable = this.byId("tblTopMaterialsCom");
+      const oBinding = oTable && oTable.getBinding("items");
+      if (!oBinding) return;
+
       const oVm = this.getView().getModel("vm");
+      const sSortKey = oVm.getProperty("/com/sortBy") || "FREQ";
+      const sQuery = (oVm.getProperty("/com/query") || "").trim();
 
-      // Get filter thresholds from UI
-      const iMinMovements = parseInt(this.byId("inMinMovements").getValue(), 10) || 0;
-      const iMinQuantity = parseFloat(this.byId("inMinQuantity").getValue()) || 0;
+      // Sort 재적용
+      const sPath = (sSortKey === "VOL") ? "TotalQuantity" : "MovementCount";
+      oBinding.sort([
+        new Sorter(sPath, true),
+        new Sorter("LastDate", true)
+      ]);
 
-      // Filter for meaningful materials based on thresholds
-      let aFiltered = aRows;
-      if (iMinMovements > 0) {
-        aFiltered = aFiltered.filter(function (r) {
-          return (parseInt(r.MovementCount, 10) || 0) >= iMinMovements;
-        });
-      }
-      if (iMinQuantity > 0) {
-        aFiltered = aFiltered.filter(function (r) {
-          return (parseFloat(r.TotalQuantity) || 0) >= iMinQuantity;
-        });
-      }
-
-      // Calculate KPIs
-      let iTotalMovements = 0;
-      let fTotalQuantity = 0;
-      const oPlants = new Set();
-
-      aFiltered.forEach(function (r) {
-        iTotalMovements += parseInt(r.MovementCount, 10) || 0;
-        fTotalQuantity += parseFloat(r.TotalQuantity) || 0;
-        if (r.Plant) {
-          oPlants.add(r.Plant);
-        }
-      });
-
-      // Determine activity status for each material
-      const aMaterials = aFiltered.map(function (r) {
-        const iMoves = parseInt(r.MovementCount, 10) || 0;
-        const fQty = parseFloat(r.TotalQuantity) || 0;
-
-        // Activity classification
-        let sStatus = "Low Activity";
-        let sState = "Warning";
-        if (iMoves >= 5 || fQty >= 500) {
-          sStatus = "High Activity";
-          sState = "Success";
-        } else if (iMoves >= 2 || fQty >= 100) {
-          sStatus = "Medium Activity";
-          sState = "None";
-        }
-
-        return {
-          Material: r.Material || "",
-          Plant: r.Plant || "",
-          BaseUoM: r.BaseUoM || "",
-          MovementCount: iMoves,
-          TotalQuantity: fQty,
-          ActivityStatus: sStatus,
-          ActivityState: sState
-        };
-      });
-
-      // Sort by TotalQuantity descending
-      aMaterials.sort(function (a, b) {
-        return b.TotalQuantity - a.TotalQuantity;
-      });
-
-      // Update view model
-      oVm.setProperty("/history/kpi/totalMaterials", aFiltered.length);
-      oVm.setProperty("/history/kpi/totalMovements", iTotalMovements);
-      oVm.setProperty("/history/kpi/totalQuantity", fTotalQuantity.toFixed(2));
-      oVm.setProperty("/history/kpi/uniquePlants", oPlants.size);
-      oVm.setProperty("/history/materials", aMaterials);
-
-      if (aFiltered.length === 0) {
-        MessageToast.show("No materials found matching the filter criteria.");
-      }
-    },
-
-    /**
-     * Builds OData filters for transaction history based on UI inputs.
-     */
-    _buildFiltersForHistory: function () {
+      // Filter 적용
       const aFilters = [];
-
-      const sPlant = (this.byId("inHistoryPlant").getValue() || "").trim();
-      if (sPlant) {
-        aFilters.push(new Filter("Plant", FilterOperator.EQ, sPlant));
+      if (sQuery) {
+        aFilters.push(new Filter("Material", FilterOperator.Contains, sQuery));
       }
-
-      return aFilters;
+      oBinding.filter(aFilters);
     },
 
-    // ======================= EXCEPTION HANDLERS =======================
+    /* =========================
+       Top N Logic
+       ========================= */
 
-    onApply: function () {
-      this._loadExceptionsAndBuildDashboard();
+    onTopNChange: function (oEvent) {
+      const sKey = oEvent.getSource().getSelectedKey(); // "20","50","100","200"
+      this.getView().getModel("vm").setProperty("/com/topN", sKey);
+
+      this._rebindCommercialTable();
+      MessageToast.show("Top " + sKey);
     },
 
-    onReset: function () {
-      this.byId("dpFrom").setDateValue(null);
-      this.byId("dpTo").setDateValue(null);
-      this.byId("inPlant").setValue("");
-      this._loadExceptionsAndBuildDashboard();
+    _rebindCommercialTable: function () {
+      const oTable = this.byId("tblTopMaterialsCom");
+      if (!oTable) return;
+
+      oTable.unbindItems();
+      this._bindCommercialTable();
+      this._applyCommercialQuery();
     },
 
-    /**
-     * Reads exception line items from OData and computes:
-     * - KPI counts (total/adjustment/reversal)
-     * - Top materials by exception count
-     */
-    _loadExceptionsAndBuildDashboard: function () {
-      const oOData = this.getView().getModel(); // default OData V2 model
-      if (!oOData) {
-        MessageToast.show("OData model not found (default model). Check manifest.json model setup.");
-        return;
-      }
 
-      const aFilters = this._buildFiltersForExceptions();
+    /* =========================
+       Commercial Table Logic
+       ========================= */
 
-      // IMPORTANT: EntitySet name must match your Service Definition expose alias
-      // Example: expose Z_I_TA_ExLine as Exceptions;
-      const sEntitySet = "/Exceptions";
+    onSortSelect: function (oEvent) {
+      const sKey = oEvent.getParameter("item").getKey(); // FREQ or VOL
+      this.getView().getModel("vm").setProperty("/com/sortBy", sKey);
 
-      oOData.read(sEntitySet, {
-        filters: aFilters,
-        urlParameters: {
-          // MVP: read up to N exceptions then aggregate in frontend
-          // If you have too many records, lower $top or add more backend restriction
-          "$top": 5000
-        },
-        success: (oData) => {
-          const aRows = (oData && oData.results) ? oData.results : [];
+      this._applyCommercialSort();
+      MessageToast.show(sKey === "VOL" ? "Sorted by Quantity (Volume)" : "Sorted by Frequency");
+    },
 
-          // KPI
-          let total = 0;
-          let adj = 0;
-          let rev = 0;
+    _bindCommercialTable: function () {
+      const oTable = this.byId("tblTopMaterialsCom");
+      if (!oTable) return;
 
-          // Top materials
-          const byMaterial = new Map(); // Material -> count
-
-          for (let i = 0; i < aRows.length; i++) {
-            const r = aRows[i];
-            total += 1;
-
-            if (r.ExceptionType === "ADJUSTMENT") {
-              adj += 1;
-            } else if (r.ExceptionType === "REVERSAL") {
-              rev += 1;
+      const oTemplate = new sap.m.ColumnListItem({
+        cells: [
+          new sap.m.Text({ text: "{Material}" }),
+          new sap.m.Text({ text: "{Plant}" }),
+          new sap.m.ObjectNumber({ number: "{MovementCount}" }),
+          new sap.m.ObjectNumber({ number: "{TotalQuantity}" }),
+          new sap.m.Text({ text: "{BaseUoM}" }),
+          new sap.m.Text({
+            text: {
+              path: "LastDate",
+              type: "sap.ui.model.type.Date",
+              formatOptions: { pattern: "yyyy-MM-dd" }
             }
+          })
+        ]
+      });
 
-            const m = (r.Material && String(r.Material).trim()) ? r.Material : "(blank)";
-            byMaterial.set(m, (byMaterial.get(m) || 0) + 1);
-          }
+      const oVm = this.getView().getModel("vm");
+      const iTopN = Number(oVm.getProperty("/com/topN") || "50");
 
-          const aTop = Array.from(byMaterial.entries())
-            .map(([Material, ExceptionCount]) => ({ Material, ExceptionCount }))
-            .sort((a, b) => b.ExceptionCount - a.ExceptionCount)
-            .slice(0, 20);
-
-          const oVm = this.getView().getModel("vm");
-          oVm.setProperty("/kpi/total", total);
-          oVm.setProperty("/kpi/adjustment", adj);
-          oVm.setProperty("/kpi/reversal", rev);
-          oVm.setProperty("/topMaterials", aTop);
-
-          if (total === 0) {
-            MessageToast.show("No exceptions found for the current filters.");
-          }
-        },
-        error: (oErr) => {
-          // Most common: 404 EntitySet mismatch -> check $metadata for correct EntitySet name
-          MessageToast.show("Failed to load /Exceptions. Check EntitySet name and Network tab.");
-          // eslint-disable-next-line no-console
-          console.error("OData read error:", oErr);
-        }
+      oTable.bindItems({
+        path: this._ENTITY.HIST_SUMMARY,
+        template: oTemplate,
+        length: iTopN, 
+        events: { dataReceived: this._onCommercialDataReceived.bind(this) }
       });
     },
 
-    /**
-     * Filters applied to the exception line items.
-     * NOTE: PostingDate should exist on /Exceptions entity type.
-     */
-    _buildFiltersForExceptions: function () {
-      const a = [];
+    _applyCommercialSort: function () {
+      const oTable = this.byId("tblTopMaterialsCom");
+      const oBinding = oTable && oTable.getBinding("items");
+      if (!oBinding) return;
 
-      const dFrom = this.byId("dpFrom").getDateValue();
-      const dTo = this.byId("dpTo").getDateValue();
-      const sPlant = (this.byId("inPlant").getValue() || "").trim();
+      const oVm = this.getView().getModel("vm");
+      const sSortKey = oVm.getProperty("/com/sortBy") || "FREQ";
+      const sPath = (sSortKey === "VOL") ? "TotalQuantity" : "MovementCount";
 
-      if (dFrom) {
-        a.push(new Filter("PostingDate", FilterOperator.GE, dFrom));
-      }
-      if (dTo) {
-        a.push(new Filter("PostingDate", FilterOperator.LE, dTo));
-      }
-      if (sPlant) {
-        a.push(new Filter("Plant", FilterOperator.EQ, sPlant));
+      oBinding.sort([
+        new Sorter(sPath, true),
+        new Sorter("LastDate", true)
+      ]);
+    },
+
+    _onCommercialDataReceived: function () {
+      const oTable = this.byId("tblTopMaterialsCom");
+      const oBinding = oTable && oTable.getBinding("items");
+      if (!oBinding) return;
+
+      const aContexts = oBinding.getCurrentContexts();
+      let totalMovements = 0;
+      let totalVolume = 0;
+
+      for (let i = 0; i < aContexts.length; i++) {
+        const o = aContexts[i].getObject();
+        totalMovements += Number(o.MovementCount || 0);
+        totalVolume += Number(o.TotalQuantity || 0);
       }
 
-      return a;
+      const oVm = this.getView().getModel("vm");
+      oVm.setProperty("/com/kpi/totalMovements", totalMovements);
+      oVm.setProperty("/com/kpi/totalVolume", totalVolume);
     }
-
+    
   });
 });

@@ -32,7 +32,8 @@
                 headerText="Compliance Report List"
                 items="{
                     path: '/Report',
-                    sorter: { path: 'run_timestamp', descending: false }
+                    sorter: { path: 'run_timestamp', descending: true },
+                    parameters: { expand: 'to_Regulation' }
                 }"
                 mode="SingleSelectMaster"
                 itemPress=".onTableItemPress"
@@ -40,7 +41,7 @@
 
                 <columns>
                     <Column><Text text="Report ID" /></Column>
-                    <Column><Text text="Regulation" /></Column>
+                    <Column><Text text="Regulation Title" /></Column>
                     <Column><Text text="Run Timestamp" /></Column>
                     <Column><Text text="Degree of Fulfillment (%)" /></Column>
                     <Column><Text text="Data Availability" /></Column>
@@ -51,8 +52,8 @@
                     <ColumnListItem type="Navigation">
                         <cells>
                             <Text text="{report_id}" />
-                            <Text text="{regulation}" />
-                            <Text text="{run_timestamp}" />
+                            <Text text="{to_Regulation/Title}" />
+                            <Text text="{path: 'run_timestamp', type: 'sap.ui.model.type.Date', formatOptions: { pattern: 'yyyy-MM-dd HH:mm:ss' }}" />
                             <ObjectStatus
                                 text="{degree_fulfill}"
                                 state="{= ${degree_fulfill} >= 80 ? 'Success' :
