@@ -181,13 +181,13 @@
                                     <table:Column>
                                         <Label text="Data Gaps" />
                                         <table:template>
-                                            <Text text="{bom>gap_desc}" maxLines="2" tooltip="{bom>gap_desc}" />
+                                            <Text text="{bom>gap_desc}" tooltip="{bom>gap_desc}" />
                                         </table:template>
                                     </table:Column>
                                     <table:Column>
                                         <Label text="Recommendations" />
                                         <table:template>
-                                            <Text text="{bom>recommendation}" maxLines="2" tooltip="{bom>recommendation}" />
+                                            <Text text="{bom>recommendation}" tooltip="{bom>recommendation}" />
                                         </table:template>
                                     </table:Column>
                                 </table:columns>
