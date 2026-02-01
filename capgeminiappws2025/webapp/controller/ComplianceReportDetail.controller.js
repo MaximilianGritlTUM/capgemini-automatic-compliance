@@ -181,7 +181,7 @@ sap.ui.define([
                 // Fields sheet
                 if (aFieldsData.length) {
                     var wsFields = XLSX.utils.json_to_sheet(aFieldsData, {
-                        header: ["Type", "ObjectId", "ObjectName", "AvailabilityCategory", "DataQuality", "GapDescription", "Recommendation", "DataSource"]
+                        header: ["ObjectId", "ObjectName", "AvailabilityCategory", "DataQuality", "GapDescription", "Recommendation", "DataSource"]
                     });
                     // Rename headers to friendly labels
                     wsFields["A1"].v = "ID";
