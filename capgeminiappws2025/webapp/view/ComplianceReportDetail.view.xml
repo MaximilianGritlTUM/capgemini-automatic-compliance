@@ -202,62 +202,6 @@
                                 </table:columns>
                             </table:TreeTable>
                         </IconTabFilter>
-
-                        <!-- Suppliers Tab -->
-                        <IconTabFilter
-                            text="Suppliers"
-                            icon="sap-icon://supplier"
-                            visible="false">
-                            <Table
-                                id="suppliersTable"
-                                inset="false"
-                                width="100%"
-                                items="{to_Results}">
-
-                                <columns>
-                                    <Column>
-                                        <Text text="Supplier ID" />
-                                    </Column>
-                                    <Column>
-                                        <Text text="Name" />
-                                    </Column>
-                                    <Column>
-                                        <Text text="Data Availability" />
-                                    </Column>
-                                    <Column>
-                                        <Text text="Data Quality" />
-                                    </Column>
-                                    <Column>
-                                        <Text text="Data Gaps" />
-                                    </Column>
-                                    <Column>
-                                        <Text text="Recommendations" />
-                                    </Column>
-                                    <Column>
-                                        <Text text="Data Source" />
-                                    </Column>
-                                </columns>
-
-                                <items>
-                                    <ColumnListItem>
-                                        <cells>
-                                            <Text text="{ObjectId}" />
-                                            <Text text="{ObjectName}" />
-                                            <ObjectStatus
-                                                text="{avail_cat}"
-                                                icon="{= ${avail_cat} === 'AVAILABLE' ? 'sap-icon://accept' : ${avail_cat} === 'PARTIAL' ? 'sap-icon://alert' : 'sap-icon://error'}"
-                                                state="{= ${avail_cat} === 'AVAILABLE' ? 'Success' : ${avail_cat} === 'PARTIAL' ? 'Warning' : 'Error'}" />
-                                            <ObjectStatus
-                                                text="{data_quality}"
-                                                state="{= ${data_quality} === 'GOOD' ? 'Success' : ${data_quality} === 'MEDIUM' ? 'Warning' : 'Error'}" />
-                                            <Text text="{gap_desc}" />
-                                            <Text text="{recommendation}" />
-                                            <Text text="{data_source}" />
-                                        </cells>
-                                    </ColumnListItem>
-                                </items>
-                            </Table>
-                        </IconTabFilter>
                     </items>
                 </IconTabBar>
             </VBox>

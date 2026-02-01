@@ -114,7 +114,6 @@ sap.ui.define([
             // 1. Extract Fields data (Materials + Suppliers)
             var aFieldsData = [];
             var oMaterialsTable = oView.byId("materialsTable");
-            var oSuppliersTable = oView.byId("suppliersTable");
 
             if (oMaterialsTable) {
                 oMaterialsTable.getItems().forEach(function (oItem) {
@@ -130,26 +129,8 @@ sap.ui.define([
                         }
                     }
 
-                    aExportData.push({
-                        Type: sType,
-                        ObjectId: oObj.object_id,
-                        ObjectName: oObj.object_name,
-                        AvailabilityCategory: oObj.avail_cat,
-                        DataQuality: oObj.data_quality,
-                        GapDescription: oObj.gap_desc,
-                        Recommendation: oObj.recommendation,
-                        DataSource: oObj.data_source
-                    });
-                });
-            }
-
-            if (oSuppliersTable) {
-                oSuppliersTable.getItems().forEach(function (oItem) {
-                    var oCtx = oItem.getBindingContext();
-                    if (!oCtx) { return; }
-                    var oObj = oCtx.getObject();
                     aFieldsData.push({
-                        Type: "Supplier",
+                        Type: sType,
                         ObjectId: oObj.object_id,
                         ObjectName: oObj.object_name,
                         AvailabilityCategory: oObj.avail_cat,
@@ -173,6 +154,7 @@ sap.ui.define([
                     }
                     aNodes.forEach(function (oNode) {
                         aBomData.push({
+                            Type: oNode.component_matnr ? "Parent" : "Child",
                             ID: oNode.parent_matnr || "",
                             Name: oNode.material_description || "",
                             "BOM Number": oNode.bom_number || "",
