@@ -20,10 +20,6 @@
             <Toolbar
                 class="sapUiSmallMarginBegin sapUiSmallMarginEnd sapUiTinyMarginBottom">
                 <Title text="Detailed Results" level="H3" />
-                <ToolbarSpacer />
-                <Button
-                    text="Filter"
-                    press="onOpenFilter" />
             </Toolbar>
 
             <!-- Results Table -->
