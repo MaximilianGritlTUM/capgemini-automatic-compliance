@@ -367,7 +367,7 @@ sap.ui.define(
                 }
 
                 this._oMarketDialog = new SelectDialog({
-                    title: "Select Target Market",
+                    title: "Select Market",
 
                     search: function (oEvent) {
                         var sValue = (oEvent.getParameter("value") || "").trim().toUpperCase();

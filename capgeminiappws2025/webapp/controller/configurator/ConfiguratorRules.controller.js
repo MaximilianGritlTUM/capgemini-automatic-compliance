@@ -123,7 +123,7 @@ sap.ui.define(
             });
 
             if (bExists) {
-                MessageBox.warning("This rule already exists for the selected regulation.");
+                MessageBox.error("This rule already exists for the selected regulation.");
                 return;
             }
 
