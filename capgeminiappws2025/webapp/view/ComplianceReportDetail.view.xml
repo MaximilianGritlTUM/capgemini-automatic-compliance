@@ -94,7 +94,7 @@
                             text="BOM"
                             icon="sap-icon://product">
                             <HBox class="sapUiSmallMarginTop sapUiSmallMarginBottom" alignItems="Center">
-                                <Label text="Filter by Activity:" class="sapUiTinyMarginEnd" />
+                                <Label text="Filter by Parent Activity:" class="sapUiTinyMarginEnd" />
                                 <Select
                                     id="activityFilter"
                                     change=".onActivityFilterChange"
