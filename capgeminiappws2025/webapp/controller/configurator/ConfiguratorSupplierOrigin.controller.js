@@ -170,7 +170,7 @@ sap.ui.define(
             });
 
             if (bExists) {
-                MessageBox.warning("This supplier origin already exists for the selected regulation.");
+                MessageBox.error("This supplier origin already exists for the selected regulation.");
                 return;
             }
 

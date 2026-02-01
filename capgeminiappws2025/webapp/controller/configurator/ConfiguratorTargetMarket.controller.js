@@ -169,7 +169,7 @@ sap.ui.define(
             });
 
             if (bExists) {
-                MessageBox.warning("This target market already exists for the selected regulation.");
+                MessageBox.error("This target market already exists for the selected regulation.");
                 return;
             }
 
