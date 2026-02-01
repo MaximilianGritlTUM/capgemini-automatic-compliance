@@ -1,0 +1,12 @@
+/* Enter your custom styles here */
+
+/* BOM Table styling for hierarchical display */
+.bomChildIndent {
+    margin-left: 2rem;
+}
+
+.bomChildText {
+    margin-left: 1rem;
+    font-weight: normal;
+    color: #666666;
+}

@@ -1,0 +1,60 @@
+<mvc:View controllerName="capgeminiappws2025.controller.Main"
+    xmlns:mvc="sap.ui.core.mvc" displayBlock="true"
+    xmlns="sap.m">
+    <Page id="page" title="{i18n>title}">
+                <content>
+            <Table id="Protocols" items="{/Protocols}">
+                
+                <columns>
+                    <Column>
+                        <Text text="Protocol ID" />
+                    </Column>
+                    <Column>
+                        <Text text="Material" />
+                    </Column>
+                    <Column>
+                        <Text text="Material Type" />
+                    </Column>
+                    <Column>
+                        <Text text="CN Code" />
+                    </Column>
+                    <Column>
+                        <Text text="DDS Reference ID" />
+                    </Column>
+                    <Column>
+                        <Text text="DDS Verification ID" />
+                    </Column>                    
+                    <Column>
+                        <Text text="Submitted At" />
+                    </Column>
+                    <Column>
+                        <Text text="Quantity Total" />
+                    </Column> 
+                    <Column>
+                        <Text text="Quantity In" />
+                    </Column>   
+                    <Column>
+                        <Text text="Quantity Out" />
+                    </Column>                                                              
+                </columns>
+
+                <items>
+                    <ColumnListItem>
+                        <cells>
+                            <Text text="{ProtocolID}" />
+                            <Text text="{= ${Material} || ${Product} || ${MaterialDescription} || ${MaterialID} || ${ProductID} }" />
+                            <Text text="{= ${MaterialTypeText} || ${MaterialType} || ${ProductTypeText} || ${ProductType} }" />
+                            <Text text="{CNCode}" />
+                            <Text text="{DDSReferenceID}" />
+                            <Text text="{DDSVerificationID}" />
+                            <Text text="{SubmittedAt}" />
+                            <Text text="{QuantityTotal}" />
+                            <Text text="{QuantityIn}" />
+                            <Text text="{QuantityOut}" />                                                        
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
+        </content>
+    </Page>
+</mvc:View>

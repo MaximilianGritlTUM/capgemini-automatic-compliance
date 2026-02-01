@@ -1,0 +1,59 @@
+<mvc:View
+    controllerName="capgeminiappws2025.controller.ComplianceReport"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m">
+    <!--http://localhost:8080/index.html#/complianceReports-->
+    <Page
+        id="complianceReportPage"
+        title="Compliance Report List"
+        class="sapUiNoContentPadding">
+
+        <content>
+
+            <!-- Results Table -->
+            <Table
+                id="reportTable"
+                items="{
+                    path: '/Report',
+                    sorter: { path: 'run_timestamp', descending: true },
+                    parameters: { expand: 'to_Regulation' }
+                }"
+                mode="SingleSelectMaster"
+                itemPress=".onTableItemPress"
+                class="sapUiSmallMarginBegin sapUiSmallMarginEnd sapUiSmallMarginBottom sapUiMediumMarginTop">
+
+                <columns>
+                    <Column><Text text="Report ID" /></Column>
+                    <Column><Text text="Regulation Title" /></Column>
+                    <Column><Text text="Run Timestamp" /></Column>
+                    <Column><Text text="Degree of Fulfillment (%)" /></Column>
+                    <Column><Text text="Data Availability" /></Column>
+                    <Column><Text text="Status" /></Column>
+                </columns>
+
+                <items>
+                    <ColumnListItem type="Navigation">
+                        <cells>
+                            <Text text="{report_id}" />
+                            <Text text="{to_Regulation/Title}" />
+                            <Text text="{path: 'run_timestamp', type: 'sap.ui.model.type.Date', formatOptions: { pattern: 'yyyy-MM-dd HH:mm:ss' }}" />
+                            <ObjectStatus
+                                text="{degree_fulfill}"
+                                state="{= ${degree_fulfill} >= 80 ? 'Success' :
+                                              ${degree_fulfill} >= 50 ? 'Warning' :
+                                              'Error'}" />
+                            <Text text="{data_avail_sum}" />
+                            <ObjectStatus
+                                text="{status}"
+                                state="{= ${status} === 'COMPLETED' ? 'Success' :
+                                              ${status} === 'Success' ? 'Warning' :
+                                              'Error'}" />
+                        </cells>
+                    </ColumnListItem>
+                </items>
+
+            </Table>
+
+        </content>
+    </Page>
+</mvc:View>

@@ -1,0 +1,201 @@
+<mvc:View
+    controllerName="capgeminiappws2025.controller.ComplianceReportDetail"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:table="sap.ui.table">
+
+    <Page id="reportDetailPage" title="Regulatory Readiness Report" enableScrolling="true">
+        <headerContent>
+            <!-- Export Button -->
+            <Button
+                text="Export"
+                icon="sap-icon://download"
+                type="Transparent"
+                press=".onExportReport" />
+        </headerContent>
+
+        <content>
+            <VBox width="100%" renderType="Div" class="sapUiSmallMargin">
+                <!-- Header: Regulation, Fulfillment, Timestamp, Audit Trail etc -->
+                <ObjectHeader
+                    title="Report ID: {report_id}"
+                    number="{degree_fulfill}"
+                    numberUnit="% Fulfillment"
+                    responsive="true">
+                    <attributes>
+                        <ObjectAttribute
+                            title="Regulation Title"
+                            text="{to_Regulation/Title}" />
+                        <ObjectAttribute
+                            title="Run Timestamp"
+                            text="{path: 'run_timestamp', type: 'sap.ui.model.type.Date', formatOptions: { pattern: 'yyyy-MM-dd HH:mm:ss' }}" />
+                    </attributes>
+                </ObjectHeader>
+
+                <!-- Material / Supplier Result -->
+                <IconTabBar expandable="false" class="sapUiSmallMarginTop">
+                    <!-- Materials Tab -->
+                    <items>
+                        <IconTabFilter
+                            text="Fields"
+                            icon="sap-icon://product">
+                            <Table
+                                id="materialsTable"
+                                inset="false"
+                                width="100%"
+                                items="{to_Results}">
+
+                                <columns>
+                                    <Column>
+                                        <Text text="Data Source" />
+                                    </Column>
+                                    <Column>
+                                        <Text text="Field" />
+                                    </Column>
+                                    <Column>
+                                        <Text text="Data Availability" />
+                                    </Column>
+                                    <Column>
+                                        <Text text="Data Quality" />
+                                    </Column>
+                                    <Column>
+                                        <Text text="Data Gaps / Activity" />
+                                    </Column>
+                                    <Column>
+                                        <Text text="Recommendations" />
+                                    </Column>
+                                </columns>
+
+                                <items>
+                                    <ColumnListItem>
+                                        <cells>
+                                            <Text text="{object_id}" />
+                                            <Text text="{object_name}" />
+                                            <!-- Data availability: available / partial / missing -->
+                                            <ObjectStatus
+                                                text="{avail_cat}"
+                                                icon="{= ${avail_cat} === 'AVAILABLE' ? 'sap-icon://accept' : ${avail_cat} === 'PARTIAL' ? 'sap-icon://alert' : 'sap-icon://error'}"
+                                                state="{= ${avail_cat} === 'AVAILABLE' ? 'Success' : ${avail_cat} === 'PARTIAL' ? 'Warning' : 'Error'}" />
+                                            <ObjectStatus
+                                                text="{data_quality}"
+                                                icon="{= ${data_quality} === 'HIGH' ? 'sap-icon://accept' : ${data_quality} === 'MEDIUM' ? 'sap-icon://alert' : 'sap-icon://error'}"
+                                                state="{= ${data_quality} === 'HIGH' ? 'Success' : ${data_quality} === 'MEDIUM' ? 'Warning' : 'Error'}" />
+                                            <Text text="{gap_desc}" />
+                                            <Text text="{recommendation}" />
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </IconTabFilter>
+
+                        <!-- BOM Tab -->
+                        <IconTabFilter
+                            text="BOM"
+                            icon="sap-icon://product">
+                            <HBox class="sapUiSmallMarginTop sapUiSmallMarginBottom" alignItems="Center">
+                                <Label text="Filter by Parent Activity:" class="sapUiTinyMarginEnd" />
+                                <Select
+                                    id="activityFilter"
+                                    change=".onActivityFilterChange"
+                                    width="200px">
+                                    <core:Item key="ALL" text="All" />
+                                    <core:Item key="ACTIVE" text="Active" />
+                                    <core:Item key="INACTIVE" text="Inactive" />
+                                    <core:Item key="DORMANT" text="Dormant" />
+                                    <core:Item key="N/A" text="No Activity Info" />
+                                </Select>
+                            </HBox>
+                            <table:TreeTable
+                                id="bomTable"
+                                rows="{
+                                    path: 'bom>/',
+                                    parameters: {
+                                        arrayNames: ['to_Children']
+                                    }
+                                }"
+                                width="100%"
+                                visibleRowCountMode="Fixed"
+                                visibleRowCount="10"
+                                rowHeight="48"
+                                selectionMode="None">
+
+                                <table:columns>
+                                    <table:Column
+                                        width="150px">
+                                        <Label text="BOM Number" />
+                                        <table:template>
+                                            <Text text="{= ${bom>bom_number} === '00000000' ? '' : ${bom>bom_number}}" />
+                                        </table:template>
+                                    </table:Column>
+                                    <table:Column>
+                                        <Label text="Material" />
+                                        <table:template>
+                                            <Text text="{bom>parent_matnr}" />
+                                        </table:template>
+                                    </table:Column>
+                                    <table:Column>
+                                        <Label text="Material Desc" />
+                                        <table:template>
+                                            <Text text="{bom>material_description}" />
+                                        </table:template>
+                                    </table:Column>
+                                    <table:Column>
+                                        <Label text="Plant" />
+                                        <table:template>
+                                            <Text text="{bom>Plant}" />
+                                        </table:template>
+                                    </table:Column>
+                                    <table:Column>
+                                        <Label text="Plant Desc" />
+                                        <table:template>
+                                            <Text text="{bom>plant_description}" />
+                                        </table:template>
+                                    </table:Column>
+                                    <table:Column>
+                                        <Label text="Activity Status" />
+                                        <table:template>
+                                            <ObjectStatus
+                                                text="{bom>activity_status}"
+                                                state="{= ${bom>activity_status} === 'ACTIVE' ? 'Success' : ${bom>activity_status} === 'INACTIVE' ? 'Warning' : ${bom>activity_status} === 'DORMANT' ? 'Error' : 'None'}" />
+                                        </table:template>
+                                    </table:Column>
+                                    <table:Column>
+                                        <Label text="Data Availability" />
+                                        <table:template>
+                                            <ObjectStatus
+                                                text="{bom>avail_cat}"
+                                                icon="{= ${bom>avail_cat} === 'AVAILABLE' ? 'sap-icon://accept' : ${bom>avail_cat} === 'PARTIAL' ? 'sap-icon://alert' : 'sap-icon://error'}"
+                                                state="{= ${bom>avail_cat} === 'AVAILABLE' ? 'Success' : ${bom>avail_cat} === 'PARTIAL' ? 'Warning' : 'Error'}" />
+                                        </table:template>
+                                    </table:Column>
+                                    <table:Column>
+                                        <Label text="Data Quality" />
+                                        <table:template>
+                                            <ObjectStatus
+                                                text="{bom>data_quality}"
+                                                icon="{= ${bom>data_quality} === 'HIGH' ? 'sap-icon://accept' : ${bom>data_quality} === 'MEDIUM' ? 'sap-icon://alert' : 'sap-icon://error'}"
+                                                state="{= ${bom>data_quality} === 'HIGH' ? 'Success' : ${bom>data_quality} === 'MEDIUM' ? 'Warning' : 'Error'}" />
+                                        </table:template>
+                                    </table:Column>
+                                    <table:Column>
+                                        <Label text="Data Gaps" />
+                                        <table:template>
+                                            <Text text="{bom>gap_desc}" tooltip="{bom>gap_desc}" />
+                                        </table:template>
+                                    </table:Column>
+                                    <table:Column>
+                                        <Label text="Recommendations" />
+                                        <table:template>
+                                            <Text text="{bom>recommendation}" tooltip="{bom>recommendation}" />
+                                        </table:template>
+                                    </table:Column>
+                                </table:columns>
+                            </table:TreeTable>
+                        </IconTabFilter>
+                    </items>
+                </IconTabBar>
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

@@ -1,0 +1,192 @@
+<mvc:View
+    controllerName="capgeminiappws2025.controller.configurator.ConfiguratorMain"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.ui.layout.form"
+>
+    <Page
+        id="configurator"
+        title="Regulatory Framework Configuration"
+    >
+        <content>
+            <HBox
+                width="100%"
+                renderType="Bare"
+                class="sapUiContentPadding"
+            >
+                <!-- ================= LEFT CARD: Active Regulations ================= -->
+                <VBox class="sapUiSmallMarginEnd" width="360px">
+                    <Panel
+                        class="sapUiResponsiveMargin"
+                        backgroundDesign="Solid"
+                    >
+                        <headerToolbar>
+                            <Toolbar>
+                                <Title
+                                    text="Active Regulations"
+                                    level="H5"
+                                />
+                                <ToolbarSpacer />
+                                <Button
+                                    text="Add Regulation"
+                                    icon="sap-icon://add"
+                                    type="Transparent"
+                                    press="onPressAddRegulation"
+                                />
+                            </Toolbar>
+                        </headerToolbar>
+
+                        <HBox class="sapUiTinyMarginTop sapUiSmallMarginBegin sapUiSmallMarginEnd" width="100%" justifyContent="End">
+                            <Button
+                                icon="sap-icon://sys-cancel"
+                                tooltip="Clear market filter"
+                                visible="{= !!${ui>/selectedMarket} }"
+                                type="Transparent"
+                                press=".onClearMarketFilter"
+                                class="sapUiTinyMarginEnd"
+                            />
+                            <Button
+                                id="btnSelectMarket"
+                                text="{= ${ui>/selectedMarket} ? 'Market: ' + ${ui>/selectedMarket} : 'Select Market' }"
+                                icon="sap-icon://world"
+                                type="Transparent"
+                                press=".onPressSelectMarket"
+                                class="sapUiTinyMarginEnd"
+                            />
+
+                            <Button
+                                icon="sap-icon://sys-cancel"
+                                tooltip="Clear origin filter"
+                                visible="{= !!${ui>/selectedOrigin} }"
+                                type="Transparent"
+                                press=".onClearOriginFilter"
+                                class="sapUiTinyMarginEnd"
+                            />
+                            <Button
+                                id="btnSelectOrigin"
+                                text="{= ${ui>/selectedOrigin} ? 'Origin: ' + ${ui>/selectedOrigin} : 'Select Origin' }"
+                                icon="sap-icon://group"
+                                type="Transparent"
+                                press=".onPressSelectOrigin"
+                            />
+                        </HBox>
+
+                        <List
+                            id="regulationList"
+                            mode="SingleSelectMaster"
+                            items="{ path: '/Z_I_ZREGULATION', templateShareable: false }"
+                            selectionChange=".onSelectRegulation"
+                        >
+                            <CustomListItem
+                                type="Active"
+                            >
+                                <VBox class="sapUiSmallMargin">
+                                    <HBox
+                                        alignItems="Center"
+                                        fitContainer="false"
+                                    >
+                                        <!-- left column: text OR input; grows to fill available space -->
+                                        <VBox width="100%">
+                                            <layoutData>
+                                                <FlexItemData growFactor="1" />
+                                            </layoutData>
+                                            <!-- Display -->
+                                            <Text
+                                                text="{= ${Title} ? ${Title} : '(Untitled regulation)' }"
+                                                visible="{= ${ui>/editRegulationId} !== ${Id} }"
+                                            />
+
+                                            <!-- Edit -->
+                                            <Input
+                                                id="regulationTitleInput"
+                                                value="{path: 'Title', mode: 'sap.ui.model.BindingMode.TwoWay'}"
+                                                visible="{= ${ui>/editRegulationId} === ${Id} }"
+                                                submit=".onSubmitRegulationTitle"
+                                                change=".onSubmitRegulationTitle"
+                                            />
+                                        </VBox>
+
+                                        <!-- right column: action buttons -->
+                                        <HBox
+                                            alignItems="Center"
+                                            justifyContent="End"
+                                            renderType="Bare"
+                                        >
+                                            <Button
+                                                icon="sap-icon://edit"
+                                                type="Transparent"
+                                                press=".onEditRegulation"
+                                                tooltip="Edit regulation"
+                                            />
+                                            <Button
+                                                icon="sap-icon://delete"
+                                                type="Reject"
+                                                press=".onDeleteRegulation"
+                                                tooltip="Delete regulation"
+                                            />
+                                        </HBox>
+                                    </HBox>
+                                </VBox>
+                            </CustomListItem>
+                        </List>
+                    </Panel>
+                </VBox>
+
+                <!-- ================= RIGHT CARD: Regulation Details ================= -->
+                <VBox
+                    width="100%"
+                    id="detailPanel"
+                    visible="false"
+                >
+                    <layoutData>
+                        <FlexItemData growFactor="1" />
+                    </layoutData>
+                    <Panel
+                        class="sapUiResponsiveMargin"
+                        backgroundDesign="Solid"
+                    >
+                        <!-- Header -->
+                        <VBox class="sapUiSmallMargin sapUiMediumMarginTop">
+                            <Title
+                                text="Description"
+                                level="H4"
+                            />
+                            <Text
+                                text="{= ${ui>/selectedRegulationDescription} ? ${ui>/selectedRegulationDescription} : 'No description provided.' }"
+                                class="sapUiTinyMarginBottom sapUiSmallMarginBegin"
+                            />
+                        </VBox>
+
+                        <mvc:XMLView viewName="capgeminiappws2025.view.configurator.ConfiguratorRules" />
+                        <VBox
+                            justifyContent="SpaceBetween"
+                            class="sapUiMediumMarginTop sapUiSmallMarginBegin sapUiSmallMarginEnd"
+                        ></VBox>
+                        <HBox class="sapUiSmallMargin">
+                            <mvc:XMLView viewName="capgeminiappws2025.view.configurator.ConfiguratorSupplierOrigin" />
+                            <mvc:XMLView viewName="capgeminiappws2025.view.configurator.ConfiguratorTargetMarket" />
+                        </HBox>
+                        <VBox
+                            justifyContent="SpaceBetween"
+                            class="sapUiSmallMarginBegin sapUiSmallMarginEnd"
+                        >
+                            <Text text="Note: Supplier Origin and Target Market currently are only used to filter the Regulations. They don't affect the readiness check results." class="sapUiTinyMargin"/>
+                        </VBox>
+                        <!-- ===== Footer Actions ===== -->
+                        <HBox
+                            class="sapUiMediumMargin"
+                            justifyContent="Start"
+                        >
+                            <Button
+                                text="Start Readiness Check"
+                                class="sapUiTinyMarginBegin"
+                                icon="sap-icon://begin"
+                                press=".onPressStartReadinessCheck"
+                            />
+                        </HBox>
+                    </Panel>
+                </VBox>
+            </HBox>
+        </content>
+    </Page>
+</mvc:View>

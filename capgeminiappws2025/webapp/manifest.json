@@ -1,0 +1,188 @@
+{
+  "_version": "1.53.0",
+  "sap.app": {
+    "id": "capgeminiappws2025",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "applicationVersion": {
+      "version": "0.0.1"
+    },
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "resources": "resources.json",
+    "sourceTemplate": {
+      "id": "@sap/generator-fiori:basic",
+      "version": "1.19.1",
+      "toolsId": "c51afef8-2a01-4fe6-ae75-0beda66caa08"
+    },
+    "crossNavigation": {
+      "inbounds": {
+        "app-preview": {
+          "semanticObject": "app",
+          "action": "preview",
+          "title": "App Preview",
+          "signature": {
+            "parameters": {},
+            "additionalParameters": "allowed"
+          }
+        }
+      }
+    },
+    "dataSources": {
+      "Z_CONFIG_SRV_UI_VAN": {
+        "uri": "/sap/opu/odata/IWFND/CATALOGSERVICE;v=2/Annotations(TechnicalName='Z_CONFIG_SRV_UI_VAN',Version='0001')/$value/",
+        "type": "ODataAnnotation",
+        "settings": {
+          "localUri": "localService/mainService/Z_CONFIG_SRV_UI_VAN.xml"
+        }
+      },
+      "mainService": {
+        "uri": "/sap/opu/odata/sap/Z_CONFIG_SRV_UI",
+        "type": "OData",
+        "settings": {
+          "odataVersion": "2.0"
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "icons": {
+      "icon": "",
+      "favIcon": "",
+      "phone": "",
+      "phone@2": "",
+      "tablet": "",
+      "tablet@2": ""
+    },
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": false,
+    "dependencies": {
+      "minUI5Version": "1.114.10",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.ui.layout": {},
+        "sap.f": {},
+        "sap.suite.ui.microchart": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "config": {
+      "fullWidth": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "capgeminiappws2025.i18n.i18n"
+        }
+      },
+      "": {
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": {}
+      }
+    },
+    "resources": {
+      "css": [
+        {
+          "uri": "css/style.css"
+        }
+      ]
+    },
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "viewType": "XML",
+        "async": true,
+        "viewPath": "capgeminiappws2025.view",
+        "controlAggregation": "pages",
+        "controlId": "app",
+        "clearControlAggregation": false
+      },
+      "routes": [
+        {
+          "name": "home",
+          "pattern": "",
+          "target": "home"
+        },
+        {
+          "name": "configurator",
+          "pattern": "configurator",
+          "target": "configurator"
+        },
+        {
+          "pattern": "complianceReports",                
+          "name": "ComplianceReport",        
+          "target": "ComplianceReport"  
+        },
+        {
+          "pattern": "reportDetail/{reportId}",                
+          "name": "ComplianceReportDetail",        
+          "target": "ComplianceReportDetail"
+        },
+        {
+          "name": "Regulation",
+          "pattern": "regulation/{contextPath}",
+          "target": "Regulation"
+        },
+        {
+          "pattern": "transactionDashboard",
+          "name": "TransactionDashboard",
+          "target": "TransactionDashboard"
+        }
+      ],
+      "targets": {
+        "home": {
+          "viewType": "XML",
+          "transition": "slide",
+          "clearControlAggregation": false,
+          "viewId": "dashboard",
+          "viewName": "Dashboard",
+          "ControlId": "app",
+          "viewLevel": 1
+        },
+        "configurator": {
+          "viewId": "configurator",
+          "viewName": "configurator.ConfiguratorMain",
+          "ControlId": "app",
+          "viewLevel": 1
+        },
+        "ComplianceReport": {
+          "viewName": "ComplianceReport",
+          "viewLevel": 1
+        },
+        "ComplianceReportDetail": {
+          "viewName": "ComplianceReportDetail",
+          "viewLevel": 2
+        },
+        "Regulation": {
+          "viewId": "Regulation",
+          "viewName": "Regulation",
+          "controlId": "app",
+          "viewLevel": 2
+        },
+        "TransactionDashboard":{
+          "viewName": "TransactionDashboard",
+          "viewType": "XML"
+        }
+      }
+    },
+    "rootView": {
+      "viewName": "capgeminiappws2025.view.App",
+      "type": "XML",
+      "async": true,
+      "id": "App"
+    }
+  }
+}

@@ -1,0 +1,75 @@
+<mvc:View
+    controllerName="capgeminiappws2025.controller.Dashboard"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    displayBlock="true">
+
+    <Page id="dashboardPage" title="Compliance Hub" titleAlignment="Center">
+        <content>
+            <VBox class="sapUiResponsiveMargin">
+                
+                <VBox class="sapUiSmallMarginBottom">
+                    <Title text="Welcome!" level="H1" />
+                </VBox>
+
+                <Title text="Quick Actions" level="H3" class="sapUiSmallMarginBottom" />
+                
+                <HBox wrap="Wrap" class="sapUiTinyMarginBottom">
+                    <items>
+                        <GenericTile 
+                            header="Configurator" 
+                            subheader="System Readiness" 
+                            frameType="TwoByOne"
+                            press=".onNavToConfig"
+                            class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+                            <TileContent footer="Setup Module">
+                                <ImageContent src="sap-icon://settings" />
+                            </TileContent>
+                        </GenericTile>
+
+                        <GenericTile 
+                            header="Report List" 
+                            subheader="Check Results" 
+                            frameType="TwoByOne"
+                            press=".onNavToReports"
+                            class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+                            <TileContent footer="{dashboard>/TodayCount} New Items">
+                                <ImageContent src="sap-icon://manager-insight" />
+                            </TileContent>
+                        </GenericTile>
+
+                        <GenericTile 
+                            header="Transaction Analysis" 
+                            subheader="Historical Data" 
+                            frameType="TwoByOne"
+                            press=".onNavToDashboard"
+                            class="sapUiTinyMarginBottom">
+                            <TileContent footer="Data Insights">
+                                <ImageContent src="sap-icon://home-share" />
+                            </TileContent>
+                        </GenericTile>
+                    </items>
+                </HBox>
+
+                <Title text="Recently Generated Reports (Last 10)" level="H3" class="sapUiMediumMarginTop sapUiSmallMarginBottom" />
+
+                <Table id="recentReportsTable" items="{dashboard>/RecentReports}">
+                    <columns>
+                        <Column><Text text="Report ID" /></Column>
+                        <Column hAlign="End"><Text text="Status" /></Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem type="Navigation" press=".onClickToReports">
+                            <cells>
+                                <Text text="{dashboard>report_id}" /> 
+                                <ObjectStatus 
+                                    text="{dashboard>status}" 
+                                    state="{= ${dashboard>status} === 'COMPLETED' ? 'Success' : 'Warning' }" />
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

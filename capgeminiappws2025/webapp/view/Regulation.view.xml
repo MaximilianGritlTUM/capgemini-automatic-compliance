@@ -1,0 +1,35 @@
+<mvc:View
+  controllerName="capgeminiappws2025.controller.Regulation"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:f="sap.ui.layout.form"
+  displayBlock="true">
+
+  <Page
+    id="RegulationPageId"
+    title="Regulation"
+    showNavButton="true"
+    navButtonPress="onNavBack">
+
+    <content>
+      <f:SimpleForm editable="true" layout="ResponsiveGridLayout">
+        <Label text="Id" visible="{= !!${Id} }"/>
+        <Text text="{Id}" visible="{= !!${Id} }"/>
+
+        <Label text="Title" />
+        <Input id="titleInput" value="{Title}" required="true"/>
+
+        <Label text="Description" />
+        <TextArea id="descriptionInput" value="{Description}" rows="5" />
+      </f:SimpleForm>
+    </content>
+
+    <footer>
+      <Toolbar>
+        <ToolbarSpacer/>
+        <Button text="Save" type="Emphasized" press="onSave"/>
+      </Toolbar>
+    </footer>
+
+  </Page>
+</mvc:View>
