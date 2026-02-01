@@ -64,7 +64,7 @@
                                 <Text text="{dashboard>report_id}" /> 
                                 <ObjectStatus 
                                     text="{dashboard>status}" 
-                                    state="{= ${dashboard>status} === 'Completed' ? 'Success' : 'Warning' }" />
+                                    state="{= ${dashboard>status} === 'COMPLETED' ? 'Success' : 'Warning' }" />
                             </cells>
                         </ColumnListItem>
                     </items>

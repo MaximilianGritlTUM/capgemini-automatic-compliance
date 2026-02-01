@@ -45,8 +45,8 @@
                             <Text text="{data_avail_sum}" />
                             <ObjectStatus
                                 text="{status}"
-                                state="{= ${status} === 'Completed' ? 'Success' :
-                                              ${status} === 'Running' ? 'Warning' :
+                                state="{= ${status} === 'COMPLETED' ? 'Success' :
+                                              ${status} === 'Success' ? 'Warning' :
                                               'Error'}" />
                         </cells>
                     </ColumnListItem>
