@@ -179,6 +179,12 @@ sap.ui.define(
                 var oValueBinding = oInput.getBinding && oInput.getBinding("value");
                 var sProp = oValueBinding ? oValueBinding.getPath() : "Title";
 
+                if (sValue === oCtx.getObject().Title) {
+                    this.getOwnerComponent().getModel("ui").setProperty("/editRegulationId", null);
+                    oInput.setValue(oCtx.getObject().Title);
+                    return;
+                }
+
                 oModel.setProperty(sPath + "/" + sProp, sValue);
 
                 if (typeof oModel.submitChanges === "function") {
