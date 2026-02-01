@@ -9,7 +9,7 @@
             <VBox class="sapUiResponsiveMargin">
                 
                 <VBox class="sapUiSmallMarginBottom">
-                    <Title text="Welcome" level="H1" />
+                    <Title text="Welcome!" level="H1" />
                 </VBox>
 
                 <Title text="Quick Actions" level="H3" class="sapUiSmallMarginBottom" />
@@ -29,7 +29,7 @@
 
                         <GenericTile 
                             header="Report List" 
-                            subheader="Review Pending" 
+                            subheader="Check Results" 
                             frameType="TwoByOne"
                             press=".onNavToReports"
                             class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
@@ -64,7 +64,7 @@
                                 <Text text="{dashboard>report_id}" /> 
                                 <ObjectStatus 
                                     text="{dashboard>status}" 
-                                    state="{= ${dashboard>status} === 'Completed' ? 'Success' : 'Warning' }" />
+                                    state="{= ${dashboard>status} === 'COMPLETED' ? 'Success' : 'Warning' }" />
                             </cells>
                         </ColumnListItem>
                     </items>

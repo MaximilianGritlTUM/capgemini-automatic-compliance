@@ -128,36 +128,31 @@
                                             <Text text="{= ${bom>bom_number} === '00000000' ? '' : ${bom>bom_number}}" />
                                         </table:template>
                                     </table:Column>
-                                    <table:Column
-                                        width="150px">
+                                    <table:Column>
                                         <Label text="Material" />
                                         <table:template>
                                             <Text text="{bom>parent_matnr}" />
                                         </table:template>
                                     </table:Column>
-                                    <table:Column
-                                        width="100px">
+                                    <table:Column>
                                         <Label text="Material Desc" />
                                         <table:template>
                                             <Text text="{bom>material_description}" />
                                         </table:template>
                                     </table:Column>
-                                    <table:Column
-                                        width="80px">
+                                    <table:Column>
                                         <Label text="Plant" />
                                         <table:template>
                                             <Text text="{bom>Plant}" />
                                         </table:template>
                                     </table:Column>
-                                    <table:Column
-                                        width="100px">
+                                    <table:Column>
                                         <Label text="Plant Desc" />
                                         <table:template>
                                             <Text text="{bom>plant_description}" />
                                         </table:template>
                                     </table:Column>
-                                    <table:Column
-                                        width="120px">
+                                    <table:Column>
                                         <Label text="Activity Status" />
                                         <table:template>
                                             <ObjectStatus
@@ -165,8 +160,7 @@
                                                 state="{= ${bom>activity_status} === 'ACTIVE' ? 'Success' : ${bom>activity_status} === 'INACTIVE' ? 'Warning' : ${bom>activity_status} === 'DORMANT' ? 'Error' : 'None'}" />
                                         </table:template>
                                     </table:Column>
-                                    <table:Column
-                                        width="120px">
+                                    <table:Column>
                                         <Label text="Data Availability" />
                                         <table:template>
                                             <ObjectStatus
@@ -175,8 +169,7 @@
                                                 state="{= ${bom>avail_cat} === 'AVAILABLE' ? 'Success' : ${bom>avail_cat} === 'PARTIAL' ? 'Warning' : 'Error'}" />
                                         </table:template>
                                     </table:Column>
-                                    <table:Column
-                                        width="100px">
+                                    <table:Column>
                                         <Label text="Data Quality" />
                                         <table:template>
                                             <ObjectStatus
@@ -185,78 +178,20 @@
                                                 state="{= ${bom>data_quality} === 'HIGH' ? 'Success' : ${bom>data_quality} === 'MEDIUM' ? 'Warning' : 'Error'}" />
                                         </table:template>
                                     </table:Column>
-                                    <table:Column
-                                        width="150px">
+                                    <table:Column>
                                         <Label text="Data Gaps" />
                                         <table:template>
-                                            <Text text="{bom>gap_desc}" maxLines="2" tooltip="{bom>gap_desc}" />
+                                            <Text text="{bom>gap_desc}" tooltip="{bom>gap_desc}" />
                                         </table:template>
                                     </table:Column>
-                                    <table:Column
-                                        width="200px">
+                                    <table:Column>
                                         <Label text="Recommendations" />
                                         <table:template>
-                                            <Text text="{bom>recommendation}" maxLines="2" tooltip="{bom>recommendation}" />
+                                            <Text text="{bom>recommendation}" tooltip="{bom>recommendation}" />
                                         </table:template>
                                     </table:Column>
                                 </table:columns>
                             </table:TreeTable>
-                        </IconTabFilter>
-
-                        <!-- Suppliers Tab -->
-                        <IconTabFilter
-                            text="Suppliers"
-                            icon="sap-icon://supplier"
-                            visible="false">
-                            <Table
-                                id="suppliersTable"
-                                inset="false"
-                                width="100%"
-                                items="{to_Results}">
-
-                                <columns>
-                                    <Column>
-                                        <Text text="Supplier ID" />
-                                    </Column>
-                                    <Column>
-                                        <Text text="Name" />
-                                    </Column>
-                                    <Column>
-                                        <Text text="Data Availability" />
-                                    </Column>
-                                    <Column>
-                                        <Text text="Data Quality" />
-                                    </Column>
-                                    <Column>
-                                        <Text text="Data Gaps" />
-                                    </Column>
-                                    <Column>
-                                        <Text text="Recommendations" />
-                                    </Column>
-                                    <Column>
-                                        <Text text="Data Source" />
-                                    </Column>
-                                </columns>
-
-                                <items>
-                                    <ColumnListItem>
-                                        <cells>
-                                            <Text text="{ObjectId}" />
-                                            <Text text="{ObjectName}" />
-                                            <ObjectStatus
-                                                text="{avail_cat}"
-                                                icon="{= ${avail_cat} === 'AVAILABLE' ? 'sap-icon://accept' : ${avail_cat} === 'PARTIAL' ? 'sap-icon://alert' : 'sap-icon://error'}"
-                                                state="{= ${avail_cat} === 'AVAILABLE' ? 'Success' : ${avail_cat} === 'PARTIAL' ? 'Warning' : 'Error'}" />
-                                            <ObjectStatus
-                                                text="{data_quality}"
-                                                state="{= ${data_quality} === 'GOOD' ? 'Success' : ${data_quality} === 'MEDIUM' ? 'Warning' : 'Error'}" />
-                                            <Text text="{gap_desc}" />
-                                            <Text text="{recommendation}" />
-                                            <Text text="{data_source}" />
-                                        </cells>
-                                    </ColumnListItem>
-                                </items>
-                            </Table>
                         </IconTabFilter>
                     </items>
                 </IconTabBar>

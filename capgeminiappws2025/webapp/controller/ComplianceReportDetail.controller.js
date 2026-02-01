@@ -114,7 +114,6 @@ sap.ui.define([
             // 1. Extract Fields data (Materials + Suppliers)
             var aFieldsData = [];
             var oMaterialsTable = oView.byId("materialsTable");
-            var oSuppliersTable = oView.byId("suppliersTable");
 
             if (oMaterialsTable) {
                 oMaterialsTable.getItems().forEach(function (oItem) {
@@ -130,26 +129,7 @@ sap.ui.define([
                         }
                     }
 
-                    aExportData.push({
-                        Type: sType,
-                        ObjectId: oObj.object_id,
-                        ObjectName: oObj.object_name,
-                        AvailabilityCategory: oObj.avail_cat,
-                        DataQuality: oObj.data_quality,
-                        GapDescription: oObj.gap_desc,
-                        Recommendation: oObj.recommendation,
-                        DataSource: oObj.data_source
-                    });
-                });
-            }
-
-            if (oSuppliersTable) {
-                oSuppliersTable.getItems().forEach(function (oItem) {
-                    var oCtx = oItem.getBindingContext();
-                    if (!oCtx) { return; }
-                    var oObj = oCtx.getObject();
                     aFieldsData.push({
-                        Type: "Supplier",
                         ObjectId: oObj.object_id,
                         ObjectName: oObj.object_name,
                         AvailabilityCategory: oObj.avail_cat,
@@ -173,6 +153,7 @@ sap.ui.define([
                     }
                     aNodes.forEach(function (oNode) {
                         aBomData.push({
+                            Type: oNode.component_matnr ? "Parent" : "Child",
                             ID: oNode.parent_matnr || "",
                             Name: oNode.material_description || "",
                             "BOM Number": oNode.bom_number || "",
@@ -200,17 +181,16 @@ sap.ui.define([
                 // Fields sheet
                 if (aFieldsData.length) {
                     var wsFields = XLSX.utils.json_to_sheet(aFieldsData, {
-                        header: ["Type", "ObjectId", "ObjectName", "AvailabilityCategory", "DataQuality", "GapDescription", "Recommendation", "DataSource"]
+                        header: ["ObjectId", "ObjectName", "AvailabilityCategory", "DataQuality", "GapDescription", "Recommendation", "DataSource"]
                     });
                     // Rename headers to friendly labels
-                    wsFields["A1"].v = "Type";
-                    wsFields["B1"].v = "ID";
-                    wsFields["C1"].v = "Name";
-                    wsFields["D1"].v = "Availability";
-                    wsFields["E1"].v = "Data Quality";
-                    wsFields["F1"].v = "Data Gaps / Activity";
-                    wsFields["G1"].v = "Recommendations";
-                    wsFields["H1"].v = "Data Source";
+                    wsFields["A1"].v = "Data Source";
+                    wsFields["B1"].v = "Field";
+                    wsFields["C1"].v = "Availability";
+                    wsFields["D1"].v = "Data Quality";
+                    wsFields["E1"].v = "Data Gaps / Activity";
+                    wsFields["F1"].v = "Recommendations";
+                    wsFields["G1"].v = "Data Source";
                     XLSX.utils.book_append_sheet(wb, wsFields, "Fields");
                 }
 
@@ -220,7 +200,7 @@ sap.ui.define([
                     XLSX.utils.book_append_sheet(wb, wsBom, "BOM");
                 }
 
-                XLSX.writeFile(wb, "ReadinessReport_Detail.xlsx");
+                XLSX.writeFile(wb, `${that.getView().getBindingContext().getObject().report_id}_Detail.xlsx`);
                 MessageToast.show("Report exported successfully.");
             }).catch(function () {
                 MessageToast.show("Failed to load export library.");

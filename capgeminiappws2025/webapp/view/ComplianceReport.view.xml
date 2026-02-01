@@ -5,31 +5,14 @@
     <!--http://localhost:8080/index.html#/complianceReports-->
     <Page
         id="complianceReportPage"
-        title="Compliance Report"
+        title="Compliance Report List"
         class="sapUiNoContentPadding">
 
         <content>
 
-            <Title
-                text="Detailed Compliance Results"
-                level="H2"
-                class="sapUiSmallMarginTop sapUiSmallMarginBottom
-                       sapUiSmallMarginBegin sapUiSmallMarginEnd" />
-
-            <!-- Toolbar: Export Report / Filter Button -->
-            <Toolbar
-                class="sapUiSmallMarginBegin sapUiSmallMarginEnd sapUiTinyMarginBottom">
-                <Title text="Detailed Results" level="H3" />
-                <ToolbarSpacer />
-                <Button
-                    text="Filter"
-                    press="onOpenFilter" />
-            </Toolbar>
-
             <!-- Results Table -->
             <Table
                 id="reportTable"
-                headerText="Compliance Report List"
                 items="{
                     path: '/Report',
                     sorter: { path: 'run_timestamp', descending: true },
@@ -37,7 +20,7 @@
                 }"
                 mode="SingleSelectMaster"
                 itemPress=".onTableItemPress"
-                class="sapUiSmallMarginBegin sapUiSmallMarginEnd sapUiSmallMarginBottom">
+                class="sapUiSmallMarginBegin sapUiSmallMarginEnd sapUiSmallMarginBottom sapUiMediumMarginTop">
 
                 <columns>
                     <Column><Text text="Report ID" /></Column>
@@ -62,8 +45,8 @@
                             <Text text="{data_avail_sum}" />
                             <ObjectStatus
                                 text="{status}"
-                                state="{= ${status} === 'Completed' ? 'Success' :
-                                              ${status} === 'Running' ? 'Warning' :
+                                state="{= ${status} === 'COMPLETED' ? 'Success' :
+                                              ${status} === 'Success' ? 'Warning' :
                                               'Error'}" />
                         </cells>
                     </ColumnListItem>

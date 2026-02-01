@@ -22,6 +22,7 @@ sap.ui.define([
 
       onSave: function () {
         var sTitle = (this.byId("titleInput").getValue() || "").trim();
+        var sDescription = (this.byId("descriptionInput").getValue() || "").trim();
 
         if (!sTitle) {
           MessageBox.error("Please enter a Title before saving.");
@@ -32,6 +33,7 @@ sap.ui.define([
         var oCtx = this.getView().getBindingContext();
         if (oCtx) {
           this.getView().getModel().setProperty(oCtx.getPath() + "/Title", sTitle);
+          this.getView().getModel().setProperty(oCtx.getPath() + "/Description", sDescription);
         }
 
         var oModel = this.getView().getModel();
@@ -42,6 +44,8 @@ sap.ui.define([
             this.getView().setBusy(false);
             oModel.refresh(true);
             MessageToast.show("Regulation Saved.");
+            this.getOwnerComponent().getModel("ui").setProperty("/selectedRegulationPath", oCtx.getPath());
+            this.getOwnerComponent().getModel("ui").setProperty("/selectedRegulationDescription", oCtx.getObject().Description);
             this.getOwnerComponent().getRouter().navTo("configurator", {}, true);
           }.bind(this),
           error: function () {

@@ -169,7 +169,7 @@ sap.ui.define(
             });
 
             if (bExists) {
-                MessageBox.warning("This target market already exists for the selected regulation.");
+                MessageBox.error("This target market already exists for the selected regulation.");
                 return;
             }
 
@@ -189,7 +189,7 @@ sap.ui.define(
                     this._oAddTargetMarketDialog.setBusy(false);
                     this._oAddTargetMarketDialog.close();
                     MessageToast.show("Target Market added");
-                    var oBinding = oSupplierOriginTable.getBinding("items");
+                    var oBinding = oTargetMarketTable.getBinding("items");
                     if (oBinding && oBinding.refresh) {
                         oBinding.refresh(true);
                     }
@@ -310,8 +310,8 @@ sap.ui.define(
 
                     this.getView().getModel("vhCountry").setProperty("/countries", aCountries);
 
-                    if (this._oAddSupplierOriginDialog && this._oAddSupplierOriginDialog.isOpen()) {
-                        this._updateAddSupplierOriginButtonState();
+                    if (this._oAddTargetMarketDialog && this._oAddTargetMarketDialog.isOpen()) {
+                        this._updateAddTargetMarketButtonState();
                     }
                 }.bind(this),
 

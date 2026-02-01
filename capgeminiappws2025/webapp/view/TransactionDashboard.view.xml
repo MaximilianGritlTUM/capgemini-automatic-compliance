@@ -16,7 +16,7 @@
           <SearchField
             id="sfMaterial"
             width="16rem"
-            placeholder="Search material in Top {vm>/com/topN} ..."
+            placeholder="Search material"
             liveChange=".onMaterialSearchLive"
             search=".onMaterialSearch" />
 
@@ -46,7 +46,7 @@
 
         <HBox class="sapUiSmallMarginTop" justifyContent="SpaceBetween" wrap="Wrap">
           <VBox width="49%">
-            <ObjectStatus title="Total Movements (Top {vm>/com/topN})"
+            <ObjectStatus title="Total Frequencies (Top {vm>/com/topN})"
               text="{vm>/com/kpi/totalMovements}"
               state="Information"/>
           </VBox>
