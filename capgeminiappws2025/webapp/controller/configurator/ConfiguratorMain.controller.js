@@ -179,6 +179,12 @@ sap.ui.define(
                 var oValueBinding = oInput.getBinding && oInput.getBinding("value");
                 var sProp = oValueBinding ? oValueBinding.getPath() : "Title";
 
+                if (sValue === oCtx.getObject().Title) {
+                    this.getOwnerComponent().getModel("ui").setProperty("/editRegulationId", null);
+                    oInput.setValue(oCtx.getObject().Title);
+                    return;
+                }
+
                 oModel.setProperty(sPath + "/" + sProp, sValue);
 
                 if (typeof oModel.submitChanges === "function") {
@@ -224,6 +230,13 @@ sap.ui.define(
                     oBinding.refresh(true);
                 } else {
                     this.getView().getModel().refresh(true);
+                }
+
+                if (this.getOwnerComponent().getModel("ui").getProperty("/selectedRegulationPath")) {
+                    oList.setSelectedItem(oList.getItems().find(function (it) {
+                        return ( it.getBindingContext() && it.getBindingContext().getPath() === this.getOwnerComponent().getModel("ui").getProperty("/selectedRegulationPath") );
+                    }.bind(this)));
+                    this.byId("detailPanel").setVisible(true);
                 }
             },
 
@@ -296,6 +309,11 @@ sap.ui.define(
                     });
 
                     await readPromise;
+
+                    if (!aData || !Array.isArray(aData) || aData.length === 0) {
+                        sap.m.MessageBox.error("No rules found for the selected regulation. Please add rules before starting the readiness check.");
+                        return;
+                    }
 
                     await oChecker.do_checking_algorithm(aData, oModel, oSelectedRegulation);
 
