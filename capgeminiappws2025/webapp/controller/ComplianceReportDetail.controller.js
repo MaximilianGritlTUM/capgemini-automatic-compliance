@@ -184,8 +184,8 @@ sap.ui.define([
                         header: ["ObjectId", "ObjectName", "AvailabilityCategory", "DataQuality", "GapDescription", "Recommendation", "DataSource"]
                     });
                     // Rename headers to friendly labels
-                    wsFields["A1"].v = "View";
-                    wsFields["B1"].v = "Element";
+                    wsFields["A1"].v = "Data Source";
+                    wsFields["B1"].v = "Field";
                     wsFields["C1"].v = "Availability";
                     wsFields["D1"].v = "Data Quality";
                     wsFields["E1"].v = "Data Gaps / Activity";
