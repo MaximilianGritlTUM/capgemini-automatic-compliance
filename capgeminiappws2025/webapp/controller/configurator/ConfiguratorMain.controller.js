@@ -315,6 +315,12 @@ sap.ui.define(
                         return;
                     }
 
+                    aData = aData.filter(function (r) {
+                        return r.Active;
+                    });
+
+                    console.log(aData)
+
                     await oChecker.do_checking_algorithm(aData, oModel, oSelectedRegulation);
 
                     oRouter.navTo("ComplianceReport");
@@ -349,20 +355,65 @@ sap.ui.define(
                     title: "Confirm Delete",
                     onClose: function (sAction) {
                         if (sAction === MessageBox.Action.OK) {
+                            var oDeleteMain = new Promise(function(resolve, reject){
+                            oModel.read(sPath, {
+                                urlParameters: { "$expand": "to_Countries,to_Fields" },
+                                success: function(oEntity) {
+                                    var aCountries = oEntity.to_Countries.results || [];
+                                    var aFields = oEntity.to_Fields.results || [];
+
+                                    // Create array of child deletion promises
+                                    var aChildDeletes = [];
+
+                                    aCountries.forEach(function(country) {
+                                        var deletePath = `/Z_I_ZREG_COUNTRY(Regid='${encodeURIComponent(country.Regid)}',Role='${encodeURIComponent(country.Role)}',Country_Code='${encodeURIComponent(country.Country_Code)}')`;
+                                        aChildDeletes.push(new Promise(function(resolve, reject){
+                                            oModel.remove(deletePath, {
+                                                success: resolve,
+                                                error: reject
+                                            });
+                                        }));
+                                    });
+
+                                    aFields.forEach(function(field) {
+                                        var deletePath = `/Z_I_ZREG_FIELDS(Regid='${encodeURIComponent(field.Regid)}',Viewname='${encodeURIComponent(field.Viewname)}',Elementname='${encodeURIComponent(field.Elementname)}')`;
+                                        aChildDeletes.push(new Promise(function(resolve, reject){
+                                            oModel.remove(deletePath, {
+                                                success: resolve,
+                                                error: reject
+                                            });
+                                        }));
+                                    });
+
+                                    // Wait for all child deletions
+                                    Promise.all(aChildDeletes)
+                                        .then(resolve)   // only then resolve main promise
+                                        .catch(reject);
+                                },
+                                error: reject
+                            });
+                        });
+
+                        // Now delete main entity after children
+                        oDeleteMain.then(function(){
                             oModel.remove(sPath, {
-                                success: function () {
+                                success: function() {
                                     MessageToast.show("Regulation deleted");
                                     if (sPath === sSelectedPath) {
                                         oUi.setProperty("/selectedRegulationPath", null);
-                                        oUi.setProperty("/selectedRegulationDescription", null);
+                                        oUi.setProperty("/selectedRegulationDescription", "");
                                         detailPanel.setVisible(false);
                                     }
                                 },
-                                error: function (oError) {
+                                error: function(oError) {
+                                    console.error("Failed to delete main regulation:", oError);
                                     MessageToast.show("Delete failed");
-                                    console.error("Delete error:", oError);
-                                },
+                                }
                             });
+                        }).catch(function(e){
+                            console.error("Delete failed:", e);
+                            MessageToast.show("Delete failed");
+                        });
                         }
                     },
                 });
@@ -380,9 +431,6 @@ sap.ui.define(
             },
 
             _ensureMarketDialog: function () {
-                if (this._oMarketDialog) {
-                    return Promise.resolve();
-                }
 
                 this._oMarketDialog = new SelectDialog({
                     title: "Select Market",
@@ -448,9 +496,6 @@ sap.ui.define(
             },
 
             _ensureOriginDialog: function () {
-                if (this._oOriginDialog) {
-                    return Promise.resolve();
-                }
 
                 this._oOriginDialog = new SelectDialog({
                     title: "Select Origin",
