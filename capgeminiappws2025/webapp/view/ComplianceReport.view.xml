@@ -20,7 +20,7 @@
                 }"
                 mode="SingleSelectMaster"
                 itemPress=".onTableItemPress"
-                class="sapUiSmallMarginBegin sapUiSmallMarginEnd sapUiSmallMarginBottom">
+                class="sapUiSmallMarginBegin sapUiSmallMarginEnd sapUiSmallMarginBottom sapUiMediumMarginTop">
 
                 <columns>
                     <Column><Text text="Report ID" /></Column>
