@@ -5,7 +5,7 @@
     xmlns:core="sap.ui.core"
     xmlns:table="sap.ui.table">
 
-    <Page id="reportDetailPage" title="Regulatory Readiness Report">
+    <Page id="reportDetailPage" title="Regulatory Readiness Report" enableScrolling="true">
         <headerContent>
             <!-- Export Button -->
             <Button
@@ -60,7 +60,7 @@
                                         <Text text="Data Quality" />
                                     </Column>
                                     <Column>
-                                        <Text text="Data Gaps" />
+                                        <Text text="Data Gaps / Activity" />
                                     </Column>
                                     <Column>
                                         <Text text="Recommendations" />
@@ -83,7 +83,6 @@
                                                 state="{= ${data_quality} === 'HIGH' ? 'Success' : ${data_quality} === 'MEDIUM' ? 'Warning' : 'Error'}" />
                                             <Text text="{gap_desc}" />
                                             <Text text="{recommendation}" />
-                                            <Text text="{data_source}" />
                                         </cells>
                                     </ColumnListItem>
                                 </items>
@@ -94,6 +93,19 @@
                         <IconTabFilter
                             text="BOM"
                             icon="sap-icon://product">
+                            <HBox class="sapUiSmallMarginTop sapUiSmallMarginBottom" alignItems="Center">
+                                <Label text="Filter by Parent Activity:" class="sapUiTinyMarginEnd" />
+                                <Select
+                                    id="activityFilter"
+                                    change=".onActivityFilterChange"
+                                    width="200px">
+                                    <core:Item key="ALL" text="All" />
+                                    <core:Item key="ACTIVE" text="Active" />
+                                    <core:Item key="INACTIVE" text="Inactive" />
+                                    <core:Item key="DORMANT" text="Dormant" />
+                                    <core:Item key="N/A" text="No Activity Info" />
+                                </Select>
+                            </HBox>
                             <table:TreeTable
                                 id="bomTable"
                                 rows="{
@@ -103,6 +115,9 @@
                                     }
                                 }"
                                 width="100%"
+                                visibleRowCountMode="Fixed"
+                                visibleRowCount="10"
+                                rowHeight="48"
                                 selectionMode="None">
 
                                 <table:columns>
@@ -143,6 +158,15 @@
                                     </table:Column>
                                     <table:Column
                                         width="120px">
+                                        <Label text="Activity Status" />
+                                        <table:template>
+                                            <ObjectStatus
+                                                text="{bom>activity_status}"
+                                                state="{= ${bom>activity_status} === 'ACTIVE' ? 'Success' : ${bom>activity_status} === 'INACTIVE' ? 'Warning' : ${bom>activity_status} === 'DORMANT' ? 'Error' : 'None'}" />
+                                        </table:template>
+                                    </table:Column>
+                                    <table:Column
+                                        width="120px">
                                         <Label text="Data Availability" />
                                         <table:template>
                                             <ObjectStatus
@@ -165,14 +189,14 @@
                                         width="150px">
                                         <Label text="Data Gaps" />
                                         <table:template>
-                                            <Text text="{bom>gap_desc}" />
+                                            <Text text="{bom>gap_desc}" maxLines="2" tooltip="{bom>gap_desc}" />
                                         </table:template>
                                     </table:Column>
                                     <table:Column
                                         width="200px">
                                         <Label text="Recommendations" />
                                         <table:template>
-                                            <Text text="{bom>recommendation}" />
+                                            <Text text="{bom>recommendation}" maxLines="2" tooltip="{bom>recommendation}" />
                                         </table:template>
                                     </table:Column>
                                 </table:columns>

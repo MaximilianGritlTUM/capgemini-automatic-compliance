@@ -4,8 +4,9 @@ sap.ui.define([
     "sap/ui/core/UIComponent",
     "sap/ui/export/Spreadsheet",
     "sap/ui/model/Filter",
-    "sap/ui/model/json/JSONModel"
-], function (Controller, MessageToast, UIComponent, Spreadsheet, Filter, JSONModel) {
+    "sap/ui/model/json/JSONModel",
+    "capgeminiappws2025/utils/TransactionHistoryFilter"
+], function (Controller, MessageToast, UIComponent, Spreadsheet, Filter, JSONModel, TransactionHistoryFilter) {
     "use strict";
 
     return Controller.extend("capgeminiappws2025.controller.ComplianceReportDetail", {
@@ -37,34 +38,61 @@ sap.ui.define([
                 oBinding.filter(new Filter("category", "EQ", "GENERAL"));
             }
 
-            oModel.read(sPath + "/to_BOMResults", {
-                urlParameters: {
-                    "$expand": "to_Children"
-                },
-                success: function (oData) {
-
-                    // 1. Normalize children arrays
-                    oData.results.forEach(node => {
-                        if (node.to_Children && node.to_Children.results && node.to_Children.results.length > 0) {
-                            node.to_Children = node.to_Children.results;
-                            node.to_Children.forEach(child => {
-                                child.to_Children = null; // Prevent deeper nesting
-                            });
-                        } else {
-                            node.to_Children = null;
-                        }
+            // Load BOM results and enrich with activity status
+            var that = this;
+            Promise.all([
+                new Promise(function (resolve) {
+                    oModel.read(sPath + "/to_BOMResults", {
+                        urlParameters: { "$expand": "to_Children" },
+                        success: function (oData) { resolve(oData); },
+                        error: function () { resolve({ results: [] }); }
                     });
+                }),
+                TransactionHistoryFilter.loadMaterialActivityStatus(oModel, 72).catch(function () {
+                    return new Map();
+                })
+            ]).then(function (aRes) {
+                var oData = aRes[0];
+                var mActivityStatus = aRes[1];
 
-                    // 2. Keep ONLY root nodes
-                    const aRoots = oData.results.filter(function (item) {
-                        return !item.parent_node_id;
-                    });
+                // 1. Normalize children arrays
+                oData.results.forEach(function (node) {
+                    if (node.to_Children && node.to_Children.results && node.to_Children.results.length > 0) {
+                        node.to_Children = node.to_Children.results;
+                        node.to_Children.forEach(function (child) {
+                            child.to_Children = null;
+                        });
+                    } else {
+                        node.to_Children = null;
+                    }
+                });
 
-                    console.log(aRoots)
+                // 2. Enrich with activity status
+                oData.results.forEach(function (node) {
+                    var oActivity = TransactionHistoryFilter.getActivityForMaterial(mActivityStatus, node.parent_matnr);
+                    node.activity_status = oActivity.status;
+                    node.last_transaction_date = oActivity.lastTransactionDate;
+                    node.transaction_count = oActivity.transactionCount;
+                    if (node.to_Children) {
+                        node.to_Children.forEach(function (child) {
+                            var oChildActivity = TransactionHistoryFilter.getActivityForMaterial(mActivityStatus, child.parent_matnr);
+                            child.activity_status = oChildActivity.status;
+                            child.last_transaction_date = oChildActivity.lastTransactionDate;
+                            child.transaction_count = oChildActivity.transactionCount;
+                        });
+                    }
+                });
 
-                    const oJsonModel = new sap.ui.model.json.JSONModel(aRoots);
-                    this.getView().setModel(oJsonModel, "bom");
-                }.bind(this)
+                // 3. Keep ONLY root nodes
+                var aRoots = oData.results.filter(function (item) {
+                    return !item.parent_node_id;
+                });
+
+                // Store original BOM data for activity filtering
+                that._aBomDataOriginal = JSON.parse(JSON.stringify(aRoots));
+
+                var oJsonModel = new JSONModel(aRoots);
+                that.getView().setModel(oJsonModel, "bom");
             });
         },
 
@@ -80,28 +108,18 @@ sap.ui.define([
             }
         },
 
-        //TODO: Not fully Implemented. After connecting to the backend, needed to be change
         onExportReport: function () {
             var oView = this.getView();
 
-            // 1. Get the table from Material/Supplier
-
+            // 1. Extract Fields data (Materials + Suppliers)
+            var aFieldsData = [];
             var oMaterialsTable = oView.byId("materialsTable");
             var oSuppliersTable = oView.byId("suppliersTable");
 
-            if(!oMaterialsTable && !oSuppliersTable) {
-                MessageToast.show("No Tables found for export.");
-                return; 
-            }
-
-            //2. Extract binded data from each tables
-            var aExportData =[];
-            if(oMaterialsTable) {
-                oMaterialsTable.getItems().forEach(function(oItem) {
+            if (oMaterialsTable) {
+                oMaterialsTable.getItems().forEach(function (oItem) {
                     var oCtx = oItem.getBindingContext();
-                    if(!oCtx) {
-                        return;
-                    }
+                    if (!oCtx) { return; }
                     var oObj = oCtx.getObject();
 
                     var sType = oObj.category || oObj.Category || oObj.object_type || oObj.objectType || "Material";
@@ -124,14 +142,13 @@ sap.ui.define([
                     });
                 });
             }
-            
-             if (oSuppliersTable) {
+
+            if (oSuppliersTable) {
                 oSuppliersTable.getItems().forEach(function (oItem) {
                     var oCtx = oItem.getBindingContext();
                     if (!oCtx) { return; }
                     var oObj = oCtx.getObject();
-
-                    aExportData.push({
+                    aFieldsData.push({
                         Type: "Supplier",
                         ObjectId: oObj.object_id,
                         ObjectName: oObj.object_name,
@@ -144,40 +161,116 @@ sap.ui.define([
                 });
             }
 
-            if (!aExportData.length) {
+            // 2. Extract BOM data from the bom JSONModel
+            var aBomData = [];
+            var oBomModel = oView.getModel("bom");
+            if (oBomModel) {
+                var aBomRaw = oBomModel.getData() || [];
+                aBomRaw.forEach(function (oRoot) {
+                    var aNodes = [oRoot];
+                    if (oRoot.to_Children && oRoot.to_Children.length) {
+                        aNodes = aNodes.concat(oRoot.to_Children);
+                    }
+                    aNodes.forEach(function (oNode) {
+                        aBomData.push({
+                            ID: oNode.parent_matnr || "",
+                            Name: oNode.material_description || "",
+                            "BOM Number": oNode.bom_number || "",
+                            Plant: oNode.Plant || "",
+                            "Activity Status": oNode.activity_status || "",
+                            Availability: oNode.avail_cat || "",
+                            "Data Quality": oNode.data_quality || "",
+                            "Data Gaps": oNode.gap_desc || "",
+                            Recommendations: oNode.recommendation || ""
+                        });
+                    });
+                });
+            }
+
+            if (!aFieldsData.length && !aBomData.length) {
                 MessageToast.show("No data available to export.");
                 return;
             }
 
-            // 3. Define Excel column
-            var aCols = [
-                { label: "Type",                 property: "Type",                 type: "string" },
-                { label: "ID",                   property: "ObjectId",             type: "string" },
-                { label: "Name",                 property: "ObjectName",           type: "string" },
-                { label: "Availability",         property: "AvailabilityCategory", type: "string" },
-                { label: "Data Quality",         property: "DataQuality",          type: "string" },
-                { label: "Data Gaps",            property: "GapDescription",       type: "string" },
-                { label: "Recommendations",      property: "Recommendation",       type: "string" },
-                { label: "Data Source",          property: "DataSource",           type: "string" }
-            ];
-            
-            var oSettings = {
-                workbook: {
-                    columns: aCols
-                },
-                dataSource: aExportData,
-                fileName: "ReadinessReport_Detail.xlsx",
-                worker: true
-            };
+            // 3. Build multi-sheet workbook using SheetJS (xlsx)
+            var that = this;
+            this._loadXlsx().then(function (XLSX) {
+                var wb = XLSX.utils.book_new();
 
-            var oSheet = new Spreadsheet(oSettings);
-            oSheet.build()
-                .then(function () {
-                    MessageToast.show("Report exported successfully.");
-                })
-                .finally(function () {
-                    oSheet.destroy();
-                });
+                // Fields sheet
+                if (aFieldsData.length) {
+                    var wsFields = XLSX.utils.json_to_sheet(aFieldsData, {
+                        header: ["Type", "ObjectId", "ObjectName", "AvailabilityCategory", "DataQuality", "GapDescription", "Recommendation", "DataSource"]
+                    });
+                    // Rename headers to friendly labels
+                    wsFields["A1"].v = "Type";
+                    wsFields["B1"].v = "ID";
+                    wsFields["C1"].v = "Name";
+                    wsFields["D1"].v = "Availability";
+                    wsFields["E1"].v = "Data Quality";
+                    wsFields["F1"].v = "Data Gaps / Activity";
+                    wsFields["G1"].v = "Recommendations";
+                    wsFields["H1"].v = "Data Source";
+                    XLSX.utils.book_append_sheet(wb, wsFields, "Fields");
+                }
+
+                // BOM sheet
+                if (aBomData.length) {
+                    var wsBom = XLSX.utils.json_to_sheet(aBomData);
+                    XLSX.utils.book_append_sheet(wb, wsBom, "BOM");
+                }
+
+                XLSX.writeFile(wb, "ReadinessReport_Detail.xlsx");
+                MessageToast.show("Report exported successfully.");
+            }).catch(function () {
+                MessageToast.show("Failed to load export library.");
+            });
+        },
+
+        /**
+         * Loads the SheetJS (xlsx) library dynamically from CDN.
+         * @returns {Promise} Resolves with the XLSX global object.
+         */
+        _loadXlsx: function () {
+            if (window.XLSX) {
+                return Promise.resolve(window.XLSX);
+            }
+            return new Promise(function (resolve, reject) {
+                var script = document.createElement("script");
+                script.src = "https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js";
+                script.onload = function () {
+                    resolve(window.XLSX);
+                };
+                script.onerror = function () {
+                    reject(new Error("Failed to load SheetJS library"));
+                };
+                document.head.appendChild(script);
+            });
+        },
+
+        onActivityFilterChange: function (oEvent) {
+            var sKey = oEvent.getParameter("selectedItem").getKey();
+
+            // Filter BOM tab — client-side JSONModel filtering
+            if (this._aBomDataOriginal) {
+                var aFiltered;
+                if (sKey === "ALL") {
+                    aFiltered = JSON.parse(JSON.stringify(this._aBomDataOriginal));
+                } else {
+                    aFiltered = this._aBomDataOriginal.filter(function (oRoot) {
+                        return oRoot.activity_status === sKey;
+                    }).map(function (oRoot) {
+                        var oCopy = JSON.parse(JSON.stringify(oRoot));
+                        if (oCopy.to_Children && Array.isArray(oCopy.to_Children)) {
+                            oCopy.to_Children = oCopy.to_Children.filter(function (oChild) {
+                                return oChild.activity_status === sKey;
+                            });
+                        }
+                        return oCopy;
+                    });
+                }
+                this.getView().getModel("bom").setData(aFiltered);
+            }
         },
 
         onBomRowPress: function (oEvent) {
