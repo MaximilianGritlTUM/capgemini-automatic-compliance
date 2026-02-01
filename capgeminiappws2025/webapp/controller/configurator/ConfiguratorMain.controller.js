@@ -310,6 +310,11 @@ sap.ui.define(
 
                     await readPromise;
 
+                    if (!aData || !Array.isArray(aData) || aData.length === 0) {
+                        sap.m.MessageBox.error("No fields found for the selected regulation.");
+                        return;
+                    }
+
                     await oChecker.do_checking_algorithm(aData, oModel, oSelectedRegulation);
 
                     oRouter.navTo("ComplianceReport");
