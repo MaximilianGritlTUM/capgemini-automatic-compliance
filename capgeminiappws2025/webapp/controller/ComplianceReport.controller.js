@@ -2,11 +2,12 @@ sap.ui.define([
     "sap/ui/core/mvc/Controller",
     "sap/ui/model/json/JSONModel",
     "sap/m/MessageToast",
-    "sap/ui/core/UIComponent"
-], function (Controller, JSONModel, MessageToast, UIComponent) {
+    "sap/ui/core/UIComponent",
+    "capgeminiappws2025/controller/BaseController"
+], function (Controller, JSONModel, MessageToast, UIComponent, BaseController) {
     "use strict";
 
-    return Controller.extend("capgeminiappws2025.controller.ComplianceReport", {
+    return BaseController.extend("capgeminiappws2025.controller.ComplianceReport", {
 
         onInit: function () {
             console.log("ComplianceReport View initialized with s40 oData Model");

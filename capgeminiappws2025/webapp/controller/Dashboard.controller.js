@@ -22,9 +22,13 @@ sap.ui.define([
     return Controller.extend("capgeminiappws2025.controller.Dashboard", {
         
         onInit: function () {
-            this._loadDashboardData();
+            var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
+            oRouter.getRoute("home").attachPatternMatched(this._onRouteMatched, this);
         },
 
+        _onRouteMatched: function () {
+            this._loadDashboardData();
+        },
 
         onNavToConfig: function () {
             this.getOwnerComponent().getRouter().navTo("configurator");

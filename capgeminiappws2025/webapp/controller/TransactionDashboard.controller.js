@@ -4,11 +4,12 @@ sap.ui.define([
   "sap/m/MessageToast",
   "sap/ui/model/Sorter",
   "sap/ui/model/Filter",
-  "sap/ui/model/FilterOperator"
-], function (Controller, JSONModel, MessageToast, Sorter, Filter, FilterOperator) {
+  "sap/ui/model/FilterOperator",
+  "capgeminiappws2025/controller/BaseController"
+], function (Controller, JSONModel, MessageToast, Sorter, Filter, FilterOperator, BaseController) {
   "use strict";
 
-  return Controller.extend("capgeminiappws2025.controller.TransactionDashboard", {
+  return BaseController.extend("capgeminiappws2025.controller.TransactionDashboard", {
 
     _ENTITY: {
       HIST_SUMMARY: "/TASummary"
