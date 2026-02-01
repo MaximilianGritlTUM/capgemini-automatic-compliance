@@ -311,7 +311,7 @@ sap.ui.define(
                     await readPromise;
 
                     if (!aData || !Array.isArray(aData) || aData.length === 0) {
-                        sap.m.MessageBox.error("No rules found for the selected regulation.");
+                        sap.m.MessageBox.error("No rules found for the selected regulation. Please add rules before starting the readiness check.");
                         return;
                     }
 
